@@ -35,7 +35,7 @@ unit Cl3;
 interface
 
 uses
-  SysUtils;
+  Typ, Sle, Omv, SysUtils;
 
 type
   // TMultivector
@@ -129,15 +129,11 @@ type
     class operator * (const ALeft: TTrivector; const ARight: TMultivector): TMultivector;
     class operator * (const ALeft: TMultivector; const ARight: TTrivector): TMultivector;
 
-
     class operator / (const ALeft, ARight: TTrivector): double;
     class operator / (const ALeft: TTrivector; const ARight: double): TTrivector;
     class operator / (const ALeft: double; const ARight: TTrivector): TTrivector;
     class operator / (const ALeft: TMultivector; const ARight: TTrivector): TMultivector;
     class operator / (const ALeft: TTrivector; const ARight: TMultivector): TMultivector;
-
-
-
 
     function SquaredNorm: double;
     function Norm: double;
@@ -151,16 +147,16 @@ type
     function Projection(const AVector: TMultivector): TMultivector;
     function Rejection (const AVector: TMultivector): TMultivector;
     function Reflection(const AVector: TMultivector): TMultivector;
-    function Rotation(const AVector1, AVector2: TTrivector): TTrivector;
+    function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 
     function ScalarProduct(const AVector: TMultivector): TMultivector;
     function ScalarProduct(const AVector: TTrivector): double;
 
-    function WedgeProduct (const AVector: TMultivector): TTrivector;
+    function WedgeProduct (const AVector: TMultivector): TMultivector;
     function WedgeProduct (const AVector: TTrivector): double;
 
-    function ToString: string;
     function ToMultivector: TMultivector;
+    function ToString: string;
   end;
 
   // Bivector
@@ -201,6 +197,14 @@ type
 
 
     function ToMultivector: TMultivector;
+  end;
+
+
+  TMultivectorHelper = record helper for TMultivector
+    function ScalarProduct(const AVector: TTrivector): double; overload;
+    function WedgeProduct (const AVector: TTrivector): double; overload;
+
+
   end;
 
 
@@ -841,7 +845,7 @@ begin
   result.fm12  :=  ALeft.fm3   * ARight.fm123;
   result.fm23  :=  ALeft.fm1   * ARight.fm123;
   result.fm31  :=  ALeft.fm2   * ARight.fm123;
-  result.fm123 :=  0;
+  result.fm123 :=  ALeft.fm0   * ARight.fm123;
 end;
 
 class operator TTrivector.*(const ALeft: TTrivector; const ARight: TMultivector): TMultivector;
@@ -874,7 +878,6 @@ begin
   result := ALeft * ARight.Reciprocal;
 end;
 
-
 function TTrivector.SquaredNorm: double;
 begin
   result := -fm123 * fm123;
@@ -882,7 +885,7 @@ end;
 
 function TTrivector.Norm: double;
 begin
-  result := sqrt(abs(SquaredNorm));
+  result := fm123;
 end;
 
 function TTrivector.Involute: TTrivector;
@@ -925,9 +928,9 @@ begin
   result := AVector * Self * AVector.Reciprocal;
 end;
 
-function TTrivector.Rotation(const AVector1, AVector2: TTrivector): TTrivector;
+function TTrivector.Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 begin
-  result := Self;
+  result := (AVector2 * AVector1) * Self * (AVector1.Reciprocal * AVector2.Reciprocal);
 end;
 
 function TTrivector.ScalarProduct(const AVector: TMultivector): TMultivector;
@@ -947,7 +950,7 @@ begin
   result := -fm123 * fm123;
 end;
 
-function TTrivector.WedgeProduct(const AVector: TMultivector): TTrivector;
+function TTrivector.WedgeProduct(const AVector: TMultivector): TMultivector;
 begin
   result.fm123 := fm123 * AVector.fm0;
 end;
@@ -1116,6 +1119,19 @@ begin
   result.fm23  := 0;
   result.fm31  := 0;
   result.fm123 := 0;
+end;
+
+
+// MultivectorHelper
+
+function TMultivectorHelper.ScalarProduct(const AVector: TTrivector): double;
+begin
+  result := -fm123 * AVector.fm123;
+end;
+
+function TMultivectorHelper.WedgeProduct (const AVector: TTrivector): double;
+begin
+  result := fm0 * AVector.fm123;
 end;
 
 // Versor
