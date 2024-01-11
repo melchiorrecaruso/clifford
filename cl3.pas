@@ -151,7 +151,6 @@ type
 
     function ScalarProduct(const AVector: TMultivector): TMultivector;
     function ScalarProduct(const AVector: TTrivector): double;
-
     function WedgeProduct (const AVector: TMultivector): TMultivector;
     function WedgeProduct (const AVector: TTrivector): double;
 
@@ -166,14 +165,13 @@ type
     fm23 : double;
     fm31 : double;
   public
-    class operator = (const ALeft, ARight: TBivector): boolean;
-    class operator = (const ALeft: TBivector; const ARight: TMultivector): boolean;
-    class operator = (const ALeft: TMultivector; const ARight: TBivector): boolean;
-
-
     class operator <>(const ALeft, ARight: TBivector): boolean;
     class operator <>(const ALeft: TBivector; const ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; const ARight: TBivector): boolean;
+
+    class operator = (const ALeft, ARight: TBivector): boolean;
+    class operator = (const ALeft: TBivector; const ARight: TMultivector): boolean;
+    class operator = (const ALeft: TMultivector; const ARight: TBivector): boolean;
 
     class operator + (const ALeft, ARight: TBivector): TBivector;
     class operator + (const ALeft: TBivector; const ARight: double): TMultivector;
@@ -207,13 +205,12 @@ type
     class operator / (const ALeft: TMultivector; const ARight: TBivector): TMultivector;
     class operator / (const ALeft: TBivector; const ARight: TMultivector): TMultivector;
 
-
-    function SquaredNorm: double;
-    function Norm: double;
-
     function Involute: TBivector;
     function Conjugate: TBivector;
     function Reverse: TBivector;
+
+    function SquaredNorm: double;
+    function Norm: double;
 
     function Reciprocal: TBivector;
     function Projection(const AVector: TMultivector): TMultivector;
@@ -221,16 +218,12 @@ type
     function Reflection(const AVector: TMultivector): TMultivector;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 
-
     function ScalarProduct(const AVector: TMultivector): TMultivector;
     function ScalarProduct(const AVector: TTrivector): TMultivector;
     function ScalarProduct(const AVector: TBivector): double;
-
     function WedgeProduct (const AVector: TMultivector): TMultivector;
     function WedgeProduct (const AVector: TTrivector): TMultivector;
     function WedgeProduct (const AVector: TBivector): TMultivector;
-
-
 
     function ToMultivector: TMultivector;
     function ToString: string;
@@ -243,17 +236,44 @@ type
     fm2 : double;
     fm3 : double;
   public
+    class operator <>(const ALeft, ARight: TVector): boolean;
+    class operator <>(const ALeft: TVector; const ARight: TMultivector): boolean;
+    class operator <>(const ALeft: TMultivector; const ARight: TVector): boolean;
 
-    class operator +(const ALeft: TVector; const ARight: double): TMultivector;
-    class operator +(const ALeft: double; const ARight: TVector): TMultivector;
+    class operator = (const ALeft, ARight: TVector): boolean;
+    class operator = (const ALeft: TVector; const ARight: TMultivector): boolean;
+    class operator = (const ALeft: TMultivector; const ARight: TVector): boolean;
 
     class operator +(const ALeft, ARight: TVector): TVector;
-
+    class operator +(const ALeft: TVector; const ARight: double): TMultivector;
+    class operator +(const ALeft: double; const ARight: TVector): TMultivector;
     class operator +(const ALeft: TVector; const ARight: TBivector): TMultivector;
     class operator +(const ALeft: TBivector; const ARight: TVector): TMultivector;
-
+    class operator +(const ALeft: TVector; const ARight: TTrivector): TMultivector;
+    class operator +(const ALeft: TTrivector; const ARight: TVector): TMultivector;
     class operator +(const ALeft: TVector; const ARight: TMultivector): TMultivector;
     class operator +(const ALeft: TMultivector; const ARight: TVector): TMultivector;
+
+    class operator - (const ALeft, ARight: TVector): TVector;
+    class operator - (const ALeft: TVector; const ARight: double): TMultivector;
+    class operator - (const ALeft: double; const ARight: TVector): TMultivector;
+    class operator - (const ALeft: TVector; const ARight: TBivector): TMultivector;
+    class operator - (const ALeft: TBivector; const ARight: TVector): TMultivector;
+    class operator - (const ALeft: TVector; const ARight: TTrivector): TMultivector;
+    class operator - (const ALeft: TTrivector; const ARight: TVector): TMultivector;
+    class operator - (const ALeft: TVector; const ARight: TMultivector): TMultivector;
+    class operator - (const ALeft: TMultivector; const ARight: TVector): TMultivector;
+
+    class operator * (const ALeft: double; const ARight: TVector): TVector;
+    class operator * (const ALeft: TVector; const ARight: double): TVector;
+    class operator * (const ALeft, ARight: TVector): TMultivector;
+    class operator * (const ALeft: TVector; const ARight: TBivector): TMultivector;
+    class operator * (const ALeft: TBivector; const ARight: TVector): TMultivector;
+    class operator * (const ALeft: TVector; const ARight: TTrivector): TBivector;
+    class operator * (const ALeft: TTrivector; const ARight: TVector): TBivector;
+    class operator * (const ALeft: TVector; const ARight: TMultivector): TMultivector;
+    class operator * (const ALeft: TMultivector; const ARight: TVector): TMultivector;
+
 
 
     function ToMultivector: TMultivector;
@@ -1494,6 +1514,53 @@ end;
 
 // Vector
 
+class operator TVector.<>(const ALeft, ARight: TVector): boolean;
+begin
+  result := (ALeft.fm1 <> ARight.fm1) or
+            (ALeft.fm2 <> ARight.fm2) or
+            (ALeft.fm3 <> ARight.fm3);
+end;
+
+class operator TVector.<>(const ALeft: TMultivector; const ARight: TVector): boolean;
+begin
+  result := (ALeft.fm0   <> 0) or
+            (ALeft.fm1   <> ARight.fm1) or
+            (ALeft.fm2   <> ARight.fm2) or
+            (ALeft.fm2   <> ARight.fm3) or
+            (ALeft.fm12  <> 0) or
+            (ALeft.fm23  <> 0) or
+            (ALeft.fm31  <> 0) or
+            (ALeft.fm123 <> 0);
+end;
+
+class operator TVector.<>(const ALeft: TVector; const ARight: TMultivector): boolean;
+begin
+  result := ARight <> ALeft;
+end;
+
+class operator TVector.=(const ALeft, ARight: TVector): boolean;
+begin
+  result := not (ARight <> ALeft);
+end;
+
+class operator TVector.=(const ALeft: TVector; const ARight: TMultivector): boolean;
+begin
+  result := not (ARight <> ALeft);
+end;
+
+class operator TVector.=(const ALeft: TMultivector; const ARight: TVector): boolean;
+begin
+  result := not (ARight <> ALeft);
+end;
+
+
+
+
+
+
+
+
+
 class operator TVector.+(const ALeft, ARight: TVector): TVector;
 begin
   result.fm1 := ALeft.fm1 + ARight.fm1;
@@ -1549,6 +1616,31 @@ begin
   result.fm123 := 0;
 end;
 
+class operator TVector.+(const ALeft: TVector; const ARight: TTrivector): TMultivector;
+begin
+  result.fm0   := 0;
+  result.fm1   := ALeft.fm1;
+  result.fm2   := ALeft.fm2;
+  result.fm3   := ALeft.fm3;
+  result.fm12  := 0;
+  result.fm23  := 0;
+  result.fm31  := 0;
+  result.fm123 := ARight.fm123;
+end;
+
+class operator TVector.+(const ALeft: TTrivector; const ARight: TVector): TMultivector;
+begin
+  result.fm0   := 0;
+  result.fm1   := ARight.fm1;
+  result.fm2   := ARight.fm2;
+  result.fm3   := ARight.fm3;
+  result.fm12  := 0;
+  result.fm23  := 0;
+  result.fm31  := 0;
+  result.fm123 := ALeft.fm123;
+end;
+
+
 class operator TVector.+(const ALeft: TVector; const ARight: TMultivector): TMultivector;
 begin
   result.fm0   := ARight.fm0;
@@ -1572,6 +1664,282 @@ begin
   result.fm31  := ALeft.fm31;
   result.fm123 := ALeft.fm123;
 end;
+
+class operator TVector.-(const ALeft, ARight: TVector): TVector;
+begin
+  result.fm1 := ALeft.fm1 - ARight.fm1;
+  result.fm2 := ALeft.fm2 - ARight.fm2;
+  result.fm3 := ALeft.fm3 - ARight.fm3;
+end;
+
+class operator TVector.-(const ALeft: TVector; const ARight: double): TMultivector;
+begin
+  result.fm0   := -ARight;
+  result.fm1   :=  ALeft.fm1;
+  result.fm2   :=  ALeft.fm2;
+  result.fm3   :=  ALeft.fm3;
+  result.fm12  :=  0;
+  result.fm23  :=  0;
+  result.fm31  :=  0;
+  result.fm123 :=  0;
+end;
+
+class operator TVector.-(const ALeft: double; const ARight: TVector): TMultivector;
+begin
+  result.fm0   :=  ALeft;
+  result.fm1   := -ARight.fm1;
+  result.fm2   := -ARight.fm2;
+  result.fm3   := -ARight.fm3;
+  result.fm12  :=  0;
+  result.fm23  :=  0;
+  result.fm31  :=  0;
+  result.fm123 :=  0;
+end;
+
+class operator TVector.-(const ALeft: TVector; const ARight: TBivector): TMultivector;
+begin
+  result.fm0   :=  0;
+  result.fm1   :=  ALeft.fm1;
+  result.fm2   :=  ALeft.fm2;
+  result.fm3   :=  ALeft.fm3;
+  result.fm12  := -ARight.fm12;
+  result.fm23  := -ARight.fm23;
+  result.fm31  := -ARight.fm31;
+  result.fm123 :=  0;
+end;
+
+class operator TVector.-(const ALeft: TBivector; const ARight: TVector): TMultivector;
+begin
+  result.fm0   :=  0;
+  result.fm1   := -ARight.fm1;
+  result.fm2   := -ARight.fm2;
+  result.fm3   := -ARight.fm3;
+  result.fm12  :=  ALeft.fm12;
+  result.fm23  :=  ALeft.fm23;
+  result.fm31  :=  ALeft.fm31;
+  result.fm123 :=  0;
+end;
+
+class operator TVector.-(const ALeft: TVector; const ARight: TTrivector): TMultivector;
+begin
+  result.fm0   :=  0;
+  result.fm1   :=  ALeft.fm1;
+  result.fm2   :=  ALeft.fm2;
+  result.fm3   :=  ALeft.fm3;
+  result.fm12  :=  0;
+  result.fm23  :=  0;
+  result.fm31  :=  0;
+  result.fm123 := -ARight.fm123;
+end;
+
+class operator TVector.-(const ALeft: TTrivector; const ARight: TVector): TMultivector;
+begin
+  result.fm0   :=  0;
+  result.fm1   := -ARight.fm1;
+  result.fm2   := -ARight.fm2;
+  result.fm3   := -ARight.fm3;
+  result.fm12  :=  0;
+  result.fm23  :=  0;
+  result.fm31  :=  0;
+  result.fm123 :=  ALeft.fm123;
+end;
+
+class operator TVector.-(const ALeft: TVector; const ARight: TMultivector): TMultivector;
+begin
+  result.fm0   := -ARight.fm0;
+  result.fm1   :=  ALeft.fm1 - ARight.fm1;
+  result.fm2   :=  ALeft.fm2 - ARight.fm2;
+  result.fm3   :=  ALeft.fm3 - ARight.fm3;
+  result.fm12  := -ARight.fm12;
+  result.fm23  := -ARight.fm23;
+  result.fm31  := -ARight.fm31;
+  result.fm123 := -ARight.fm123;
+end;
+
+class operator TVector.-(const ALeft: TMultivector; const ARight: TVector): TMultivector;
+begin
+  result.fm0   := ALeft.fm0;
+  result.fm1   := ALeft.fm1 - ARight.fm1;
+  result.fm2   := ALeft.fm2 - ARight.fm2;
+  result.fm3   := ALeft.fm3 - ARight.fm3;
+  result.fm12  := ALeft.fm12;
+  result.fm23  := ALeft.fm23;
+  result.fm31  := ALeft.fm31;
+  result.fm123 := ALeft.fm123;
+end;
+
+class operator TVector.*(const ALeft: double; const ARight: TVector): TVector;
+begin
+  result.fm1 := ALeft * ARight.fm1;
+  result.fm2 := ALeft * ARight.fm2;
+  result.fm3 := ALeft * ARight.fm3;
+end;
+
+class operator TVector.*(const ALeft: TVector; const ARight: double): TVector;
+begin
+  result.fm1 := ALeft.fm1 * ARight;
+  result.fm2 := ALeft.fm2 * ARight;
+  result.fm3 := ALeft.fm3 * ARight;
+end;
+
+class operator TVector.*(const ALeft, ARight: TVector): TMultivector;
+begin
+  result.fm0   :=  ALeft.fm1 * ARight.fm1
+                  +ALeft.fm2 * ARight.fm2
+                  +ALeft.fm3 * ARight.fm3;
+  result.fm1   :=  0;
+  result.fm2   :=  0;
+  result.fm3   :=  0;
+  result.fm12  :=  ALeft.fm1 * ARight.fm2
+                  -ALeft.fm2 * ARight.fm1;
+  result.fm23  :=  ALeft.fm2 * ARight.fm3
+                  -ALeft.fm3 * ARight.fm2;
+  result.fm31  :=  ALeft.fm3 * ARight.fm1
+                  -ALeft.fm1 * ARight.fm3;
+  result.fm123 :=  0;
+end;
+
+class operator TVector.*(const ALeft: TVector; const ARight: TBivector): TMultivector;
+begin
+  result.fm0 :=    0;
+  result.fm1 :=    ALeft.fm3 * ARight.fm31
+                  -ALeft.fm2 * ARight.fm12;
+  result.fm2 :=    ALeft.fm1 * ARight.fm12
+                  -ALeft.fm3 * ARight.fm23;
+  result.fm3 :=    ALeft.fm2 * ARight.fm23
+                  -ALeft.fm1 * ARight.fm31;
+  result.fm12  :=  0;
+  result.fm23  :=  0;
+  result.fm31  :=  0;
+  result.fm123 :=  ALeft.fm1 * ARight.fm23
+                  +ALeft.fm2 * ARight.fm31
+                  +ALeft.fm3 * ARight.fm12;
+end;
+
+class operator TVector.*(const ALeft: TBivector; const ARight: TVector): TMultivector;
+begin
+  result.fm0   :=  0;
+  result.fm1   :=  ALeft.fm12 * ARight.fm2
+                  -ALeft.fm31 * ARight.fm3;
+  result.fm2   :=  ALeft.fm23 * ARight.fm3
+                  -ALeft.fm12 * ARight.fm1;
+  result.fm3   :=  ALeft.fm31 * ARight.fm1
+                  -ALeft.fm23 * ARight.fm2;
+  result.fm12  :=  0;
+  result.fm23  :=  0;
+  result.fm31  :=  0;
+  result.fm123 :=  ALeft.fm12 * ARight.fm3
+                  +ALeft.fm23 * ARight.fm1
+                  +ALeft.fm31 * ARight.fm2;
+end;
+
+class operator TVector.*(const ALeft: TVector; const ARight: TTrivector): TBivector;
+begin
+  result.fm12 := ALeft.fm3 * ARight.fm123;
+  result.fm23 := ALeft.fm1 * ARight.fm123;
+  result.fm31 := ALeft.fm2 * ARight.fm123;
+end;
+
+class operator TVector.*(const ALeft: TTrivector; const ARight: TVector): TBivector;
+begin
+  result.fm12 := ALeft.fm123 * ARight.fm3;
+  result.fm23 := ALeft.fm123 * ARight.fm1;
+  result.fm31 := ALeft.fm123 * ARight.fm2;
+end;
+
+class operator TVector.*(const ALeft: TVector; const ARight: TMultivector): TMultivector;
+begin
+  result.fm0   :=  ALeft.fm1 * ARight.fm1
+                  +ALeft.fm2 * ARight.fm2
+                  +ALeft.fm3 * ARight.fm3;
+
+  result.fm1   :=  ALeft.fm1 * ARight.fm0
+                  -ALeft.fm2 * ARight.fm12
+                  +ALeft.fm3 * ARight.fm31;
+
+  result.fm2   :=  ALeft.fm1 * ARight.fm12
+                  +ALeft.fm2 * ARight.fm0
+                  -ALeft.fm3 * ARight.fm23;
+
+  result.fm3   := +ALeft.fm3 * ARight.fm0
+                  -ALeft.fm1 * ARight.fm31
+                  +ALeft.fm2 * ARight.fm23;
+
+  result.fm12  :=  ALeft.fm1 * ARight.fm2
+                  -ALeft.fm2 * ARight.fm1
+                  +ALeft.fm3 * ARight.fm123;
+
+  result.fm23  :=  ALeft.fm1 * ARight.fm123
+                  +ALeft.fm2 * ARight.fm3
+                  -ALeft.fm3 * ARight.fm2;
+
+  result.fm31  := +ALeft.fm3 * ARight.fm1
+                  -ALeft.fm1 * ARight.fm3
+                  +ALeft.fm2 * ARight.fm123;
+
+  result.fm123 :=  ALeft.fm1 * ARight.fm23
+                  +ALeft.fm2 * ARight.fm31
+                  +ALeft.fm3 * ARight.fm12;
+end;
+
+class operator TVector.*(const ALeft: TMultivector; const ARight: TVector): TMultivector;
+begin
+  result.fm0   :=  ALeft.fm1   * ARight.fm1
+                  +ALeft.fm2   * ARight.fm2
+                  +ALeft.fm3   * ARight.fm3;
+
+  result.fm1   :=  ALeft.fm0   * ARight.fm1
+                  +ALeft.fm12  * ARight.fm2
+                  -ALeft.fm31  * ARight.fm3;
+
+  result.fm2   :=  ALeft.fm0   * ARight.fm2
+                  -ALeft.fm12  * ARight.fm1
+                  +ALeft.fm23  * ARight.fm3;
+
+  result.fm3   :=  ALeft.fm0   * ARight.fm3
+                  -ALeft.fm23  * ARight.fm2
+                  +ALeft.fm31  * ARight.fm1;
+
+  result.fm12  :=  ALeft.fm1   * ARight.fm2
+                  -ALeft.fm2   * ARight.fm1
+                  +ALeft.fm123 * ARight.fm3;
+
+  result.fm23  := +ALeft.fm2   * ARight.fm3
+                  -ALeft.fm3   * ARight.fm2
+                  +ALeft.fm123 * ARight.fm1;
+
+  result.fm31  :=  ALeft.fm123 * ARight.fm2
+                  -ALeft.fm1   * ARight.fm3
+                  +ALeft.fm3   * ARight.fm1;
+
+  result.fm123 :=  ALeft.fm12  * ARight.fm3
+                  +ALeft.fm23  * ARight.fm1
+                  +ALeft.fm31  * ARight.fm2;
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function TVector.ToMultivector: TMultivector;
