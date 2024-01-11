@@ -35,7 +35,7 @@ unit Cl3;
 interface
 
 uses
-  Typ, Sle, Omv, SysUtils;
+  SysUtils;
 
 type
   // TMultivector
@@ -199,7 +199,6 @@ type
     class operator * (const ALeft: TBivector; const ARight: TMultivector): TMultivector;
     class operator * (const ALeft: TMultivector; const ARight: TBivector): TMultivector;
 
-
     class operator / (const ALeft, ARight: TBivector): TMultivector;
     class operator / (const ALeft: TBivector; const ARight: double): TBivector;
     class operator / (const ALeft: double; const ARight: TBivector): TBivector;
@@ -217,8 +216,19 @@ type
     function Reverse: TBivector;
 
     function Reciprocal: TBivector;
+    function Projection(const AVector: TMultivector): TMultivector;
+    function Rejection (const AVector: TMultivector): TMultivector;
+    function Reflection(const AVector: TMultivector): TMultivector;
+    function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 
 
+    function ScalarProduct(const AVector: TMultivector): TMultivector;
+    function ScalarProduct(const AVector: TTrivector): TMultivector;
+    function ScalarProduct(const AVector: TBivector): double;
+
+    function WedgeProduct (const AVector: TMultivector): TMultivector;
+    function WedgeProduct (const AVector: TTrivector): TMultivector;
+    function WedgeProduct (const AVector: TBivector): TMultivector;
 
 
 
@@ -254,7 +264,10 @@ type
     function ScalarProduct(const AVector: TTrivector): double; overload;
     function WedgeProduct (const AVector: TTrivector): double; overload;
 
-
+    function ExtractTrivector: TTrivector;
+    function ExtractBivector: TBivector;
+    function ExtractVector: TVector;
+    function ExtractScalar: double;
   end;
 
 
@@ -1365,22 +1378,90 @@ begin
   result := Self / SquaredNorm;
 end;
 
+function TBivector.Projection(const AVector: TMultivector): TMultivector;
+begin
+  result := ScalarProduct(AVector) * AVector.Reciprocal;
+end;
+
+function TBivector.Rejection (const AVector: TMultivector): TMultivector;
+begin
+  result := WedgeProduct(AVector) * AVector.Reciprocal;
+end;
+
+function TBivector.Reflection(const AVector: TMultivector): TMultivector;
+begin
+  result := AVector * Self * AVector.Reciprocal;
+end;
+
+function TBivector.Rotation(const AVector1, AVector2: TMultivector): TMultivector;
+begin
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
+end;
 
 
+function TBivector.ScalarProduct(const AVector: TMultivector): TMultivector;
+begin
+  result.fm0   := -fm12  * AVector.fm12
+                  -fm23  * AVector.fm23
+                  -fm31  * AVector.fm31;
+  result.fm1   := +fm12  * AVector.fm2
+                  -fm23  * AVector.fm123
+                  -fm31  * AVector.fm3;
+  result.fm2   := -fm12  * AVector.fm1
+                  -fm31  * AVector.fm123
+                  +fm23  * AVector.fm3;
+  result.fm3   := -fm12  * AVector.fm123
+                  -fm23  * AVector.fm2
+                  +fm31  * AVector.fm1;
+  result.fm12  :=  fm12  * AVector.fm0;
+  result.fm23  :=  fm23  * AVector.fm0;
+  result.fm31  :=  fm31  * AVector.fm0;
+  result.fm123 :=  0;
+end;
+
+function TBivector.ScalarProduct(const AVector: TTrivector): TMultivector;
+begin
+  result.fm0   :=  0;
+  result.fm1   := -fm23  * AVector.fm123;
+  result.fm2   := -fm31  * AVector.fm123;
+  result.fm3   := -fm12  * AVector.fm123;
+  result.fm12  :=  0;
+  result.fm23  :=  0;
+  result.fm31  :=  0;
+  result.fm123 :=  0;
+end;
 
 
+function TBivector.ScalarProduct(const AVector: TBivector): double;
+begin
+  result := -fm12 * AVector.fm12
+            -fm23 * AVector.fm23
+            -fm31 * AVector.fm31;
+end;
 
+function TBivector.WedgeProduct (const AVector: TMultivector): TMultivector;
+begin
+  result.fm0   :=  0;
+  result.fm1   :=  0;
+  result.fm2   :=  0;
+  result.fm3   :=  0;
+  result.fm12  :=  fm12  * AVector.fm0;
+  result.fm23  :=  fm23  * AVector.fm0;
+  result.fm31  :=  fm31  * AVector.fm0;
+  result.fm123 :=  fm12  * AVector.fm3
+                  +fm23  * AVector.fm1
+                  +fm31  * AVector.fm2;
+end;
 
+function TBivector.WedgeProduct(const AVector: TTrivector): TMultivector;
+begin
+  result := NullMultivector;
+end;
 
-
-
-
-
-
-
-
-
-
+function TBivector.WedgeProduct(const AVector: TBivector): TMultivector;
+begin
+  result := NullMultivector;
+end;
 
 function TBivector.ToMultivector: TMultivector;
 begin
@@ -1505,7 +1586,6 @@ begin
   result.fm123 := 0;
 end;
 
-
 // MultivectorHelper
 
 function TMultivectorHelper.ScalarProduct(const AVector: TTrivector): double;
@@ -1516,6 +1596,30 @@ end;
 function TMultivectorHelper.WedgeProduct (const AVector: TTrivector): double;
 begin
   result := fm0 * AVector.fm123;
+end;
+
+function TMultivectorHelper.ExtractTrivector: TTrivector;
+begin
+  result.fm123 := fm123;;
+end;
+
+function TMultivectorHelper.ExtractBivector: TBivector;
+begin
+  result.fm12 := fm12;
+  result.fm23 := fm23;
+  result.fm31 := fm31;
+end;
+
+function TMultivectorHelper.ExtractVector: TVector;
+begin
+  result.fm1 := fm1;
+  result.fm2 := fm2;
+  result.fm3 := fm3;
+end;
+
+function TMultivectorHelper.ExtractScalar: double;
+begin
+  result := fm0;
 end;
 
 // TBivectorHelper
