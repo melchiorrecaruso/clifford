@@ -89,7 +89,7 @@ type
     function Reverse: TMultivector;
     function Conjugate: TMultivector;
     function SquaredNorm: TMultivector;
-    function Norm: double;
+    function Norm(AGrade: longint): double;
 
     function Reciprocal: TMultivector;
     function Projection(const AVector: TMultivector): TMultivector;
@@ -147,6 +147,7 @@ type
     function Conjugate: TTrivector;
     function SquaredNorm: double;
     function Norm: double;
+    function Normalized: TTrivector;
 
     function Reciprocal: TTrivector;
     function Projection(const AVector: TMultivector): TMultivector;
@@ -215,6 +216,7 @@ type
     function Conjugate: TBivector;
     function SquaredNorm: double;
     function Norm: double;
+    function Normalized: TBivector;
 
     function Reciprocal: TBivector;
     function Projection(const AVector: TMultivector): TMultivector;
@@ -293,6 +295,7 @@ type
     function Conjugate: TVector;
     function SquaredNorm: double;
     function Norm: double;
+    function Normalized: TVector;
 
     function Reciprocal: TVector;
     function Projection(const AVector: TMultivector): TMultivector;
@@ -628,9 +631,15 @@ begin
   result := Self * Self.Conjugate;
 end;
 
-function TMultivector.Norm: double;
+function TMultivector.Norm(AGrade: longint): double;
 begin
-  result := sqrt(abs(SquaredNorm.fm0));
+  case AGrade of
+    0: result := sqrt(sqr(fm0));
+    1: result := sqrt(sqr(fm1)  + sqr(fm2)  + sqr(fm3));
+    2: result := sqrt(sqr(fm12) + sqr(fm23) + sqr(fm31));
+    3: result := sqrt(sqr(fm123));
+  else raise Exception.Create('TMultivector.Norm: Out of bounds.');
+  end;
 end;
 
 function TMultivector.Inverse: TMultivector;
@@ -693,8 +702,11 @@ begin
 end;
 
 function TMultivector.Rotation(const AVector1, AVector2: TMultivector): TMultivector;
+var
+  Rotor: TMultivector;
 begin
-  result := (AVector2 * AVector1) * Self * (AVector1.Reciprocal * AVector2.Reciprocal);
+  Rotor  := AVector2 * AVector1;
+  result := Rotor * Self * Rotor.Reciprocal;
 end;
 
 function TMultivector.ScalarProduct(const AVector: TMultivector): TMultivector;
@@ -722,8 +734,8 @@ begin
                   + fm2   * AVector.fm0
                   - fm3   * AVector.fm23
                   - fm12  * AVector.fm1
-                  - fm31  * AVector.fm123
                   + fm23  * AVector.fm3
+                  - fm31  * AVector.fm123
                   - fm123 * AVector.fm31;
 
   result.fm3 :=     fm0   * AVector.fm3
@@ -993,7 +1005,12 @@ end;
 
 function TTrivector.Norm: double;
 begin
-  result := fm123;
+  result := abs(fm123);
+end;
+
+function TTrivector.Normalized: TTrivector;
+begin
+  result := Self / Self.Norm;
 end;
 
 function TTrivector.Inverse: TTrivector;
@@ -1082,7 +1099,7 @@ end;
 
 function TTrivector.ToString: string;
 begin
-  result := Format('%s123', [FloatToStr(fm123)]);
+  result := Format('%se123', [FloatToStr(fm123)]);
 end;
 
 // Bivector
@@ -1373,6 +1390,11 @@ end;
 function TBivector.Norm: double;
 begin
   result := sqrt(SquaredNorm);
+end;
+
+function TBivector.Normalized: TBivector;
+begin
+  result := Self / Self.Norm;
 end;
 
 function TBivector.Inverse: TBivector;
@@ -1964,6 +1986,11 @@ end;
 function TVector.Norm: double;
 begin
   result := sqrt(SquaredNorm);
+end;
+
+function TVector.Normalized: TVector;
+begin
+  result := Self / Self.Norm;
 end;
 
 function TVector.Reciprocal: TVector;
