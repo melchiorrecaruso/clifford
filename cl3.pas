@@ -311,6 +311,7 @@ type
     function WedgeProduct(const AVector: TTrivector): TMultivector;
     function WedgeProduct(const AVector: TBivector): TTrivector;
     function WedgeProduct(const AVector: TVector): TBivector;
+    function CrossProduct(const AVector: TVector): TVector;
 
     function ToMultivector: TMultivector;
     function ToString: string;
@@ -327,6 +328,11 @@ type
     function ExtractBivector: TBivector;
     function ExtractVector: TVector;
     function ExtractScalar: double;
+
+    function IsScalar: boolean;
+    function IsVector: boolean;
+    function IsBiVector: boolean;
+    function IsTrivector: boolean;
   end;
 
   // TTrivectorHelper
@@ -373,6 +379,9 @@ const
   NullScalar      : double       = (0);
 
 implementation
+
+uses
+  Math;
 
 // TMultivector class: boolean operators
 
@@ -806,12 +815,12 @@ end;
 
 function TMultivector.ToString: string;
 begin
-  result := Format('%s %se1 %se2 %se3 %se12 %s23 %s31 %s123',
-    [FloatToStr(fm0  ),
+  result := Format('%s %se1 %se2 %se3 %se12 %se23 %se31 %se123',
+    [FloatToStr(fm0),
      FloatToStr(fm1  ), FloatToStr(fm2 ), FloatToStr(fm3 ),
      FloatToStr(fm12 ), FloatToStr(fm23), FloatToStr(fm31),
      FloatToStr(fm123)
-    ]);
+     ]);
 end;
 
 // Trivector
@@ -1543,7 +1552,7 @@ begin
   result := (ALeft.fm0   <> 0) or
             (ALeft.fm1   <> ARight.fm1) or
             (ALeft.fm2   <> ARight.fm2) or
-            (ALeft.fm2   <> ARight.fm3) or
+            (ALeft.fm3   <> ARight.fm3) or
             (ALeft.fm12  <> 0) or
             (ALeft.fm23  <> 0) or
             (ALeft.fm31  <> 0) or
@@ -2079,6 +2088,13 @@ begin
   result.fm31 := fm3 * AVector.fm1 - fm1 * AVector.fm3;
 end;
 
+function TVector.CrossProduct(const AVector: TVector): TVector;
+begin
+  result.fm1 := fm2*AVector.fm3 - fm3*AVector.fm2;
+  result.fm2 := fm3*AVector.fm1 - fm1*AVector.fm3;
+  result.fm3 := fm1*AVector.fm2 - fm2*AVector.fm1;
+end;
+
 function TVector.ToMultivector: TMultivector;
 begin
   result.fm0   := 0;
@@ -2142,6 +2158,46 @@ end;
 function TMultivectorHelper.ExtractScalar: double;
 begin
   result := fm0;
+end;
+
+function TMultivectorHelper.IsScalar: boolean;
+begin
+  result := Math.SameValue(fm1,   0) and
+            Math.SameValue(fm2,   0) and
+            Math.SameValue(fm3,   0) and
+            Math.SameValue(fm12,  0) and
+            Math.SameValue(fm23,  0) and
+            Math.SameValue(fm31,  0) and
+            Math.SameValue(fm123, 0);
+end;
+
+function TMultivectorHelper.IsVector: boolean;
+begin
+  result := Math.SameValue(fm0,   0) and
+            Math.SameValue(fm12,  0) and
+            Math.SameValue(fm23,  0) and
+            Math.SameValue(fm31,  0) and
+            Math.SameValue(fm123, 0);
+end;
+
+function TMultivectorHelper.IsBiVector: boolean;
+begin
+  result := Math.SameValue(fm0,   0) and
+            Math.SameValue(fm1,   0) and
+            Math.SameValue(fm2,   0) and
+            Math.SameValue(fm3,   0) and
+            Math.SameValue(fm123, 0);
+end;
+
+function TMultivectorHelper.IsTrivector: boolean;
+begin
+  result := Math.SameValue(fm0,   0) and
+            Math.SameValue(fm1,   0) and
+            Math.SameValue(fm2,   0) and
+            Math.SameValue(fm3,   0) and
+            Math.SameValue(fm12,  0) and
+            Math.SameValue(fm23,  0) and
+            Math.SameValue(fm31,  0);
 end;
 
 // TBivectorHelper
