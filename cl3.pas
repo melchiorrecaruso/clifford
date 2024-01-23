@@ -1928,7 +1928,9 @@ end;
 
 class operator TVector./ (const ALeft: TVector; const ARight: double): TVector;
 begin
-  result := ALeft / ARight;
+  result.fm1 := ALeft.fm1 / ARight;
+  result.fm2 := ALeft.fm2 / ARight;
+  result.fm3 := ALeft.fm3 / ARight;
 end;
 
 class operator TVector./(const ALeft: double; const ARight: TVector): TVector;
