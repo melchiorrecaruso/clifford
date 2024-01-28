@@ -92,10 +92,10 @@ type
     function Conjugate: TMultivector;
     function SquaredNorm: TMultivector;
     function Norm(AGrade: TMultivectorGrade): double;
-
     function Reciprocal: TMultivector;
+
     function Projection(const AVector: TMultivector): TMultivector;
-    function Rejection (const AVector: TMultivector): TMultivector;
+    function Rejection(const AVector: TMultivector): TMultivector;
     function Reflection(const AVector: TMultivector): TMultivector;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 
@@ -153,13 +153,12 @@ type
 
     function Projection(const AVector: TMultivector): TMultivector;
     function Projection(const AVector: TTrivector): TTrivector;
-
     function Rejection(const AVector: TMultivector): TMultivector;
     function Rejection(const AVector: TTrivector): TTrivector;
-
     function Reflection(const AVector: TMultivector): TMultivector;
 
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
+
     function ScalarProduct(const AVector: TMultivector): TMultivector;
     function ScalarProduct(const AVector: TTrivector): double;
     function WedgeProduct(const AVector: TMultivector): TMultivector;
@@ -222,15 +221,15 @@ type
     function SquaredNorm: double;
     function Norm: double;
     function Normalized: TBivector;
-
     function Reciprocal: TBivector;
+
     function Projection(const AVector: TMultivector): TMultivector;
     function Projection(const AVector: TTrivector): TMultivector;
     function Projection(const AVector: TBivector): TBivector;
 
-    function Rejection (const AVector: TMultivector): TMultivector;
-    function Rejection (const AVector: TTrivector): TMultivector;
-    function Rejection (const AVector: TBivector): TMultivector;
+    function Rejection(const AVector: TMultivector): TMultivector;
+    function Rejection(const AVector: TTrivector): TMultivector;
+    function Rejection(const AVector: TBivector): TMultivector;
 
     function Reflection(const AVector: TMultivector): TMultivector;
     function Reflection(const AVector: TTrivector): TMultivector;
@@ -305,6 +304,7 @@ type
     class operator / (const ALeft: TVector; const ARight: TMultivector): TMultivector;
     class operator / (const ALeft: TMultivector; const ARight: TVector): TMultivector;
 
+    function Dual: TBivector;
     function Inverse: TVector;
     function Reverse: TVector;
     function Conjugate: TVector;
@@ -374,25 +374,16 @@ type
     function Dual: double;
     function Projection(const AVector: TVector): TMultivector; overload;
     function Projection(const AVector: TBivector): TMultivector; overload;
-
-
     function Rejection(const AVector: TVector): TVector; overload;
     function Rejection(const AVector: TBivector): TBivector; overload;
-
-
     function Reflection(const AVector: TVector): TMultivector; overload;
     function Reflection(const AVector: TBivector): TMultivector; overload;
-
     function Rotation(const AVector1, AVector2: TVector): TMultivector; overload;
     function Rotation(const AVector1, AVector2: TBivector): TMultivector; overload;
-
-
     function ScalarProduct(const AVector: TVector): TBivector; overload;
     function ScalarProduct(const AVector: TBivector): TVector; overload;
-
     function WedgeProduct(const AVector: TVector): double; overload;
     function WedgeProduct(const AVector: TBivector): double; overload;
-
   end;
 
   // TBivectorHelper
@@ -402,14 +393,12 @@ type
     function Rejection(const AVector: TVector): TBivector; overload;
     function Reflection(const AVector: TVector): TMultivector; overload;
     function Rotation(const AVector1, AVector2: TVector): TMultivector; overload;
-
     function ScalarProduct(const AVector: TVector): TVector; overload;
     function WedgeProduct(const AVector: TVector): TTrivector; overload;
   end;
 
   // TVectorHelper
   TVectorHelper = record helper for TVector
-    function Dual: TBivector;
   end;
 
   // TVersor
@@ -889,8 +878,8 @@ end;
 
 function TMultivector.ToString: string;
 begin
-  result := Format('%0.10f %0.10fe1 %0.10fe2 %0.10fe3 %0.10fe12 %0.10fe23 %0.10fe31 %0.10fe123',
-    [fm0, fm1, fm2 , fm3, fm12,fm23, fm31, fm123]);
+  result := Format('%g %ge1 %ge2 %ge3 %ge12 %ge23 %ge31 %ge123',
+    [fm0, fm1, fm2, fm3, fm12, fm23, fm31, fm123]);
 end;
 
 // Trivector
@@ -1220,7 +1209,7 @@ end;
 
 function TTrivector.ToString: string;
 begin
-  result := Format('%se123', [FloatToStr(fm123)]);
+  result := Format('%ge123', [fm123]);
 end;
 
 // Bivector
@@ -1711,7 +1700,7 @@ end;
 
 function TBivector.ToString: string;
 begin
-  result := Format('%se12 %se23 %se31', [FloatToStr(fm12), FloatToStr(fm23), FloatToStr(fm31)]);
+  result := Format('%ge12 %ge23 %ge31', [fm12, fm23, fm31]);
 end;
 
 // Vector
@@ -2144,6 +2133,13 @@ begin
   result := ALeft * ARight.Reciprocal;
 end;
 
+function TVector.Dual: TBivector;
+begin
+  result.fm12 := fm3; // Self * e123;
+  result.fm23 := fm1;
+  result.fm31 := fm2;
+end;
+
 function TVector.Inverse: TVector;
 begin
   result.fm1 := -fm1;
@@ -2348,7 +2344,7 @@ end;
 
 function TVector.ToString: string;
 begin
-  result := Format('%se1 %se2 %se3', [FloatToStr(fm1), FloatToStr(fm2), FloatToStr(fm3)]);
+  result := Format('%ge1 %ge2 %ge3', [fm1, fm2, fm3]);
 end;
 
 // MultivectorHelper
@@ -2643,14 +2639,6 @@ begin
   result.fm123 :=  fm12 * AVector.fm3
                   +fm23 * AVector.fm1
                   +fm31 * AVector.fm2;
-end;
-
-// TVectorHelper
-function TVectorHelper.Dual: TBivector;
-begin
-  result.fm12 := fm3;  // Self * e123;
-  result.fm23 := fm1;
-  result.fm31 := fm2;
 end;
 
 // Versor
