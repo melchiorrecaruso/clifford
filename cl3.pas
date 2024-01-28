@@ -434,6 +434,16 @@ const
   e31  : TBiversor31   = ();
   e123 : TTriversor123 = ();
 
+  u1   : TVector = (fm1:1; fm2:0; fm3:0);
+  u2   : TVector = (fm1:0; fm2:1; fm3:0);
+  u3   : TVector = (fm1:0; fm2:0; fm3:1);
+
+  u12  : TBivector = (fm12:1; fm23:0; fm31:0);
+  u23  : TBivector = (fm12:0; fm23:1; fm31:0);
+  u31  : TBivector = (fm12:0; fm23:0; fm31:1);
+
+  u123 : TTrivector = (fm123:1);
+
   NullMultivector : TMultivector = (fm0:0; fm1:0; fm2:0; fm3:0; fm12:0; fm23:0; fm31:0; fm123:0);
   NullTrivector   : TTrivector   = (fm123:0);
   NullBivector    : TBivector    = (fm12:0; fm23:0; fm31:0);
