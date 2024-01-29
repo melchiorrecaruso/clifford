@@ -102,6 +102,7 @@ type
     function ScalarProduct(const AVector: TMultivector): TMultivector;
     function WedgeProduct(const AVector: TMultivector): TMultivector;
 
+    function SameValue(const AVector: TMultivector): boolean;
     function ToString: string;
   end;
 
@@ -164,6 +165,7 @@ type
     function WedgeProduct(const AVector: TMultivector): TMultivector;
     function WedgeProduct(const AVector: TTrivector): double;
 
+    function SameValue(const AVector: TTrivector): boolean;
     function ToMultivector: TMultivector;
     function ToString: string;
   end;
@@ -245,6 +247,7 @@ type
     function WedgeProduct(const AVector: TTrivector): TMultivector;
     function WedgeProduct(const AVector: TBivector): TMultivector;
 
+    function SameValue(const AVector: TBivector): boolean;
     function ToMultivector: TMultivector;
     function ToString: string;
   end;
@@ -342,6 +345,7 @@ type
     function WedgeProduct(const AVector: TVector): TBivector;
     function CrossProduct(const AVector: TVector): TVector;
 
+    function SameValue(const AVector: TVector): boolean;
     function ToMultivector: TMultivector;
     function ToString: string;
   end;
@@ -876,6 +880,18 @@ begin
                   + fm123 * AVector.fm0;
 end;
 
+function TMultivector.SameValue(const AVector: TMultivector): boolean;
+begin
+  result := Math.SameValue(fm0,   Avector.fm0  ) and
+            Math.SameValue(fm1,   Avector.fm1  ) and
+            Math.SameValue(fm2,   Avector.fm2  ) and
+            Math.SameValue(fm3,   Avector.fm3  ) and
+            Math.SameValue(fm12,  Avector.fm12 ) and
+            Math.SameValue(fm23,  Avector.fm23 ) and
+            Math.SameValue(fm31,  Avector.fm31 ) and
+            Math.SameValue(fm123, Avector.fm123);
+end;
+
 function TMultivector.ToString: string;
 begin
   result := Format('%g %ge1 %ge2 %ge3 %ge12 %ge23 %ge31 %ge123',
@@ -1193,6 +1209,11 @@ end;
 function TTrivector.WedgeProduct(const AVector: TTrivector): double;
 begin
   result := 0;
+end;
+
+function TTrivector.SameValue(const AVector: TTrivector): boolean;
+begin
+  result := Math.SameValue(fm123, AVector.fm123);
 end;
 
 function TTrivector.ToMultivector: TMultivector;
@@ -1684,6 +1705,13 @@ end;
 function TBivector.WedgeProduct(const AVector: TBivector): TMultivector;
 begin
   result := NullMultivector;
+end;
+
+function TBivector.SameValue(const AVector: TBivector): boolean;
+begin
+  result := Math.SameValue(fm12, Avector.fm12) and
+            Math.SameValue(fm23, Avector.fm23) and
+            Math.SameValue(fm31, Avector.fm31);
 end;
 
 function TBivector.ToMultivector: TMultivector;
@@ -2328,6 +2356,13 @@ begin
   result.fm1 := fm2*AVector.fm3 - fm3*AVector.fm2;
   result.fm2 := fm3*AVector.fm1 - fm1*AVector.fm3;
   result.fm3 := fm1*AVector.fm2 - fm2*AVector.fm1;
+end;
+
+function TVector.SameValue(const AVector: TVector): boolean;
+begin
+  result := Math.SameValue(fm1, Avector.fm1) and
+            Math.SameValue(fm2, Avector.fm2) and
+            Math.SameValue(fm3, Avector.fm3);
 end;
 
 function TVector.ToMultivector: TMultivector;
