@@ -12,11 +12,12 @@
         <SaveJumpHistory Value="False"/>
         <SaveFoldState Value="False"/>
       </Flags>
+      <SessionStorage Value="None"/>
       <Title Value="cl3test"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
-    <BuildModes Active="Default">
+    <BuildModes>
       <Item Name="Default" Default="True"/>
     </BuildModes>
     <PublishOptions>
@@ -30,20 +31,11 @@
       <Unit>
         <Filename Value="cl3test.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="20" Y="3"/>
-        <UsageCount Value="200"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="cl3.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Cl3"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="411"/>
-        <CursorPos Y="436"/>
-        <UsageCount Value="200"/>
-        <Loaded Value="True"/>
       </Unit>
     </Units>
   </ProjectOptions>
