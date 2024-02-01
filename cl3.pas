@@ -99,7 +99,7 @@ type
     function Reflection(const AVector: TMultivector): TMultivector;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 
-    function ScalarProduct(const AVector: TMultivector): TMultivector;
+    function DotProduct(const AVector: TMultivector): TMultivector;
     function WedgeProduct(const AVector: TMultivector): TMultivector;
 
     function SameValue(const AVector: TMultivector): boolean;
@@ -160,8 +160,8 @@ type
 
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 
-    function ScalarProduct(const AVector: TMultivector): TMultivector;
-    function ScalarProduct(const AVector: TTrivector): double;
+    function DotProduct(const AVector: TMultivector): TMultivector;
+    function DotProduct(const AVector: TTrivector): double;
     function WedgeProduct(const AVector: TMultivector): TMultivector;
     function WedgeProduct(const AVector: TTrivector): double;
 
@@ -240,9 +240,9 @@ type
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
     function Rotation(const AVector1, AVector2: TBivector): TMultivector;
 
-    function ScalarProduct(const AVector: TMultivector): TMultivector;
-    function ScalarProduct(const AVector: TTrivector): TMultivector;
-    function ScalarProduct(const AVector: TBivector): double;
+    function DotProduct(const AVector: TMultivector): TMultivector;
+    function DotProduct(const AVector: TTrivector): TMultivector;
+    function DotProduct(const AVector: TBivector): double;
     function WedgeProduct(const AVector: TMultivector): TMultivector;
     function WedgeProduct(const AVector: TTrivector): TMultivector;
     function WedgeProduct(const AVector: TBivector): TMultivector;
@@ -335,10 +335,10 @@ type
     function Rotation(const AVector1, AVector2: TBivector): TMultivector;
     function Rotation(const AVector1, AVector2: TVector): TMultivector;
 
-    function ScalarProduct(const AVector: TMultivector): TMultivector;
-    function ScalarProduct(const AVector: TTrivector): TBivector;
-    function ScalarProduct(const AVector: TBivector): TVector;
-    function ScalarProduct(const AVector: TVector): double;
+    function DotProduct(const AVector: TMultivector): TMultivector;
+    function DotProduct(const AVector: TTrivector): TBivector;
+    function DotProduct(const AVector: TBivector): TVector;
+    function DotProduct(const AVector: TVector): double;
     function WedgeProduct(const AVector: TMultivector): TMultivector;
     function WedgeProduct(const AVector: TTrivector): TMultivector;
     function WedgeProduct(const AVector: TBivector): TTrivector;
@@ -354,9 +354,9 @@ type
   TMultivectorHelper = record helper for TMultivector
     function Dual: TMultivector;
 
-    function ScalarProduct(const AVector: TTrivector): double; overload;
-    function ScalarProduct(const AVector: TBivector): TMultivector; overload;
-    function ScalarProduct(const AVector: TVector): TMultivector; overload;
+    function DotProduct(const AVector: TTrivector): double; overload;
+    function DotProduct(const AVector: TBivector): TMultivector; overload;
+    function DotProduct(const AVector: TVector): TMultivector; overload;
 
     function WedgeProduct(const AVector: TTrivector): TTrivector; overload;
     function WedgeProduct(const AVector: TBivector): TMultivector; overload;
@@ -384,8 +384,8 @@ type
     function Reflection(const AVector: TBivector): TMultivector; overload;
     function Rotation(const AVector1, AVector2: TVector): TMultivector; overload;
     function Rotation(const AVector1, AVector2: TBivector): TMultivector; overload;
-    function ScalarProduct(const AVector: TVector): TBivector; overload;
-    function ScalarProduct(const AVector: TBivector): TVector; overload;
+    function DotProduct(const AVector: TVector): TBivector; overload;
+    function DotProduct(const AVector: TBivector): TVector; overload;
     function WedgeProduct(const AVector: TVector): double; overload;
     function WedgeProduct(const AVector: TBivector): double; overload;
   end;
@@ -397,7 +397,7 @@ type
     function Rejection(const AVector: TVector): TBivector; overload;
     function Reflection(const AVector: TVector): TMultivector; overload;
     function Rotation(const AVector1, AVector2: TVector): TMultivector; overload;
-    function ScalarProduct(const AVector: TVector): TVector; overload;
+    function DotProduct(const AVector: TVector): TVector; overload;
     function WedgeProduct(const AVector: TVector): TTrivector; overload;
   end;
 
@@ -767,7 +767,7 @@ end;
 
 function TMultivector.Projection(const AVector: TMultivector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TMultivector.Rejection(const AVector: TMultivector): TMultivector;
@@ -785,7 +785,7 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TMultivector.ScalarProduct(const AVector: TMultivector): TMultivector;
+function TMultivector.DotProduct(const AVector: TMultivector): TMultivector;
 begin
   result.fm0 :=     fm0   * AVector.fm0
                   + fm1   * AVector.fm1
@@ -1156,12 +1156,12 @@ end;
 
 function TTrivector.Projection(const AVector: TMultivector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivector.Projection(const AVector: TTrivector): TTrivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivector.Rejection(const AVector: TMultivector): TMultivector;
@@ -1184,7 +1184,7 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TTrivector.ScalarProduct(const AVector: TMultivector): TMultivector;
+function TTrivector.DotProduct(const AVector: TMultivector): TMultivector;
 begin
   result.fm0   := -fm123 * AVector.fm123;
   result.fm1   := -fm123 * AVector.fm23;
@@ -1196,7 +1196,7 @@ begin
   result.fm123 :=  fm123 * AVector.fm0;
 end;
 
-function TTrivector.ScalarProduct(const AVector: TTrivector): double;
+function TTrivector.DotProduct(const AVector: TTrivector): double;
 begin
   result := -fm123 * AVector.fm123;
 end;
@@ -1586,17 +1586,17 @@ end;
 
 function TBivector.Projection(const AVector: TMultivector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TBivector.Projection(const AVector: TTrivector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TBivector.Projection(const AVector: TBivector): TBivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TBivector.Rejection (const AVector: TMultivector): TMultivector;
@@ -1639,7 +1639,7 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TBivector.ScalarProduct(const AVector: TMultivector): TMultivector;
+function TBivector.DotProduct(const AVector: TMultivector): TMultivector;
 begin
   result.fm0   := - fm12 * AVector.fm12
                   - fm23 * AVector.fm23
@@ -1663,7 +1663,7 @@ begin
   result.fm123 :=   0;
 end;
 
-function TBivector.ScalarProduct(const AVector: TTrivector): TMultivector;
+function TBivector.DotProduct(const AVector: TTrivector): TMultivector;
 begin
   result.fm0   :=  0;
   result.fm1   := -fm23 * AVector.fm123;
@@ -1676,7 +1676,7 @@ begin
 end;
 
 
-function TBivector.ScalarProduct(const AVector: TBivector): double;
+function TBivector.DotProduct(const AVector: TBivector): double;
 begin
   result := - fm12 * AVector.fm12
             - fm23 * AVector.fm23
@@ -2211,22 +2211,22 @@ end;
 
 function TVector.Projection(const AVector: TMultivector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Projection(const AVector: TTrivector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Projection(const AVector: TVector): TVector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Projection(const AVector: TBivector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Rejection (const AVector: TMultivector): TMultivector;
@@ -2290,7 +2290,7 @@ begin
   result := Rotor * Self * Rotor.Reciprocal;
 end;
 
-function TVector.ScalarProduct(const AVector: TMultivector): TMultivector;
+function TVector.DotProduct(const AVector: TMultivector): TMultivector;
 begin
   result.fm0   := fm1 * AVector.fm1 + fm2 * AVector.fm2  + fm3 * AVector.fm3;
   result.fm1   := fm1 * AVector.fm0 - fm2 * AVector.fm12 + fm3 * AVector.fm31;
@@ -2303,21 +2303,21 @@ begin
 end;
 
 
-function TVector.ScalarProduct(const AVector: TTrivector): TBivector;
+function TVector.DotProduct(const AVector: TTrivector): TBivector;
 begin
   result.fm12 := fm3 * AVector.fm123;
   result.fm23 := fm1 * Avector.fm123;
   result.fm31 := fm2 * AVector.fm123;
 end;
 
-function TVector.ScalarProduct(const AVector: TBivector): TVector;
+function TVector.DotProduct(const AVector: TBivector): TVector;
 begin
   result.fm1 := fm3 * AVector.fm31 - fm2 * AVector.fm12;
   result.fm2 := fm1 * AVector.fm12 - fm3 * AVector.fm23;
   result.fm3 := fm2 * AVector.fm23 - fm1 * AVector.fm31;
 end;
 
-function TVector.ScalarProduct(const AVector: TVector): double;
+function TVector.DotProduct(const AVector: TVector): double;
 begin
  result := fm1 * AVector.fm1 + fm2 * AVector.fm2 + fm3 * AVector.fm3;
 end;
@@ -2396,12 +2396,12 @@ begin
   result.fm123 :=  fm0;
 end;
 
-function TMultivectorHelper.ScalarProduct(const AVector: TTrivector): double;
+function TMultivectorHelper.DotProduct(const AVector: TTrivector): double;
 begin
   result := -fm123 * AVector.fm123;
 end;
 
-function TMultivectorHelper.ScalarProduct(const AVector: TBivector): TMultivector;
+function TMultivectorHelper.DotProduct(const AVector: TBivector): TMultivector;
 begin
   result.fm0   := -fm12  * AVector.fm12
                   -fm23  * AVector.fm23
@@ -2425,7 +2425,7 @@ begin
   result.fm123 :=  0;
 end;
 
-function TMultivectorHelper.ScalarProduct(const AVector: TVector): TMultivector;
+function TMultivectorHelper.DotProduct(const AVector: TVector): TMultivector;
 begin
   result.fm0   :=  fm1   * AVector.fm1
                   +fm2   * AVector.fm2
@@ -2562,12 +2562,12 @@ end;
 
 function TTrivectorHelper.Projection(const AVector: TVector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Projection(const AVector: TBivector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Rejection(const AVector: TVector): TVector;
@@ -2606,14 +2606,14 @@ begin
   result := Rotor * Self * Rotor.Reciprocal;
 end;
 
-function TTrivectorHelper.ScalarProduct(const AVector: TVector): TBivector;
+function TTrivectorHelper.DotProduct(const AVector: TVector): TBivector;
 begin
   result.fm12 := fm123 * AVector.fm3;
   result.fm23 := fm123 * AVector.fm1;
   result.fm31 := fm123 * AVector.fm2;
 end;
 
-function TTrivectorHelper.ScalarProduct(const AVector: TBivector): TVector;
+function TTrivectorHelper.DotProduct(const AVector: TBivector): TVector;
 begin
   result.fm1 := -fm123 * AVector.fm23;
   result.fm2 := -fm123 * AVector.fm31;
@@ -2641,7 +2641,7 @@ end;
 
 function TBivectorHelper.Projection(const AVector: TVector): TMultivector;
 begin
-  result := ScalarProduct(AVector) * AVector.Reciprocal;
+  result := DotProduct(AVector) * AVector.Reciprocal;
 end;
 
 function TBivectorHelper.Rejection(const AVector: TVector): TBivector;
@@ -2659,7 +2659,7 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TBivectorHelper.ScalarProduct(const AVector: TVector): TVector;
+function TBivectorHelper.DotProduct(const AVector: TVector): TVector;
 begin
   result.fm1 :=  fm12 * AVector.fm2
                 -fm31 * AVector.fm3;
