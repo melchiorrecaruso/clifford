@@ -103,6 +103,7 @@ type
     function Wedge(const AVector: TMultivector): TMultivector;
 
     function SameValue(const AVector: TMultivector): boolean;
+    function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -167,6 +168,8 @@ type
 
     function SameValue(const AVector: TTrivector): boolean;
     function ToMultivector: TMultivector;
+
+    function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -249,6 +252,8 @@ type
 
     function SameValue(const AVector: TBivector): boolean;
     function ToMultivector: TMultivector;
+
+    function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -347,6 +352,8 @@ type
 
     function SameValue(const AVector: TVector): boolean;
     function ToMultivector: TMultivector;
+
+    function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -892,12 +899,33 @@ begin
             Math.SameValue(fm123, Avector.fm123);
 end;
 
-function Fmt(const Value: double): string;
+function Fmt(const AValue: double): string;
 begin
-  if Value < 0 then
-    result := Format('%g', [Value])
+  if AValue < 0 then
+    result := FloatToStr(AValue)
   else
-    result := format('+%g', [Value]);
+    result := '+' + FloatToStr(AValue);
+end;
+
+function Fmt(const AValue: double; APrecision, ADigits: longint): string;
+begin
+  if AValue < 0 then
+    result := FloatToStrF(AValue, ffGeneral, APrecision, ADigits)
+  else
+    result := '+' + FloatToStrF(AValue, ffGeneral, APrecision, ADigits);
+end;
+
+function TMultivector.ToVerboseString(APrecision, ADigits: longint): string;
+begin
+  result := Format('%s %se1 %se2 %se3 %se12 %se23 %se31 %se123',
+    [Fmt(fm0, APrecision, ADigits),
+     Fmt(fm1, APrecision, ADigits),
+     Fmt(fm2, APrecision, ADigits),
+     Fmt(fm3, APrecision, ADigits),
+     Fmt(fm12, APrecision, ADigits),
+     Fmt(fm23, APrecision, ADigits),
+     Fmt(fm31, APrecision, ADigits),
+     Fmt(fm123, APrecision, ADigits)]);
 end;
 
 function TMultivector.ToString: string;
@@ -1234,6 +1262,11 @@ begin
   result.fm23  := 0;
   result.fm31  := 0;
   result.fm123 := fm123;
+end;
+
+function TTrivector.ToVerboseString(APrecision, ADigits: longint): string;
+begin
+  result := Format('%se123', [Fmt(fm123, APrecision, ADigits)]);
 end;
 
 function TTrivector.ToString: string;
@@ -1732,6 +1765,14 @@ begin
   result.fm23  := fm23;
   result.fm31  := fm31;
   result.fm123 := 0;
+end;
+
+function TBivector.ToVerboseString(APrecision, ADigits: longint): string;
+begin
+  result := Format('%se12 %se23 %se31',
+    [Fmt(fm12, APrecision, ADigits),
+     Fmt(fm23, APrecision, ADigits),
+     Fmt(fm31, APrecision, ADigits)]);
 end;
 
 function TBivector.ToString: string;
@@ -2383,6 +2424,14 @@ begin
   result.fm23  := 0;
   result.fm31  := 0;
   result.fm123 := 0;
+end;
+
+function TVector.ToVerboseString(APrecision, ADigits: longint): string;
+begin
+  result := Format('%se1 %se2 %se3',
+    [Fmt(fm1, APrecision, ADigits),
+     Fmt(fm2, APrecision, ADigits),
+     Fmt(fm3, APrecision, ADigits)]);
 end;
 
 function TVector.ToString: string;
