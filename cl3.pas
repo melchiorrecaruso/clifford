@@ -99,8 +99,8 @@ type
     function Reflection(const AVector: TMultivector): TMultivector;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 
-    function DotProduct(const AVector: TMultivector): TMultivector;
-    function WedgeProduct(const AVector: TMultivector): TMultivector;
+    function Dot(const AVector: TMultivector): TMultivector;
+    function Wedge(const AVector: TMultivector): TMultivector;
 
     function SameValue(const AVector: TMultivector): boolean;
     function ToString: string;
@@ -160,10 +160,10 @@ type
 
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 
-    function DotProduct(const AVector: TMultivector): TMultivector;
-    function DotProduct(const AVector: TTrivector): double;
-    function WedgeProduct(const AVector: TMultivector): TMultivector;
-    function WedgeProduct(const AVector: TTrivector): double;
+    function Dot(const AVector: TMultivector): TMultivector;
+    function Dot(const AVector: TTrivector): double;
+    function Wedge(const AVector: TMultivector): TMultivector;
+    function Wedge(const AVector: TTrivector): double;
 
     function SameValue(const AVector: TTrivector): boolean;
     function ToMultivector: TMultivector;
@@ -240,12 +240,12 @@ type
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
     function Rotation(const AVector1, AVector2: TBivector): TMultivector;
 
-    function DotProduct(const AVector: TMultivector): TMultivector;
-    function DotProduct(const AVector: TTrivector): TMultivector;
-    function DotProduct(const AVector: TBivector): double;
-    function WedgeProduct(const AVector: TMultivector): TMultivector;
-    function WedgeProduct(const AVector: TTrivector): TMultivector;
-    function WedgeProduct(const AVector: TBivector): TMultivector;
+    function Dot(const AVector: TMultivector): TMultivector;
+    function Dot(const AVector: TTrivector): TMultivector;
+    function Dot(const AVector: TBivector): double;
+    function Wedge(const AVector: TMultivector): TMultivector;
+    function Wedge(const AVector: TTrivector): TMultivector;
+    function Wedge(const AVector: TBivector): TMultivector;
 
     function SameValue(const AVector: TBivector): boolean;
     function ToMultivector: TMultivector;
@@ -335,15 +335,15 @@ type
     function Rotation(const AVector1, AVector2: TBivector): TMultivector;
     function Rotation(const AVector1, AVector2: TVector): TMultivector;
 
-    function DotProduct(const AVector: TMultivector): TMultivector;
-    function DotProduct(const AVector: TTrivector): TBivector;
-    function DotProduct(const AVector: TBivector): TVector;
-    function DotProduct(const AVector: TVector): double;
-    function WedgeProduct(const AVector: TMultivector): TMultivector;
-    function WedgeProduct(const AVector: TTrivector): TMultivector;
-    function WedgeProduct(const AVector: TBivector): TTrivector;
-    function WedgeProduct(const AVector: TVector): TBivector;
-    function CrossProduct(const AVector: TVector): TVector;
+    function Dot(const AVector: TMultivector): TMultivector;
+    function Dot(const AVector: TTrivector): TBivector;
+    function Dot(const AVector: TBivector): TVector;
+    function Dot(const AVector: TVector): double;
+    function Wedge(const AVector: TMultivector): TMultivector;
+    function Wedge(const AVector: TTrivector): TMultivector;
+    function Wedge(const AVector: TBivector): TTrivector;
+    function Wedge(const AVector: TVector): TBivector;
+    function Cross(const AVector: TVector): TVector;
 
     function SameValue(const AVector: TVector): boolean;
     function ToMultivector: TMultivector;
@@ -354,13 +354,13 @@ type
   TMultivectorHelper = record helper for TMultivector
     function Dual: TMultivector;
 
-    function DotProduct(const AVector: TTrivector): double; overload;
-    function DotProduct(const AVector: TBivector): TMultivector; overload;
-    function DotProduct(const AVector: TVector): TMultivector; overload;
+    function Dot(const AVector: TTrivector): double; overload;
+    function Dot(const AVector: TBivector): TMultivector; overload;
+    function Dot(const AVector: TVector): TMultivector; overload;
 
-    function WedgeProduct(const AVector: TTrivector): TTrivector; overload;
-    function WedgeProduct(const AVector: TBivector): TMultivector; overload;
-    function WedgeProduct(const AVector: TVector): TMultivector; overload;
+    function Wedge(const AVector: TTrivector): TTrivector; overload;
+    function Wedge(const AVector: TBivector): TMultivector; overload;
+    function Wedge(const AVector: TVector): TMultivector; overload;
 
     function ExtractTrivector: TTrivector;
     function ExtractBivector: TBivector;
@@ -384,10 +384,10 @@ type
     function Reflection(const AVector: TBivector): TMultivector; overload;
     function Rotation(const AVector1, AVector2: TVector): TMultivector; overload;
     function Rotation(const AVector1, AVector2: TBivector): TMultivector; overload;
-    function DotProduct(const AVector: TVector): TBivector; overload;
-    function DotProduct(const AVector: TBivector): TVector; overload;
-    function WedgeProduct(const AVector: TVector): double; overload;
-    function WedgeProduct(const AVector: TBivector): double; overload;
+    function Dot(const AVector: TVector): TBivector; overload;
+    function Dot(const AVector: TBivector): TVector; overload;
+    function Wedge(const AVector: TVector): double; overload;
+    function Wedge(const AVector: TBivector): double; overload;
   end;
 
   // TBivectorHelper
@@ -397,8 +397,8 @@ type
     function Rejection(const AVector: TVector): TBivector; overload;
     function Reflection(const AVector: TVector): TMultivector; overload;
     function Rotation(const AVector1, AVector2: TVector): TMultivector; overload;
-    function DotProduct(const AVector: TVector): TVector; overload;
-    function WedgeProduct(const AVector: TVector): TTrivector; overload;
+    function Dot(const AVector: TVector): TVector; overload;
+    function Wedge(const AVector: TVector): TTrivector; overload;
   end;
 
   // TVectorHelper
@@ -767,12 +767,12 @@ end;
 
 function TMultivector.Projection(const AVector: TMultivector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TMultivector.Rejection(const AVector: TMultivector): TMultivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TMultivector.Reflection(const AVector: TMultivector): TMultivector;
@@ -785,7 +785,7 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TMultivector.DotProduct(const AVector: TMultivector): TMultivector;
+function TMultivector.Dot(const AVector: TMultivector): TMultivector;
 begin
   result.fm0 :=     fm0   * AVector.fm0
                   + fm1   * AVector.fm1
@@ -842,7 +842,7 @@ begin
                   + fm123 * AVector.fm0;
 end;
 
-function TMultivector.WedgeProduct(const AVector: TMultivector): TMultivector;
+function TMultivector.Wedge(const AVector: TMultivector): TMultivector;
 begin
   result.fm0   :=   fm0   * AVector.fm0;
 
@@ -892,10 +892,18 @@ begin
             Math.SameValue(fm123, Avector.fm123);
 end;
 
+function Fmt(const Value: double): string;
+begin
+  if Value < 0 then
+    result := Format('%g', [Value])
+  else
+    result := format('+%g', [Value]);
+end;
+
 function TMultivector.ToString: string;
 begin
-  result := Format('%g %ge1 %ge2 %ge3 %ge12 %ge23 %ge31 %ge123',
-    [fm0, fm1, fm2, fm3, fm12, fm23, fm31, fm123]);
+  result := Format('%s %se1 %se2 %se3 %se12 %se23 %se31 %se123',
+    [Fmt(fm0), Fmt(fm1), Fmt(fm2), Fmt(fm3), Fmt(fm12), Fmt(fm23), Fmt(fm31), Fmt(fm123)]);
 end;
 
 // Trivector
@@ -1156,22 +1164,22 @@ end;
 
 function TTrivector.Projection(const AVector: TMultivector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivector.Projection(const AVector: TTrivector): TTrivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivector.Rejection(const AVector: TMultivector): TMultivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivector.Rejection(const AVector: TTrivector): TTrivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivector.Reflection(const AVector: TMultivector): TMultivector;
@@ -1184,7 +1192,7 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TTrivector.DotProduct(const AVector: TMultivector): TMultivector;
+function TTrivector.Dot(const AVector: TMultivector): TMultivector;
 begin
   result.fm0   := -fm123 * AVector.fm123;
   result.fm1   := -fm123 * AVector.fm23;
@@ -1196,17 +1204,17 @@ begin
   result.fm123 :=  fm123 * AVector.fm0;
 end;
 
-function TTrivector.DotProduct(const AVector: TTrivector): double;
+function TTrivector.Dot(const AVector: TTrivector): double;
 begin
   result := -fm123 * AVector.fm123;
 end;
 
-function TTrivector.WedgeProduct(const AVector: TMultivector): TMultivector;
+function TTrivector.Wedge(const AVector: TMultivector): TMultivector;
 begin
   result.fm123 := fm123 * AVector.fm0;
 end;
 
-function TTrivector.WedgeProduct(const AVector: TTrivector): double;
+function TTrivector.Wedge(const AVector: TTrivector): double;
 begin
   result := 0;
 end;
@@ -1230,7 +1238,7 @@ end;
 
 function TTrivector.ToString: string;
 begin
-  result := Format('%ge123', [fm123]);
+  result := Format('%se123', [Fmt(fm123)]);
 end;
 
 // Bivector
@@ -1586,32 +1594,32 @@ end;
 
 function TBivector.Projection(const AVector: TMultivector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TBivector.Projection(const AVector: TTrivector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TBivector.Projection(const AVector: TBivector): TBivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TBivector.Rejection (const AVector: TMultivector): TMultivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TBivector.Rejection (const AVector: TTrivector): TMultivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TBivector.Rejection (const AVector: TBivector): TMultivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TBivector.Reflection(const AVector: TMultivector): TMultivector;
@@ -1639,7 +1647,7 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TBivector.DotProduct(const AVector: TMultivector): TMultivector;
+function TBivector.Dot(const AVector: TMultivector): TMultivector;
 begin
   result.fm0   := - fm12 * AVector.fm12
                   - fm23 * AVector.fm23
@@ -1663,7 +1671,7 @@ begin
   result.fm123 :=   0;
 end;
 
-function TBivector.DotProduct(const AVector: TTrivector): TMultivector;
+function TBivector.Dot(const AVector: TTrivector): TMultivector;
 begin
   result.fm0   :=  0;
   result.fm1   := -fm23 * AVector.fm123;
@@ -1676,14 +1684,14 @@ begin
 end;
 
 
-function TBivector.DotProduct(const AVector: TBivector): double;
+function TBivector.Dot(const AVector: TBivector): double;
 begin
   result := - fm12 * AVector.fm12
             - fm23 * AVector.fm23
             - fm31 * AVector.fm31;
 end;
 
-function TBivector.WedgeProduct (const AVector: TMultivector): TMultivector;
+function TBivector.Wedge (const AVector: TMultivector): TMultivector;
 begin
   result.fm0   := 0;
   result.fm1   := 0;
@@ -1697,12 +1705,12 @@ begin
                   + fm31 * AVector.fm2;
 end;
 
-function TBivector.WedgeProduct(const AVector: TTrivector): TMultivector;
+function TBivector.Wedge(const AVector: TTrivector): TMultivector;
 begin
   result := NullMultivector;
 end;
 
-function TBivector.WedgeProduct(const AVector: TBivector): TMultivector;
+function TBivector.Wedge(const AVector: TBivector): TMultivector;
 begin
   result := NullMultivector;
 end;
@@ -1728,7 +1736,7 @@ end;
 
 function TBivector.ToString: string;
 begin
-  result := Format('%ge12 %ge23 %ge31', [fm12, fm23, fm31]);
+  result := Format('%se12 %se23 %se31', [Fmt(fm12), Fmt(fm23), Fmt(fm31)]);
 end;
 
 // Vector
@@ -2211,42 +2219,42 @@ end;
 
 function TVector.Projection(const AVector: TMultivector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Projection(const AVector: TTrivector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Projection(const AVector: TVector): TVector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Projection(const AVector: TBivector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Rejection (const AVector: TMultivector): TMultivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Rejection(const AVector: TTrivector): TMultivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function  TVector.Rejection(const AVector: TBivector): TMultivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Rejection(const AVector: TVector): TMultivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TVector.Reflection(const AVector: TMultivector): TMultivector;
@@ -2290,7 +2298,7 @@ begin
   result := Rotor * Self * Rotor.Reciprocal;
 end;
 
-function TVector.DotProduct(const AVector: TMultivector): TMultivector;
+function TVector.Dot(const AVector: TMultivector): TMultivector;
 begin
   result.fm0   := fm1 * AVector.fm1 + fm2 * AVector.fm2  + fm3 * AVector.fm3;
   result.fm1   := fm1 * AVector.fm0 - fm2 * AVector.fm12 + fm3 * AVector.fm31;
@@ -2303,26 +2311,26 @@ begin
 end;
 
 
-function TVector.DotProduct(const AVector: TTrivector): TBivector;
+function TVector.Dot(const AVector: TTrivector): TBivector;
 begin
   result.fm12 := fm3 * AVector.fm123;
   result.fm23 := fm1 * Avector.fm123;
   result.fm31 := fm2 * AVector.fm123;
 end;
 
-function TVector.DotProduct(const AVector: TBivector): TVector;
+function TVector.Dot(const AVector: TBivector): TVector;
 begin
   result.fm1 := fm3 * AVector.fm31 - fm2 * AVector.fm12;
   result.fm2 := fm1 * AVector.fm12 - fm3 * AVector.fm23;
   result.fm3 := fm2 * AVector.fm23 - fm1 * AVector.fm31;
 end;
 
-function TVector.DotProduct(const AVector: TVector): double;
+function TVector.Dot(const AVector: TVector): double;
 begin
  result := fm1 * AVector.fm1 + fm2 * AVector.fm2 + fm3 * AVector.fm3;
 end;
 
-function TVector.WedgeProduct(const AVector: TMultivector): TMultivector;
+function TVector.Wedge(const AVector: TMultivector): TMultivector;
 begin
   result.fm0   := 0;
   result.fm1   := fm1 * AVector.fm0;
@@ -2334,24 +2342,24 @@ begin
   result.fm123 := fm1 * AVector.fm23 + fm2 * AVector.fm31 + fm3 * AVector.fm12;
 end;
 
-function TVector.WedgeProduct(const AVector: TTrivector): TMultivector;
+function TVector.Wedge(const AVector: TTrivector): TMultivector;
 begin
   result := NullMultivector;
 end;
 
-function TVector.WedgeProduct(const AVector: TBivector): TTrivector;
+function TVector.Wedge(const AVector: TBivector): TTrivector;
 begin
   result.fm123 := fm1 * AVector.fm23 + fm2 * AVector.fm31 + fm3 * AVector.fm12;
 end;
 
-function TVector.WedgeProduct(const AVector: TVector): TBivector;
+function TVector.Wedge(const AVector: TVector): TBivector;
 begin
   result.fm12 := fm1 * AVector.fm2 - fm2 * AVector.fm1;
   result.fm23 := fm2 * AVector.fm3 - fm3 * AVector.fm2;
   result.fm31 := fm3 * AVector.fm1 - fm1 * AVector.fm3;
 end;
 
-function TVector.CrossProduct(const AVector: TVector): TVector;
+function TVector.Cross(const AVector: TVector): TVector;
 begin
   result.fm1 := fm2*AVector.fm3 - fm3*AVector.fm2;
   result.fm2 := fm3*AVector.fm1 - fm1*AVector.fm3;
@@ -2379,7 +2387,7 @@ end;
 
 function TVector.ToString: string;
 begin
-  result := Format('%ge1 %ge2 %ge3', [fm1, fm2, fm3]);
+  result := Format('%se1 %se2 %se3', [Fmt(fm1), Fmt(fm2), Fmt(fm3)]);
 end;
 
 // MultivectorHelper
@@ -2396,12 +2404,12 @@ begin
   result.fm123 :=  fm0;
 end;
 
-function TMultivectorHelper.DotProduct(const AVector: TTrivector): double;
+function TMultivectorHelper.Dot(const AVector: TTrivector): double;
 begin
   result := -fm123 * AVector.fm123;
 end;
 
-function TMultivectorHelper.DotProduct(const AVector: TBivector): TMultivector;
+function TMultivectorHelper.Dot(const AVector: TBivector): TMultivector;
 begin
   result.fm0   := -fm12  * AVector.fm12
                   -fm23  * AVector.fm23
@@ -2425,7 +2433,7 @@ begin
   result.fm123 :=  0;
 end;
 
-function TMultivectorHelper.DotProduct(const AVector: TVector): TMultivector;
+function TMultivectorHelper.Dot(const AVector: TVector): TMultivector;
 begin
   result.fm0   :=  fm1   * AVector.fm1
                   +fm2   * AVector.fm2
@@ -2449,12 +2457,12 @@ begin
   result.fm123 :=  0;
 end;
 
-function TMultivectorHelper.WedgeProduct(const AVector: TTrivector): TTrivector;
+function TMultivectorHelper.Wedge(const AVector: TTrivector): TTrivector;
 begin
   result.fm123 := fm0 * AVector.fm123;
 end;
 
-function TMultivectorHelper.WedgeProduct(const AVector: TBivector): TMultivector;
+function TMultivectorHelper.Wedge(const AVector: TBivector): TMultivector;
 begin
   result.fm0   :=  0;
   result.fm1   :=  0;
@@ -2468,7 +2476,7 @@ begin
                   +fm3 * AVector.fm12
 end;
 
-function TMultivectorHelper.WedgeProduct(const AVector: TVector): TMultivector;
+function TMultivectorHelper.Wedge(const AVector: TVector): TMultivector;
 begin
   result.fm0   :=  0;
   result.fm1   :=  fm0  * AVector.fm1;
@@ -2562,22 +2570,22 @@ end;
 
 function TTrivectorHelper.Projection(const AVector: TVector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Projection(const AVector: TBivector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Rejection(const AVector: TVector): TVector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Rejection(const AVector: TBivector): TBivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Reflection(const AVector: TVector): TMultivector;
@@ -2606,26 +2614,26 @@ begin
   result := Rotor * Self * Rotor.Reciprocal;
 end;
 
-function TTrivectorHelper.DotProduct(const AVector: TVector): TBivector;
+function TTrivectorHelper.Dot(const AVector: TVector): TBivector;
 begin
   result.fm12 := fm123 * AVector.fm3;
   result.fm23 := fm123 * AVector.fm1;
   result.fm31 := fm123 * AVector.fm2;
 end;
 
-function TTrivectorHelper.DotProduct(const AVector: TBivector): TVector;
+function TTrivectorHelper.Dot(const AVector: TBivector): TVector;
 begin
   result.fm1 := -fm123 * AVector.fm23;
   result.fm2 := -fm123 * AVector.fm31;
   result.fm3 := -fm123 * AVector.fm12;
 end;
 
-function TTrivectorHelper.WedgeProduct(const AVector: TVector): double;
+function TTrivectorHelper.Wedge(const AVector: TVector): double;
 begin
   result := 0;
 end;
 
-function TTrivectorHelper.WedgeProduct(const AVector: TBivector): double;
+function TTrivectorHelper.Wedge(const AVector: TBivector): double;
 begin
   result := 0;
 end;
@@ -2641,12 +2649,12 @@ end;
 
 function TBivectorHelper.Projection(const AVector: TVector): TMultivector;
 begin
-  result := DotProduct(AVector) * AVector.Reciprocal;
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TBivectorHelper.Rejection(const AVector: TVector): TBivector;
 begin
-  result := WedgeProduct(AVector) * AVector.Reciprocal;
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TBivectorHelper.Reflection(const AVector: TVector): TMultivector;
@@ -2659,7 +2667,7 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TBivectorHelper.DotProduct(const AVector: TVector): TVector;
+function TBivectorHelper.Dot(const AVector: TVector): TVector;
 begin
   result.fm1 :=  fm12 * AVector.fm2
                 -fm31 * AVector.fm3;
@@ -2669,7 +2677,7 @@ begin
                 -fm23 * AVector.fm2;
 end;
 
-function TBivectorHelper.WedgeProduct(const AVector: TVector): TTrivector;
+function TBivectorHelper.Wedge(const AVector: TVector): TTrivector;
 begin
   result.fm123 :=  fm12 * AVector.fm3
                   +fm23 * AVector.fm1
