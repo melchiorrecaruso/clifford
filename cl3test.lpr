@@ -3,25 +3,38 @@ program cl3test;
 {$mode objfpc}{$h+}
 
 uses
-  Cl3;
+  Cl3, Math;
 
 var
   a  : double;
-  v  : TVector;
-  v1 : TVector;
-  v2 : TVector;
-  v3 : TVector;
-  B  : TBivector;
-  I  : TTrivector;
-  M  : TMultiVector;
+  v, v1, v2, v3 : TVector;
+  B, B1, B2, B3 : TBivector;
+  I, I1, I2, I3 : TTrivector;
+  M, M1, M2, M3 : TMultiVector;
+
+
+  function Rnd: double;
+  var
+    i, j: longint;
+  begin
+    i := RandomRange(-MaxSmallInt, MaxSmallInt);
+    while (i = 0) do i := RandomRange(-MaxSmallInt, MaxSmallInt);
+
+    j := RandomRange(-MaxSmallInt, MaxSmallInt);
+    while (j = 0) do j := RandomRange(-MaxSmallInt, MaxSmallInt);
+
+    result := i/j;
+  end;
+
 
 begin
+  Randomize;
   Writeln('CL3 TEST: begin');
 
-  a := 7;
-  v := 5*e1  + 17*e2  + 23*e3;
-  B := 3*e12 +  5*e23 +  7*e31;
-  I := 2.5*e123;
+  a := Rnd;
+  v := Rnd*e1  + Rnd*e2  + Rnd*e3;
+  B := Rnd*e12 + Rnd*e23 + Rnd*e31;
+  I := Rnd*e123;
   M := a + v + B + I;
 
   // TTrivector
@@ -119,19 +132,19 @@ begin
 
   // TVector
   M  := v.ToMultivector;
-  if v.Dot           (v) <> M.Dot          (M) then Writeln('TEST-301: PASSED');
-  if v.Dot           (M) <> M.Dot          (v) then Writeln('TEST-302: PASSED');
-  if v.Wedge         (v) <> M.Wedge        (M) then Writeln('TEST-303: PASSED');
-  if v.Wedge         (M) <> M.Wedge        (v) then Writeln('TEST-304: PASSED');
-  if (v*M)               <> (M*v)              then Writeln('TEST-305: PASSED');
-  if (v*v)               <> (M*M)              then Writeln('TEST-306: PASSED');
-  if v.Reciprocal        <> M.Reciprocal       then Writeln('TEST-307: PASSED');
-  if v.Conjugate         <> M.Conjugate        then Writeln('TEST-308: PASSED');
-  if v.Inverse           <> M.Inverse          then Writeln('TEST-309: PASSED');
-  if v.Dual              <> M.Dual             then Writeln('TEST-310: PASSED');
-  if v.Norm              <> M.Norm(gVector)    then Writeln('TEST-311: PASSED');
-  if v.SquaredNorm       <> M.SquaredNorm      then Writeln('TEST-312: PASSED');
-  if v.Reverse           <> M.Reverse          then Writeln('TEST-313: PASSED');
+  if v.Dot           (v) <> M.Dot          (M) then Writeln('TEST-301: NOT PASSED');
+  if v.Dot           (M) <> M.Dot          (v) then Writeln('TEST-302: NOT PASSED');
+  if v.Wedge         (v) <> M.Wedge        (M) then Writeln('TEST-303: NOT PASSED');
+  if v.Wedge         (M) <> M.Wedge        (v) then Writeln('TEST-304: NOT PASSED');
+  if (v*M)               <> (M*v)              then Writeln('TEST-305: NOT PASSED');
+  if (v*v)               <> (M*M)              then Writeln('TEST-306: NOT PASSED');
+  if v.Reciprocal        <> M.Reciprocal       then Writeln('TEST-307: NOT PASSED');
+  if v.Conjugate         <> M.Conjugate        then Writeln('TEST-308: NOT PASSED');
+  if v.Inverse           <> M.Inverse          then Writeln('TEST-309: NOT PASSED');
+  if v.Dual              <> M.Dual             then Writeln('TEST-310: NOT PASSED');
+  if v.Norm              <> M.Norm(gVector)    then Writeln('TEST-311: NOT PASSED');
+  if v.SquaredNorm       <> M.SquaredNorm      then Writeln('TEST-312: NOT PASSED');
+  if v.Reverse           <> M.Reverse          then Writeln('TEST-313: NOT PASSED');
 
   if (v.Projection(u1  ) <> M.Projection(u1  .ToMultivector)) then Writeln('TEST-314: NOT PASSED');
   if (v.Projection(u2  ) <> M.Projection(u2  .ToMultivector)) then Writeln('TEST-315: NOT PASSED');
@@ -168,5 +181,172 @@ begin
   if ((9.0*e3).Cross(4.5*e1)/(4.5*e1).SquaredNorm) <> (2.0*e2) then Writeln('TEST-342: NOT PASSED');
   if ((2.0*e2).Cross(9.0*e3)/(2.0*e2).SquaredNorm) <> (4.5*e1) then Writeln('TEST-343: NOT PASSED');
 
+
   Writeln('CL3 TEST: end.');
+
+  v1 := Rnd*e1 + Rnd*e2 + Rnd*e3;
+  v2 := Rnd*e1 + Rnd*e2 + Rnd*e3;
+  v3 := Rnd*e1 + Rnd*e2 + Rnd*e3;
+
+  B1 := Rnd*e12 + Rnd*e23 + Rnd*e31;
+  B2 := Rnd*e12 + Rnd*e23 + Rnd*e31;
+  B3 := Rnd*e12 + Rnd*e23 + Rnd*e31;
+
+  I1 := Rnd*e123;
+  I2 := Rnd*e123;
+  I3 := Rnd*e123;
+
+  M1 := Rnd + Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e12 + Rnd*e23 + Rnd*e31 + Rnd*e123;
+  M2 := Rnd + Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e12 + Rnd*e23 + Rnd*e31 + Rnd*e123;
+  M3 := Rnd + Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e12 + Rnd*e23 + Rnd*e31 + Rnd*e123;
+
+  writeln;
+  writeln('TVECTOR');
+  writeln('Dot       : vector &      vector  : ',  v1.ToMultivector.Dot(v2.ToMultivector).IsA);
+  writeln('Dot       : vector &    bivector  : ',  v1.ToMultivector.Dot(B2.ToMultivector).IsA);
+  writeln('Dot       : vector &   trivector  : ',  v1.ToMultivector.Dot(I2.ToMultivector).IsA);
+  writeln('Dot       : vector & multivector  : ',  v1.ToMultivector.Dot(M2              ).IsA);
+  writeln;
+  writeln('Wedge     : vector &      vector  : ',  v1.ToMultivector.Wedge(v2.ToMultivector).IsA);
+  writeln('Wedge     : vector &    bivector  : ',  v1.ToMultivector.Wedge(B2.ToMultivector).IsA);
+  writeln('Wedge     : vector &   trivector  : ',  v1.ToMultivector.Wedge(I2.ToMultivector).IsA);
+  writeln('Wedge     : vector & multivector  : ',  v1.ToMultivector.Wedge(M2              ).IsA);
+  writeln;
+  writeln('Geometric : vector &      vector  : ', (v1.ToMultivector*v2.ToMultivector).IsA);
+  writeln('Geometric : vector &    bivector  : ', (v1.ToMultivector*B2.ToMultivector).IsA);
+  writeln('Geometric : vector &   trivector  : ', (v1.ToMultivector*I2.ToMultivector).IsA);
+  writeln('Geometric : vector & multivector  : ', (v1.ToMultivector*M2              ).IsA);
+  writeln;
+  writeln('Projection: vector &      vector  : ',  v1.ToMultivector.Projection(v2.ToMultivector).IsA);
+  writeln('Projection: vector &    bivector  : ',  v1.ToMultivector.Projection(B2.ToMultivector).IsA);
+  writeln('Projection: vector &   trivector  : ',  v1.ToMultivector.Projection(I2.ToMultivector).IsA);
+  writeln('Projection: vector & multivector  : ',  v1.ToMultivector.Projection(M2              ).IsA);
+  writeln;
+  writeln('Rejection : vector &      vector  : ',  v1.ToMultivector.Rejection(v2.ToMultivector).IsA);
+  writeln('Rejection : vector &    bivector  : ',  v1.ToMultivector.Rejection(B2.ToMultivector).IsA);
+  writeln('Rejection : vector &   trivector  : ',  v1.ToMultivector.Rejection(I2.ToMultivector).IsA);
+  writeln('Rejection : vector & multivector  : ',  v1.ToMultivector.Rejection(M2              ).IsA);
+  writeln;
+  writeln('Reflection: vector &      vector  : ',  v1.ToMultivector.Reflection(v2.ToMultivector).IsA);
+  writeln('Reflection: vector &    bivector  : ',  v1.ToMultivector.Reflection(B2.ToMultivector).IsA);
+  writeln('Reflection: vector &   trivector  : ',  v1.ToMultivector.Reflection(I2.ToMultivector).IsA);
+  writeln('Reflection: vector & multivector  : ',  v1.ToMultivector.Reflection(M2              ).IsA);
+  writeln;
+  writeln('Rotation  : vector &      vectors : ',  v1.ToMultivector.Rotation(v2.ToMultivector, v3.ToMultivector).IsA);
+  writeln('Rotation  : vector &    bivectors : ',  v1.ToMultivector.Rotation(B2.ToMultivector, B3.ToMultivector).IsA);
+  writeln('Rotation  : vector &   trivectors : ',  v1.ToMultivector.Rotation(I2.ToMultivector, I3.ToMultivector).IsA);
+  writeln('Rotation  : vector & multivectors : ',  v1.ToMultivector.Rotation(M2              , M3).IsA);
+
+  writeln;
+  writeln('TBIVECTOR');
+  writeln('Dot       : bivector &      vector  : ',  B1.ToMultivector.Dot(v2.ToMultivector).IsA);
+  writeln('Dot       : bivector &    bivector  : ',  B1.ToMultivector.Dot(B2.ToMultivector).IsA);
+  writeln('Dot       : bivector &   trivector  : ',  B1.ToMultivector.Dot(I2.ToMultivector).IsA);
+  writeln('Dot       : bivector & multivector  : ',  B1.ToMultivector.Dot(M2              ).IsA);
+  writeln;
+  writeln('Wedge     : bivector &      vector  : ',  B1.ToMultivector.Wedge(v2.ToMultivector).IsA);
+  writeln('Wedge     : bivector &    bivector  : ',  B1.ToMultivector.Wedge(B2.ToMultivector).IsA);
+  writeln('Wedge     : bivector &   trivector  : ',  B1.ToMultivector.Wedge(I2.ToMultivector).IsA);
+  writeln('Wedge     : bivector & multivector  : ',  B1.ToMultivector.Wedge(M2              ).IsA);
+  writeln;
+  writeln('Geometric : bivector &      vector  : ', (B1.ToMultivector*v2.ToMultivector).IsA);
+  writeln('Geometric : bivector &    bivector  : ', (B1.ToMultivector*B2.ToMultivector).IsA);
+  writeln('Geometric : bivector &   trivector  : ', (B1.ToMultivector*I2.ToMultivector).IsA);
+  writeln('Geometric : bivector & multivector  : ', (B1.ToMultivector*M2              ).IsA);
+  writeln;
+  writeln('Projection: bivector &      vector  : ',  B1.ToMultivector.Projection(v2.ToMultivector).IsA);
+  writeln('Projection: bivector &    bivector  : ',  B1.ToMultivector.Projection(B2.ToMultivector).IsA);
+  writeln('Projection: bivector &   trivector  : ',  B1.ToMultivector.Projection(I2.ToMultivector).IsA);
+  writeln('Projection: bivector & multivector  : ',  B1.ToMultivector.Projection(M2              ).IsA);
+  writeln;
+  writeln('Rejection : bivector &      vector  : ',  B1.ToMultivector.Rejection(v2.ToMultivector).IsA);
+  writeln('Rejection : bivector &    bivector  : ',  B1.ToMultivector.Rejection(B2.ToMultivector).IsA);
+  writeln('Rejection : bivector &   trivector  : ',  B1.ToMultivector.Rejection(I2.ToMultivector).IsA);
+  writeln('Rejection : bivector & multivector  : ',  B1.ToMultivector.Rejection(M2              ).IsA);
+  writeln;
+  writeln('Reflection: bivector &      vector  : ',  B1.ToMultivector.Reflection(v2.ToMultivector).IsA);
+  writeln('Reflection: bivector &    bivector  : ',  B1.ToMultivector.Reflection(B2.ToMultivector).IsA);
+  writeln('Reflection: bivector &   trivector  : ',  B1.ToMultivector.Reflection(I2.ToMultivector).IsA);
+  writeln('Reflection: bivector & multivector  : ',  B1.ToMultivector.Reflection(M2              ).IsA);
+  writeln;
+  writeln('Rotation  : bivector &      vectors : ',  B1.ToMultivector.Rotation(v2.ToMultivector, v3.ToMultivector).IsA);
+  writeln('Rotation  : bivector &    bivectors : ',  B1.ToMultivector.Rotation(B2.ToMultivector, B3.ToMultivector).IsA);
+  writeln('Rotation  : bivector &   trivectors : ',  B1.ToMultivector.Rotation(I2.ToMultivector, I3.ToMultivector).IsA);
+  writeln('Rotation  : bivector & multivectors : ',  B1.ToMultivector.Rotation(M2              , M3).IsA);
+
+  writeln;
+  writeln('TTRIVECTOR');
+  writeln('Dot       : trivector &      vector  : ',  I1.ToMultivector.Dot(v2.ToMultivector).IsA);
+  writeln('Dot       : trivector &    bivector  : ',  I1.ToMultivector.Dot(B2.ToMultivector).IsA);
+  writeln('Dot       : trivector &   trivector  : ',  I1.ToMultivector.Dot(I2.ToMultivector).IsA);
+  writeln('Dot       : trivector & multivector  : ',  I1.ToMultivector.Dot(M2              ).IsA);
+  writeln;
+  writeln('Wedge     : trivector &      vector  : ',  I1.ToMultivector.Wedge(v2.ToMultivector).IsA);
+  writeln('Wedge     : trivector &    bivector  : ',  I1.ToMultivector.Wedge(B2.ToMultivector).IsA);
+  writeln('Wedge     : trivector &   trivector  : ',  I1.ToMultivector.Wedge(I2.ToMultivector).IsA);
+  writeln('Wedge     : trivector & multivector  : ',  I1.ToMultivector.Wedge(M2              ).IsA);
+  writeln;
+  writeln('Geometric : trivector &      vector  : ', (I1.ToMultivector*v2.ToMultivector).IsA);
+  writeln('Geometric : trivector &    bivector  : ', (I1.ToMultivector*B2.ToMultivector).IsA);
+  writeln('Geometric : trivector &   trivector  : ', (I1.ToMultivector*I2.ToMultivector).IsA);
+  writeln('Geometric : trivector & multivector  : ', (I1.ToMultivector*M2              ).IsA);
+  writeln;
+  writeln('Projection: trivector &      vector  : ',  I1.ToMultivector.Projection(v2.ToMultivector).IsA);
+  writeln('Projection: trivector &    bivector  : ',  I1.ToMultivector.Projection(B2.ToMultivector).IsA);
+  writeln('Projection: trivector &   trivector  : ',  I1.ToMultivector.Projection(I2.ToMultivector).IsA);
+  writeln('Projection: trivector & multivector  : ',  I1.ToMultivector.Projection(M2              ).IsA);
+  writeln;
+  writeln('Rejection : trivector &      vector  : ',  I1.ToMultivector.Rejection(v2.ToMultivector).IsA);
+  writeln('Rejection : trivector &    bivector  : ',  I1.ToMultivector.Rejection(B2.ToMultivector).IsA);
+  writeln('Rejection : trivector &   trivector  : ',  I1.ToMultivector.Rejection(I2.ToMultivector).IsA);
+  writeln('Rejection : trivector & multivector  : ',  I1.ToMultivector.Rejection(M2              ).IsA);
+  writeln;
+  writeln('Reflection: trivector &      vector  : ',  I1.ToMultivector.Reflection(v2.ToMultivector).IsA);
+  writeln('Reflection: trivector &    bivector  : ',  I1.ToMultivector.Reflection(B2.ToMultivector).IsA);
+  writeln('Reflection: trivector &   trivector  : ',  I1.ToMultivector.Reflection(I2.ToMultivector).IsA);
+  writeln('Reflection: trivector & multivector  : ',  I1.ToMultivector.Reflection(M2              ).IsA);
+  writeln;
+  writeln('Rotation  : trivector &      vectors : ',  I1.ToMultivector.Rotation(v2.ToMultivector, v3.ToMultivector).IsA);
+  writeln('Rotation  : trivector &    bivectors : ',  I1.ToMultivector.Rotation(B2.ToMultivector, B3.ToMultivector).IsA);
+  writeln('Rotation  : trivector &   trivectors : ',  I1.ToMultivector.Rotation(I2.ToMultivector, I3.ToMultivector).IsA);
+  writeln('Rotation  : trivector & multivectors : ',  I1.ToMultivector.Rotation(M2              , M3).IsA);
+  writeln;
+
+  writeln;
+  writeln('TMULTIVECTOR');
+  writeln('Dot       : multivector &      vector  : ',  M1.Dot(v2.ToMultivector).IsA);
+  writeln('Dot       : multivector &    bivector  : ',  M1.Dot(B2.ToMultivector).IsA);
+  writeln('Dot       : multivector &   trivector  : ',  M1.Dot(I2.ToMultivector).IsA);
+  writeln('Dot       : multivector & multivector  : ',  M1.Dot(M2              ).IsA);
+  writeln;
+  writeln('Wedge     : multivector &      vector  : ',  M1.Wedge(v2.ToMultivector).IsA);
+  writeln('Wedge     : multivector &    bivector  : ',  M1.Wedge(B2.ToMultivector).IsA);
+  writeln('Wedge     : multivector &   trivector  : ',  M1.Wedge(I2.ToMultivector).IsA);
+  writeln('Wedge     : multivector & multivector  : ',  M1.Wedge(M2              ).IsA);
+  writeln;
+  writeln('Geometric : multivector &      vector  : ', (M1*v2.ToMultivector).IsA);
+  writeln('Geometric : multivector &    bivector  : ', (M1*B2.ToMultivector).IsA);
+  writeln('Geometric : multivector &   trivector  : ', (M1*I2.ToMultivector).IsA);
+  writeln('Geometric : multivector & multivector  : ', (M1*M2              ).IsA);
+  writeln;
+  writeln('Projection: multivector &      vector  : ',  M1.Projection(v2.ToMultivector).IsA);
+  writeln('Projection: multivector &    bivector  : ',  M1.Projection(B2.ToMultivector).IsA);
+  writeln('Projection: multivector &   trivector  : ',  M1.Projection(I2.ToMultivector).IsA);
+  writeln('Projection: multivector & multivector  : ',  M1.Projection(M2              ).IsA);
+  writeln;
+  writeln('Rejection : multivector &      vector  : ',  M1.Rejection(v2.ToMultivector).IsA);
+  writeln('Rejection : multivector &    bivector  : ',  M1.Rejection(B2.ToMultivector).IsA);
+  writeln('Rejection : multivector &   trivector  : ',  M1.Rejection(I2.ToMultivector).IsA);
+  writeln('Rejection : multivector & multivector  : ',  M1.Rejection(M2              ).IsA);
+  writeln;
+  writeln('Reflection: multivector &      vector  : ',  M1.Reflection(v2.ToMultivector).IsA);
+  writeln('Reflection: multivector &    bivector  : ',  M1.Reflection(B2.ToMultivector).IsA);
+  writeln('Reflection: multivector &   trivector  : ',  M1.Reflection(I2.ToMultivector).IsA);
+  writeln('Reflection: multivector & multivector  : ',  M1.Reflection(M2              ).IsA);
+  writeln;
+  writeln('Rotation  : multivector &      vectors : ',  M1.Rotation(v2.ToMultivector, v3.ToMultivector).IsA);
+  writeln('Rotation  : multivector &    bivectors : ',  M1.Rotation(B2.ToMultivector, B3.ToMultivector).IsA);
+  writeln('Rotation  : multivector &   trivectors : ',  M1.Rotation(I2.ToMultivector, I3.ToMultivector).IsA);
+  writeln('Rotation  : multivector & multivectors : ',  M1.Rotation(M2              , M3).IsA);
+  writeln;
 end.
