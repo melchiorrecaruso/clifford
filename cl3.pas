@@ -151,6 +151,7 @@ type
     class operator + (const ALeft: TBivector; const ARight: TMultivector): TMultivector;
     class operator + (const ALeft: TMultivector; const ARight: TBivector): TMultivector;
 
+    class operator - (const ASelf: TBivector): TBivector;
     class operator - (const ALeft, ARight: TBivector): TBivector;
     class operator - (const ALeft: TBivector; const ARight: double): TMultivector;
     class operator - (const ALeft: double; const ARight: TBivector): TMultivector;
@@ -202,6 +203,7 @@ type
     class operator + (const ALeft: TVector; const ARight: TMultivector): TMultivector;
     class operator + (const ALeft: TMultivector; const ARight: TVector): TMultivector;
 
+    class operator - (const ASelf: TVector): TVector;
     class operator - (const ALeft, ARight: TVector): TVector;
     class operator - (const ALeft: TVector; const ARight: double): TMultivector;
     class operator - (const ALeft: double; const ARight: TVector): TMultivector;
@@ -1078,6 +1080,13 @@ begin
   result := ARight + ALeft;
 end;
 
+class operator TBivector.-(const ASelf: TBivector): TBivector;
+begin
+  result.fm12 := -ASelf.fm12;
+  result.fm23 := -ASelf.fm23;
+  result.fm31 := -ASelf.fm31;
+end;
+
 class operator TBivector.-(const ALeft, ARight: TBivector): TBivector;
 begin
   result.fm12  := ALeft.fm12 - ARight.fm12;
@@ -1439,6 +1448,13 @@ begin
   result.fm23  := ALeft.fm23;
   result.fm31  := ALeft.fm31;
   result.fm123 := ALeft.fm123;
+end;
+
+class operator TVector.-(const ASelf: TVector): TVector;
+begin
+  result.fm1 := -ASelf.fm1;
+  result.fm2 := -ASelf.fm2;
+  result.fm3 := -ASelf.fm3;
 end;
 
 class operator TVector.-(const ALeft, ARight: TVector): TVector;
