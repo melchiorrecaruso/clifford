@@ -430,6 +430,10 @@ type
     function Rotation(const AVector1, AVector2: TTrivector): TVector; overload;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector; overload;
 
+    function LERP(const AVector1, AVector2: TVector; const AFactor: double = 0.5): TVector;
+    function SLERP(const AVector1, AVector2: TVector; const AFactor: double = 0.5): TVector;
+
+
     function SameValue(const AVector: TVector): boolean;
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
@@ -2845,6 +2849,19 @@ end;
 function TVectorHelper.Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal  * AVector2.Reciprocal;
+end;
+
+function TVectorHelper.LERP(const AVector1, AVector2: TVector; const AFactor: double = 0.5): TVector;
+begin
+  result := AVector1 + AFactor * (AVector2 - AVector1);
+end;
+
+function TVectorHelper.SLERP(const AVector1, AVector2: TVector; const AFactor: double = 0.5): TVector;
+var
+  angle: double;
+begin
+  angle := AVector1.Dot(AVector2)/(AVector1.Norm * AVector2.Norm);
+  result := sin((1-AFactor)*angle)/sin(angle) * AVector1 + sin(AFactor*angle)/sin(angle) * AVector2;
 end;
 
 function TVectorHelper.Cross(const AVector: TVector): TVector;
