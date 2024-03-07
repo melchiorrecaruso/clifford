@@ -276,7 +276,12 @@ type
     function Rotation(const AVector1, AVector2: TTrivector): TMultivector; overload;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;overload;
 
-    function SameValue(const AVector: TMultivector): boolean;
+    function SameValue(const AValue: TMultivector): boolean;
+    function SameValue(const AValue: TTrivector): boolean;
+    function SameValue(const AValue: TBivector): boolean;
+    function SameValue(const AValue: TVector): boolean;
+    function SameValue(const AValue: double): boolean;
+
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
 
@@ -285,7 +290,7 @@ type
     function ExtractVector: TVector;
     function ExtractScalar: double;
 
-    function IsZero: boolean;
+    function IsNull: boolean;
     function IsScalar: boolean;
     function IsVector: boolean;
     function IsBiVector: boolean;
@@ -334,7 +339,9 @@ type
     function Rotation(const AVector1, AVector2: TTrivector): TTrivector; overload;
     function Rotation(const AVector1, AVector2: TMultivector): TTrivector; overload;
 
-    function SameValue(const AVector: TTrivector): boolean;
+    function SameValue(const AValue: TMultivector): boolean;
+    function SameValue(const AValue: TTrivector): boolean;
+
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
     function ToMultivector: TMultivector;
@@ -381,7 +388,9 @@ type
     function Rotation(const AVector1, AVector2: TTrivector): TBivector; overload;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector; overload;
 
-    function SameValue(const AVector: TBivector): boolean;
+    function SameValue(const AValue: TMultivector): boolean;
+    function SameValue(const AValue: TBivector): boolean;
+
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
     function ToMultivector: TMultivector;
@@ -433,8 +442,9 @@ type
     function LERP(const AVector1, AVector2: TVector; const AFactor: double = 0.5): TVector;
     function SLERP(const AVector1, AVector2: TVector; const AFactor: double = 0.5): TVector;
 
+    function SameValue(const AValue: TMultivector): boolean;
+    function SameValue(const AValue: TVector): boolean;
 
-    function SameValue(const AVector: TVector): boolean;
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
     function ToMultivector: TMultivector;
@@ -1801,7 +1811,7 @@ var
   Numerator: TMultivector;
 begin
   Numerator := Conjugate*Inverse*Reverse;
-  result    := Numerator / (Self*Numerator).ExtractScalar;
+  result := Numerator / (Self*Numerator).ExtractScalar;
 end;
 
 function TMultivectorHelper.Norm(AGrade: TMultivectorGrade): double;
@@ -2094,16 +2104,64 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TMultivectorHelper.SameValue(const AVector: TMultivector): boolean;
+function TMultivectorHelper.SameValue(const AValue: TMultivector): boolean;
 begin
-  result := Math.SameValue(fm0,   Avector.fm0  ) and
-            Math.SameValue(fm1,   Avector.fm1  ) and
-            Math.SameValue(fm2,   Avector.fm2  ) and
-            Math.SameValue(fm3,   Avector.fm3  ) and
-            Math.SameValue(fm12,  Avector.fm12 ) and
-            Math.SameValue(fm23,  Avector.fm23 ) and
-            Math.SameValue(fm31,  Avector.fm31 ) and
-            Math.SameValue(fm123, Avector.fm123);
+  result := Math.SameValue(fm0,   AValue.fm0  ) and
+            Math.SameValue(fm1,   AValue.fm1  ) and
+            Math.SameValue(fm2,   AValue.fm2  ) and
+            Math.SameValue(fm3,   AValue.fm3  ) and
+            Math.SameValue(fm12,  AValue.fm12 ) and
+            Math.SameValue(fm23,  AValue.fm23 ) and
+            Math.SameValue(fm31,  AValue.fm31 ) and
+            Math.SameValue(fm123, AValue.fm123);
+end;
+
+function TMultivectorHelper.SameValue(const AValue: TTrivector): boolean;
+begin
+  result := Math.SameValue(fm0,              0) and
+            Math.SameValue(fm1,              0) and
+            Math.SameValue(fm2,              0) and
+            Math.SameValue(fm3,              0) and
+            Math.SameValue(fm12,             0) and
+            Math.SameValue(fm23,             0) and
+            Math.SameValue(fm31,             0) and
+            Math.SameValue(fm123, AValue.fm123);
+end;
+
+function TMultivectorHelper.SameValue(const AValue: TBivector): boolean;
+begin
+  result := Math.SameValue(fm0,             0) and
+            Math.SameValue(fm1,             0) and
+            Math.SameValue(fm2,             0) and
+            Math.SameValue(fm3,             0) and
+            Math.SameValue(fm12,  AValue.fm12) and
+            Math.SameValue(fm23,  AValue.fm23) and
+            Math.SameValue(fm31,  AValue.fm31) and
+            Math.SameValue(fm123,           0);
+end;
+
+function TMultivectorHelper.SameValue(const AValue: TVector): boolean;
+begin
+  result := Math.SameValue(fm0,            0) and
+            Math.SameValue(fm1,   AValue.fm1) and
+            Math.SameValue(fm2,   AValue.fm2) and
+            Math.SameValue(fm3,   AValue.fm3) and
+            Math.SameValue(fm12,           0) and
+            Math.SameValue(fm23,           0) and
+            Math.SameValue(fm31,           0) and
+            Math.SameValue(fm123,          0);
+end;
+
+function TMultivectorHelper.SameValue(const AValue: double): boolean;
+begin
+  result := Math.SameValue(fm0,       AValue) and
+            Math.SameValue(fm1,            0) and
+            Math.SameValue(fm2,            0) and
+            Math.SameValue(fm3,            0) and
+            Math.SameValue(fm12,           0) and
+            Math.SameValue(fm23,           0) and
+            Math.SameValue(fm31,           0) and
+            Math.SameValue(fm123,          0);
 end;
 
 function TMultivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
@@ -2149,74 +2207,66 @@ begin
   result := fm0;
 end;
 
-function TMultivectorHelper.IsZero: boolean;
+function TMultivectorHelper.IsNull: boolean;
 begin
   result := SameValue(NullMultivector);
 end;
 
 function TMultivectorHelper.IsScalar: boolean;
 begin
-  result := Math.SameValue(fm1,   0) and
-            Math.SameValue(fm2,   0) and
-            Math.SameValue(fm3,   0) and
-            Math.SameValue(fm12,  0) and
-            Math.SameValue(fm23,  0) and
-            Math.SameValue(fm31,  0) and
-            Math.SameValue(fm123, 0);
-
-  if result then
-    result := not IsZero;
+  result := (not Math.SameValue(fm0,   0)) and
+            (    Math.SameValue(fm1,   0)) and
+            (    Math.SameValue(fm2,   0)) and
+            (    Math.SameValue(fm3,   0)) and
+            (    Math.SameValue(fm12,  0)) and
+            (    Math.SameValue(fm23,  0)) and
+            (    Math.SameValue(fm31,  0)) and
+            (    Math.SameValue(fm123, 0));
 end;
 
 function TMultivectorHelper.IsVector: boolean;
 begin
-  result := Math.SameValue(fm0,   0) and
-            Math.SameValue(fm12,  0) and
-            Math.SameValue(fm23,  0) and
-            Math.SameValue(fm31,  0) and
-            Math.SameValue(fm123, 0);
-
-  if result then
-    result := not IsZero;
+  result :=  (    Math.SameValue(fm0,   0))  and
+            ((not Math.SameValue(fm1,   0))  or
+             (not Math.SameValue(fm2,   0))  or
+             (not Math.SameValue(fm3,   0))) and
+             (    Math.SameValue(fm12,  0))  and
+             (    Math.SameValue(fm23,  0))  and
+             (    Math.SameValue(fm31,  0))  and
+             (    Math.SameValue(fm123, 0));
 end;
 
 function TMultivectorHelper.IsBiVector: boolean;
 begin
-  result := Math.SameValue(fm0,   0) and
-            Math.SameValue(fm1,   0) and
-            Math.SameValue(fm2,   0) and
-            Math.SameValue(fm3,   0) and
-            Math.SameValue(fm123, 0);
-
-  if result then
-    result := not IsZero;
+  result :=  (    Math.SameValue(fm0,   0))  and
+             (    Math.SameValue(fm1,   0))  and
+             (    Math.SameValue(fm2,   0))  and
+             (    Math.SameValue(fm3,   0))  and
+            ((not Math.SameValue(fm12,  0))  or
+             (not Math.SameValue(fm23,  0))  or
+             (not Math.SameValue(fm31,  0))) and
+             (    Math.SameValue(fm123, 0));
 end;
 
 function TMultivectorHelper.IsTrivector: boolean;
 begin
-  result := Math.SameValue(fm0,  0) and
-            Math.SameValue(fm1,  0) and
-            Math.SameValue(fm2,  0) and
-            Math.SameValue(fm3,  0) and
-            Math.SameValue(fm12, 0) and
-            Math.SameValue(fm23, 0) and
-            Math.SameValue(fm31, 0);
-
-  if result then
-    result := not IsZero;
+  result := (    Math.SameValue(fm0,   0)) and
+            (    Math.SameValue(fm1,   0)) and
+            (    Math.SameValue(fm2,   0)) and
+            (    Math.SameValue(fm3,   0)) and
+            (    Math.SameValue(fm12,  0)) and
+            (    Math.SameValue(fm23,  0)) and
+            (    Math.SameValue(fm31,  0)) and
+            (not Math.SameValue(fm123, 0));
 end;
 
 function TMultivectorHelper.IsA: string;
 begin
-  Result := '';
-
-  if IsZero      then Result := Result + 'Null';
-  if IsTrivector then Result := Result + 'TTrivector';
-  if IsBivector  then Result := Result + 'TBivector';
-  if IsVector    then Result := Result + 'TVector';
-  if IsScalar    then Result := Result + 'TScalar';
-
-  if Result = '' then Result := 'TMultivector'
+  if IsNull      then Result := 'Null'       else
+  if IsTrivector then Result := 'TTrivector' else
+  if IsBivector  then Result := 'TBivector'  else
+  if IsVector    then Result := 'TVector'    else
+  if IsScalar    then Result := 'TScalar'    else Result := 'TMultivector';
 end;
 
 // TTrivectorHelper
@@ -2393,9 +2443,21 @@ begin
   result := (AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal).ExtractTrivector;
 end;
 
-function TTrivectorHelper.SameValue(const AVector: TTrivector): boolean;
+function TTrivectorHelper.SameValue(const AValue: TMultivector): boolean;
 begin
-  result := Math.SameValue(fm123, AVector.fm123);
+  result := Math.SameValue(0,     AValue.fm0  ) and
+            Math.SameValue(0,     AValue.fm1  ) and
+            Math.SameValue(0,     AValue.fm2  ) and
+            Math.SameValue(0,     AValue.fm3  ) and
+            Math.SameValue(0,     AValue.fm12 ) and
+            Math.SameValue(0,     AValue.fm23 ) and
+            Math.SameValue(0,     AValue.fm31 ) and
+            Math.SameValue(fm123, AValue.fm123);
+end;
+
+function TTrivectorHelper.SameValue(const AValue: TTrivector): boolean;
+begin
+  result := Math.SameValue(fm123, AValue.fm123);
 end;
 
 function TTrivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
@@ -2629,11 +2691,23 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
-function TBivectorHelper.SameValue(const AVector: TBivector): boolean;
+function TBivectorHelper.SameValue(const AValue: TMultivector): boolean;
 begin
-  result := Math.SameValue(fm12, Avector.fm12) and
-            Math.SameValue(fm23, Avector.fm23) and
-            Math.SameValue(fm31, Avector.fm31);
+  result := Math.SameValue(0,    AValue.fm0  ) and
+            Math.SameValue(0,    AValue.fm1  ) and
+            Math.SameValue(0,    AValue.fm2  ) and
+            Math.SameValue(0,    AValue.fm3  ) and
+            Math.SameValue(fm12, AValue.fm12 ) and
+            Math.SameValue(fm23, AValue.fm23 ) and
+            Math.SameValue(fm31, AValue.fm31 ) and
+            Math.SameValue(0,    AValue.fm123);
+end;
+
+function TBivectorHelper.SameValue(const AValue: TBivector): boolean;
+begin
+  result := Math.SameValue(fm12, AValue.fm12) and
+            Math.SameValue(fm23, AValue.fm23) and
+            Math.SameValue(fm31, AValue.fm31);
 end;
 
 function TBivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
@@ -2871,11 +2945,23 @@ begin
   result.fm3 := fm1*AVector.fm2 - fm2*AVector.fm1;
 end;
 
-function TVectorHelper.SameValue(const AVector: TVector): boolean;
+function TVectorHelper.SameValue(const AValue: TMultivector): boolean;
 begin
-  result := Math.SameValue(fm1, Avector.fm1) and
-            Math.SameValue(fm2, Avector.fm2) and
-            Math.SameValue(fm3, Avector.fm3);
+  result := Math.SameValue(0  , AValue.fm0  ) and
+            Math.SameValue(fm1, AValue.fm1  ) and
+            Math.SameValue(fm2, AValue.fm2  ) and
+            Math.SameValue(fm3, AValue.fm3  ) and
+            Math.SameValue(0,   AValue.fm12 ) and
+            Math.SameValue(0,   AValue.fm23 ) and
+            Math.SameValue(0,   AValue.fm31 ) and
+            Math.SameValue(0,   AValue.fm123);
+end;
+
+function TVectorHelper.SameValue(const AValue: TVector): boolean;
+begin
+  result := Math.SameValue(fm1, AValue.fm1) and
+            Math.SameValue(fm2, AValue.fm2) and
+            Math.SameValue(fm3, AValue.fm3);
 end;
 
 function TVectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
