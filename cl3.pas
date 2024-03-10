@@ -243,8 +243,9 @@ type
     function Reverse: TMultivector;
     function Conjugate: TMultivector;
     function Reciprocal: TMultivector;
+    function Norm: double;
     function Norm(AGrade: TMultivectorGrade): double;
-    function SquaredNorm: TMultivector;
+    function SquaredNorm: double;
 
     function Dot(const AVector: TVector): TMultivector; overload;
     function Dot(const AVector: TBivector): TMultivector; overload;
@@ -1807,11 +1808,8 @@ begin
 end;
 
 function TMultivectorHelper.Reciprocal: TMultivector;
-var
-  Numerator: TMultivector;
 begin
-  Numerator := Conjugate*Inverse*Reverse;
-  result := Numerator / (Self*Numerator).ExtractScalar;
+  result := Reverse/SquaredNorm;
 end;
 
 function TMultivectorHelper.Norm(AGrade: TMultivectorGrade): double;
@@ -1824,9 +1822,14 @@ begin
   end;
 end;
 
-function TMultivectorHelper.SquaredNorm: TMultivector;
+function TMultivectorHelper.Norm: double;
 begin
-  result := Self * Reverse;
+  result := sqrt(SquaredNorm);
+end;
+
+function TMultivectorHelper.SquaredNorm: double;
+begin
+  result := (Self * Reverse).ExtractScalar;
 end;
 
 function TMultivectorHelper.Dot(const AVector: TVector): TMultivector;

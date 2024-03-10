@@ -6,6 +6,7 @@ uses
   Cl3, Math, SysUtils;
 
 var
+  k : longint;
   a : double;
   v, v1, v2, v3 : TVector;
   B, B1, B2, B3 : TBivector;
@@ -17,10 +18,10 @@ var
   var
     i: longint;
   begin
-    i := RandomRange(-MaxSmallInt, MaxSmallInt);
+    i := RandomRange(-MaxLongint, MaxLongint);
     while (i = 0) do
     begin
-      i := RandomRange(-MaxSmallInt, MaxSmallInt);
+      i := RandomRange(-MaxLongint, MaxLongint);
     end;
     result := i;
   end;
@@ -30,6 +31,7 @@ begin
   Randomize;
 
   Writeln('CL3 TEST: begin');
+  for k := 0 to 1000000 do
   begin
     a := Rnd;
     v := Rnd*e1  + Rnd*e2  + Rnd*e3;
@@ -45,7 +47,7 @@ begin
     if I.Wedge        (M) <> M.Wedge        (I) then Writeln('TEST-104: NOT PASSED');
     if (I*M)              <> (M*I)              then Writeln('TEST-105: NOT PASSED');
     if (I*I)              <> (M*M)              then Writeln('TEST-106: NOT PASSED');
-    if not I.Reciprocal.SameValue(M.Reciprocal) then Writeln('TEST-107: NOT PASSED');
+    if I.Reciprocal       <> M.Reciprocal       then Writeln('TEST-107: NOT PASSED');
     if I.Conjugate        <> M.Conjugate        then Writeln('TEST-108: NOT PASSED');
     if I.Inverse          <> M.Inverse          then Writeln('TEST-109: NOT PASSED');
     if I.Dual             <> M.Dual             then Writeln('TEST-110: NOT PASSED');
@@ -91,7 +93,7 @@ begin
     if B.Wedge        (M) <> M.Wedge        (B) then Writeln('TEST-204: NOT PASSED');
     if (B*M)              <> (M*B)              then Writeln('TEST-205: NOT PASSED');
     if (B*B)              <> (M*M)              then Writeln('TEST-206: NOT PASSED');
-    if not B.Reciprocal.SameValue(M.Reciprocal) then Writeln('TEST-208: NOT PASSED');
+    if B.Reciprocal       <> M.Reciprocal       then Writeln('TEST-208: NOT PASSED');
     if B.Conjugate        <> M.Conjugate        then Writeln('TEST-209: NOT PASSED');
     if B.Inverse          <> M.Inverse          then Writeln('TEST-210: NOT PASSED');
     if B.Dual             <> M.Dual             then Writeln('TEST-211: NOT PASSED');
@@ -138,7 +140,7 @@ begin
     if v.Wedge         (M) <> M.Wedge        (v) then Writeln('TEST-304: NOT PASSED');
     if (v*M)               <> (M*v)              then Writeln('TEST-305: NOT PASSED');
     if (v*v)               <> (M*M)              then Writeln('TEST-306: NOT PASSED');
-    if not v.Reciprocal.SameValue(M.Reciprocal)  then Writeln('TEST-307: NOT PASSED');
+    if v.Reciprocal        <> M.Reciprocal       then Writeln('TEST-307: NOT PASSED');
     if v.Conjugate         <> M.Conjugate        then Writeln('TEST-308: NOT PASSED');
     if v.Inverse           <> M.Inverse          then Writeln('TEST-309: NOT PASSED');
     if v.Dual              <> M.Dual             then Writeln('TEST-310: NOT PASSED');
