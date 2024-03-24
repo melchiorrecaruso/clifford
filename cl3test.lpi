@@ -37,6 +37,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Cl3"/>
       </Unit>
+      <Unit>
+        <Filename Value="cl2.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Cl2"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
