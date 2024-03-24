@@ -40,6 +40,9 @@ unit Cl3;
 
 {$mode objfpc}{$h+}
 {$modeswitch advancedrecords}
+{$WARN 05024 OFF} // Suppress warning for unused routine parameter.
+{$WARN 05033 OFF} // Suppress warning for unassigned function's return value.
+{$MACRO ON}
 
 interface
 
@@ -47,8 +50,9 @@ uses
   SysUtils;
 
 type
-  // TMultivectorGrade
-  TMultivectorGrade = (gScalar, gVector, gBivector, gTrivector);
+  // TMultivectorComponents
+  TMultivectorComponent  = (mc0, mc1, mc2, mc3, mc12, mc23, mc31, mc123);
+  TMultivectorComponents = set of TMultivectorComponent;
 
   // TMultivector
   TMultivector = record
@@ -62,6 +66,7 @@ type
     fm31: double;
     fm123: double;
   public
+    class operator :=(const AValue: double): TMultivector;
     class operator <>(const ALeft, ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; const ARight: double): boolean;
     class operator <>(const ALeft: double; const ARight: TMultivector): boolean;
@@ -88,11 +93,16 @@ type
     class operator / (const ALeft: double; const ARight: TMultivector): TMultivector;
   end;
 
+  // TTrivectorComponents
+  TTrivectorComponent  = (tc123);
+  TTrivectorComponents = set of TTrivectorComponent;
+
   // TTrivector
   TTrivector = record
   private
     fm123: double;
   public
+    class operator :=(const ASelf: TTrivector): TMultivector;
     class operator <>(const ALeft, ARight: TTrivector): boolean;
     class operator <>(const ALeft: TTrivector; const ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; const ARight: TTrivector): boolean;
@@ -128,6 +138,10 @@ type
     class operator / (const ALeft: TMultivector; const ARight: TTrivector): TMultivector;
   end;
 
+  // TBivectorComponents
+  TBivectorComponent  = (bc12, bc23, bc31);
+  TBivectorComponents = set of TBivectorComponent;
+
   // TBivector
   TBivector = record
   private
@@ -135,6 +149,7 @@ type
     fm23: double;
     fm31: double;
   public
+    class operator :=(const ASelf: TBivector): TMultivector;
     class operator <>(const ALeft, ARight: TBivector): boolean;
     class operator <>(const ALeft: TBivector; const ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; const ARight: TBivector): boolean;
@@ -178,6 +193,10 @@ type
     class operator / (const ALeft: TMultivector; const ARight: TBivector): TMultivector;
   end;
 
+  // TVectorComponents
+  TVectorComponent  = (vc1, vc2, vc3);
+  TVectorComponents = set of TVectorComponent;
+
   // TVector
   TVector = record
   private
@@ -185,6 +204,7 @@ type
     fm2: double;
     fm3: double;
   public
+    class operator :=(const ASelf: TVector): TMultivector;
     class operator <>(const ALeft, ARight: TVector): boolean;
     class operator <>(const ALeft: TVector; const ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; const ARight: TVector): boolean;
@@ -236,6 +256,10 @@ type
     class operator / (const ALeft: TMultivector; const ARight: TVector): TMultivector;
   end;
 
+  // TScalarComponents
+  TScalarComponent  = (sc0);
+  TScalarComponents = set of TScalarComponent;
+
   // TMultivectorHelper
   TMultivectorHelper = record helper for TMultivector
     function Dual: TMultivector;
@@ -244,8 +268,9 @@ type
     function Conjugate: TMultivector;
     function Reciprocal: TMultivector;
     function Norm: double;
-    function Norm(AGrade: TMultivectorGrade): double;
+    function Norm(AComponents: TMultivectorComponents): double;
     function SquaredNorm: double;
+    function SquaredNorm(AComponents: TMultivectorComponents): double;
 
     function Dot(const AVector: TVector): TMultivector; overload;
     function Dot(const AVector: TBivector): TMultivector; overload;
@@ -285,6 +310,10 @@ type
 
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
+
+    function Extract(AComponents: TMultivectorComponents): TMultivector;
+    function Extract(AComponents: TBivectorComponents): TBivector;
+    function Extract(AComponents: TVectorComponents): TVector;
 
     function ExtractTrivector: TTrivector;
     function ExtractBivector: TBivector;
@@ -343,6 +372,8 @@ type
     function SameValue(const AValue: TMultivector): boolean;
     function SameValue(const AValue: TTrivector): boolean;
 
+    function Extract(AComponents: TTrivectorComponents): TTrivector;
+
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
     function ToMultivector: TMultivector;
@@ -391,6 +422,8 @@ type
 
     function SameValue(const AValue: TMultivector): boolean;
     function SameValue(const AValue: TBivector): boolean;
+
+    function Extract(AComponents: TBivectorComponents): TBivector;
 
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
@@ -446,6 +479,8 @@ type
     function SameValue(const AValue: TMultivector): boolean;
     function SameValue(const AValue: TVector): boolean;
 
+    function Extract(AComponents: TVectorComponents): TVector;
+
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
     function ToMultivector: TMultivector;
@@ -457,37 +492,37 @@ type
   TVersor3 = record class operator *(const AValue: double; const ASelf: TVersor3): TVector; end;
 
   // TBiversor
-  TBiversor12 = record class operator *(const AValue: double; const ASelf: TBiversor12): TBivector; end;
-  TBiversor23 = record class operator *(const AValue: double; const ASelf: TBiversor23): TBivector; end;
-  TBiversor31 = record class operator *(const AValue: double; const ASelf: TBiversor31): TBivector; end;
+  TVersor12 = record class operator *(const AValue: double; const ASelf: TVersor12): TBivector; end;
+  TVersor23 = record class operator *(const AValue: double; const ASelf: TVersor23): TBivector; end;
+  TVersor31 = record class operator *(const AValue: double; const ASelf: TVersor31): TBivector; end;
 
   // TTriversor
-  TTriversor123 = record class operator *(const AValue: double; const ASelf: TTriversor123): TTrivector; end;
+  TVersor123 = record class operator *(const AValue: double; const ASelf: TVersor123): TTrivector; end;
 
 const
-  e1   : TVersor1      = ();
-  e2   : TVersor2      = ();
-  e3   : TVersor3      = ();
-  e12  : TBiversor12   = ();
-  e23  : TBiversor23   = ();
-  e31  : TBiversor31   = ();
-  e123 : TTriversor123 = ();
+  e1   : TVersor1   = ();
+  e2   : TVersor2   = ();
+  e3   : TVersor3   = ();
+  e12  : TVersor12  = ();
+  e23  : TVersor23  = ();
+  e31  : TVersor31  = ();
+  e123 : TVersor123 = ();
 
-  u1   : TVector = (fm1:1; fm2:0; fm3:0);
-  u2   : TVector = (fm1:0; fm2:1; fm3:0);
-  u3   : TVector = (fm1:0; fm2:0; fm3:1);
+  u1   : TVector = (fm1:1.0; fm2:0.0; fm3:0.0);
+  u2   : TVector = (fm1:0.0; fm2:1.0; fm3:0.0);
+  u3   : TVector = (fm1:0.0; fm2:0.0; fm3:1.0);
 
-  u12  : TBivector = (fm12:1; fm23:0; fm31:0);
-  u23  : TBivector = (fm12:0; fm23:1; fm31:0);
-  u31  : TBivector = (fm12:0; fm23:0; fm31:1);
+  u12  : TBivector = (fm12:1.0; fm23:0.0; fm31:0.0);
+  u23  : TBivector = (fm12:0.0; fm23:1.0; fm31:0.0);
+  u31  : TBivector = (fm12:0.0; fm23:0.0; fm31:1.0);
 
   u123 : TTrivector = (fm123:1);
 
-  NullMultivector : TMultivector = (fm0:0; fm1:0; fm2:0; fm3:0; fm12:0; fm23:0; fm31:0; fm123:0);
-  NullTrivector   : TTrivector   = (fm123:0);
-  NullBivector    : TBivector    = (fm12:0; fm23:0; fm31:0);
-  NullVector      : TVector      = (fm1:0; fm2:0; fm3:0);
-  NullScalar      : double       = (0);
+  NullMultivector : TMultivector = (fm0:0.0; fm1:0.0; fm2:0.0; fm3:0.0; fm12:0.0; fm23:0.0; fm31:0.0; fm123:0.0);
+  NullTrivector   : TTrivector   = (fm123:0.0);
+  NullBivector    : TBivector    = (fm12:0.0; fm23:0.0; fm31:0.0);
+  NullVector      : TVector      = (fm1: 0.0; fm2: 0.0; fm3: 0.0);
+  NullScalar      : double       = (0.0);
 
 implementation
 
@@ -496,7 +531,7 @@ uses
 
 function Fmt(const AValue: double): string;
 begin
-  if AValue < 0 then
+  if AValue < 0.0 then
     result := FloatToStr(AValue)
   else
     result := '+' + FloatToStr(AValue);
@@ -504,13 +539,25 @@ end;
 
 function Fmt(const AValue: double; APrecision, ADigits: longint): string;
 begin
-  if AValue < 0 then
+  if AValue < 0.0 then
     result := FloatToStrF(AValue, ffGeneral, APrecision, ADigits)
   else
     result := '+' + FloatToStrF(AValue, ffGeneral, APrecision, ADigits);
 end;
 
 // TMultivector
+
+class operator TMultivector.:=(const AValue: double): TMultivector;
+begin
+  result.fm0   := AValue;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
+  result.fm123 := 0.0;
+end;
 
 class operator TMultivector.<>(const ALeft, ARight: TMultivector): boolean;
 begin
@@ -527,25 +574,25 @@ end;
 class operator TMultivector.<>(const ALeft: TMultivector; const ARight: double): boolean;
 begin
   result := (ALeft.fm0   <> ARight) or
-            (ALeft.fm1   <>      0) or
-            (ALeft.fm2   <>      0) or
-            (ALeft.fm3   <>      0) or
-            (ALeft.fm12  <>      0) or
-            (ALeft.fm23  <>      0) or
-            (ALeft.fm31  <>      0) or
-            (ALeft.fm123 <>      0);
+            (ALeft.fm1   <>    0.0) or
+            (ALeft.fm2   <>    0.0) or
+            (ALeft.fm3   <>    0.0) or
+            (ALeft.fm12  <>    0.0) or
+            (ALeft.fm23  <>    0.0) or
+            (ALeft.fm31  <>    0.0) or
+            (ALeft.fm123 <>    0.0);
 end;
 
 class operator TMultivector.<>(const ALeft: double; const ARight: TMultivector): boolean;
 begin
   result := (ALeft <> ARight.fm0  ) or
-            (0     <> ARight.fm1  ) or
-            (0     <> ARight.fm2  ) or
-            (0     <> ARight.fm3  ) or
-            (0     <> ARight.fm12 ) or
-            (0     <> ARight.fm23 ) or
-            (0     <> ARight.fm31 ) or
-            (0     <> ARight.fm123);
+            (0.0   <> ARight.fm1  ) or
+            (0.0   <> ARight.fm2  ) or
+            (0.0   <> ARight.fm3  ) or
+            (0.0   <> ARight.fm12 ) or
+            (0.0   <> ARight.fm23 ) or
+            (0.0   <> ARight.fm31 ) or
+            (0.0   <> ARight.fm123);
 end;
 
 class operator TMultivector.=(const ALeft: TMultivector; const ARight: double): boolean;
@@ -770,6 +817,18 @@ end;
 
 // TTrivector
 
+class operator TTrivector.:=(const ASelf: TTrivector): TMultivector;
+begin
+  result.fm0   := 0.0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
+  result.fm123 := ASelf.fm123;
+end;
+
 class operator TTrivector.<>(const ALeft, ARight: TTrivector): boolean;
 begin
   result := ALeft.fm123 <> ARight.fm123;
@@ -777,25 +836,25 @@ end;
 
 class operator TTrivector.<>(const ALeft: TMultivector; const ARight: TTrivector): boolean;
 begin
-  result := (ALeft.fm0   <>            0) or
-            (ALeft.fm1   <>            0) or
-            (ALeft.fm2   <>            0) or
-            (ALeft.fm3   <>            0) or
-            (ALeft.fm12  <>            0) or
-            (ALeft.fm23  <>            0) or
-            (ALeft.fm31  <>            0) or
+  result := (ALeft.fm0   <>          0.0) or
+            (ALeft.fm1   <>          0.0) or
+            (ALeft.fm2   <>          0.0) or
+            (ALeft.fm3   <>          0.0) or
+            (ALeft.fm12  <>          0.0) or
+            (ALeft.fm23  <>          0.0) or
+            (ALeft.fm31  <>          0.0) or
             (ALeft.fm123 <> ARight.fm123);
 end;
 
 class operator TTrivector.<>(const ALeft: TTrivector; const ARight: TMultivector): boolean;
 begin
-  result := (0           <> ARight.fm0  ) or
-            (0           <> ARight.fm1  ) or
-            (0           <> ARight.fm2  ) or
-            (0           <> ARight.fm3  ) or
-            (0           <> ARight.fm12 ) or
-            (0           <> ARight.fm23 ) or
-            (0           <> ARight.fm31 ) or
+  result := (0.0         <> ARight.fm0  ) or
+            (0.0         <> ARight.fm1  ) or
+            (0.0         <> ARight.fm2  ) or
+            (0.0         <> ARight.fm3  ) or
+            (0.0         <> ARight.fm12 ) or
+            (0.0         <> ARight.fm23 ) or
+            (0.0         <> ARight.fm31 ) or
             (ALeft.fm123 <> ARight.fm123);
 end;
 
@@ -822,24 +881,24 @@ end;
 class operator TTrivector.+(const ALeft: TTrivector; const ARight: double): TMultivector;
 begin
   result.fm0   := ARight;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
   result.fm123 := ALeft.fm123;
 end;
 
 class operator TTrivector.+(const ALeft: double; const ARight: TTrivector): TMultivector;
 begin
   result.fm0   := ALeft;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
   result.fm123 := ARight.fm123;
 end;
 
@@ -880,24 +939,24 @@ end;
 class operator TTrivector.-(const ALeft: TTrivector; const ARight: double): TMultivector;
 begin
   result.fm0   := -ARight;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
   result.fm123 := ALeft.fm123;
 end;
 
 class operator TTrivector.-(const ALeft: double; const ARight: TTrivector): TMultivector;
 begin
   result.fm0   := ALeft;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
   result.fm123 := -ARight.fm123;
 end;
 
@@ -991,6 +1050,18 @@ end;
 
 // TBivector
 
+class operator TBivector.:=(const ASelf: TBivector): TMultivector;
+begin
+  result.fm0   := 0.0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
+  result.fm12  := ASelf.fm12;
+  result.fm23  := ASelf.fm23;
+  result.fm31  := ASelf.fm31;
+  result.fm123 := 0.0;
+end;
+
 class operator TBivector.<>(const ALeft, ARight: TBivector): boolean;
 begin
   result := (ALeft.fm12 <> ARight.fm12) or
@@ -1000,26 +1071,26 @@ end;
 
 class operator TBivector.<>(const ALeft: TMultivector; const ARight: TBivector): boolean;
 begin
-  result := (ALeft.fm0   <> 0) or
-            (ALeft.fm1   <> 0) or
-            (ALeft.fm2   <> 0) or
-            (ALeft.fm3   <> 0) or
+  result := (ALeft.fm0   <>         0.0) or
+            (ALeft.fm1   <>         0.0) or
+            (ALeft.fm2   <>         0.0) or
+            (ALeft.fm3   <>         0.0) or
             (ALeft.fm12  <> ARight.fm12) or
             (ALeft.fm23  <> ARight.fm23) or
             (ALeft.fm31  <> ARight.fm31) or
-            (ALeft.fm123 <> 0);
+            (ALeft.fm123 <>         0.0);
 end;
 
 class operator TBivector.<>(const ALeft: TBivector; const ARight: TMultivector): boolean;
 begin
-  result := (ARight.fm0   <> 0) or
-            (ARight.fm1   <> 0) or
-            (ARight.fm2   <> 0) or
-            (ARight.fm3   <> 0) or
+  result := (ARight.fm0   <>        0.0) or
+            (ARight.fm1   <>        0.0) or
+            (ARight.fm2   <>        0.0) or
+            (ARight.fm3   <>        0.0) or
             (ARight.fm12  <> ALeft.fm12) or
             (ARight.fm23  <> ALeft.fm23) or
             (ARight.fm31  <> ALeft.fm31) or
-            (ARight.fm123 <> 0);
+            (ARight.fm123 <>        0.0);
 end;
 
 class operator TBivector.=(const ALeft, ARight: TBivector): boolean;
@@ -1047,13 +1118,13 @@ end;
 class operator TBivector.+(const ALeft: TBivector; const ARight: double): TMultivector;
 begin
   result.fm0   := ARight;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
   result.fm12  := ALeft.fm12;
   result.fm23  := ALeft.fm23;
   result.fm31  := ALeft.fm31;
-  result.fm123 := 0;
+  result.fm123 := 0.0;
 end;
 
 class operator TBivector.+(const ALeft: double; const ARight: TBivector): TMultivector;
@@ -1063,10 +1134,10 @@ end;
 
 class operator TBivector.+(const ALeft: TBivector; const ARight: TTrivector): TMultivector;
 begin
-  result.fm0   := 0;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
+  result.fm0   := 0.0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
   result.fm12  := ALeft.fm12;
   result.fm23  := ALeft.fm23;
   result.fm31  := ALeft.fm31;
@@ -1112,13 +1183,13 @@ end;
 class operator TBivector.-(const ALeft: TBivector; const ARight: double): TMultivector;
 begin
   result.fm0   := -ARight;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
-  result.fm12  := ALeft.fm12;
-  result.fm23  := ALeft.fm23;
-  result.fm31  := ALeft.fm31;
-  result.fm123 := 0;
+  result.fm1   :=  0.0;
+  result.fm2   :=  0.0;
+  result.fm3   :=  0.0;
+  result.fm12  :=  ALeft.fm12;
+  result.fm23  :=  ALeft.fm23;
+  result.fm31  :=  ALeft.fm31;
+  result.fm123 :=  0.0;
 end;
 
 class operator TBivector.-(const ALeft: double; const ARight: TBivector): TMultivector;
@@ -1128,13 +1199,13 @@ end;
 
 class operator TBivector.-(const ALeft: TBivector; const ARight: TTrivector): TMultivector;
 begin
-  result.fm0   := 0;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
-  result.fm12  := ALeft.fm12;
-  result.fm23  := ALeft.fm23;
-  result.fm31  := ALeft.fm31;
+  result.fm0   :=  0.0;
+  result.fm1   :=  0.0;
+  result.fm2   :=  0.0;
+  result.fm3   :=  0.0;
+  result.fm12  :=  ALeft.fm12;
+  result.fm23  :=  ALeft.fm23;
+  result.fm31  :=  ALeft.fm31;
   result.fm123 := -ARight.fm123;
 end;
 
@@ -1149,9 +1220,9 @@ begin
   result.fm1   := -ARight.fm1;
   result.fm2   := -ARight.fm2;
   result.fm3   := -ARight.fm3;
-  result.fm12  := ALeft.fm12 - ARight.fm12;
-  result.fm23  := ALeft.fm23 - ARight.fm23;
-  result.fm31  := ALeft.fm31 - ARight.fm31;
+  result.fm12  :=  ALeft.fm12 - ARight.fm12;
+  result.fm23  :=  ALeft.fm23 - ARight.fm23;
+  result.fm31  :=  ALeft.fm31 - ARight.fm31;
   result.fm123 := -ARight.fm123;
 end;
 
@@ -1174,78 +1245,78 @@ end;
 
 class operator TBivector.*(const ALeft, ARight: TBivector): TMultivector;
 begin
-  result.fm0   := - ALeft.fm12 * ARight.fm12
-                  - ALeft.fm23 * ARight.fm23
-                  - ALeft.fm31 * ARight.fm31;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
-  result.fm12  :=   ALeft.fm31 * ARight.fm23
-                  - ALeft.fm23 * ARight.fm31;
-  result.fm23  :=   ALeft.fm12 * ARight.fm31
-                  - ALeft.fm31 * ARight.fm12;
-  result.fm31  :=   ALeft.fm23 * ARight.fm12
-                  - ALeft.fm12 * ARight.fm23;
-  result.fm123 := 0;
+  result.fm0   := -ALeft.fm12 * ARight.fm12
+                  -ALeft.fm23 * ARight.fm23
+                  -ALeft.fm31 * ARight.fm31;
+  result.fm1   :=  0.0;
+  result.fm2   :=  0.0;
+  result.fm3   :=  0.0;
+  result.fm12  :=  ALeft.fm31 * ARight.fm23
+                  -ALeft.fm23 * ARight.fm31;
+  result.fm23  :=  ALeft.fm12 * ARight.fm31
+                  -ALeft.fm31 * ARight.fm12;
+  result.fm31  :=  ALeft.fm23 * ARight.fm12
+                  -ALeft.fm12 * ARight.fm23;
+  result.fm123 :=  0.0;
 end;
 
 class operator TBivector.*(const ALeft: TBivector; const ARight: TMultivector): TMultivector;
 begin
-  result.fm0 :=   -ALeft.fm12  * ARight.fm12
-                  -ALeft.fm23  * ARight.fm23
-                  -ALeft.fm31  * ARight.fm31;
+  result.fm0 :=   -ALeft.fm12 * ARight.fm12
+                  -ALeft.fm23 * ARight.fm23
+                  -ALeft.fm31 * ARight.fm31;
 
-  result.fm1 :=    ALeft.fm12  * ARight.fm2
-                  -ALeft.fm23  * ARight.fm123
-                  -ALeft.fm31  * ARight.fm3;
+  result.fm1 :=    ALeft.fm12 * ARight.fm2
+                  -ALeft.fm23 * ARight.fm123
+                  -ALeft.fm31 * ARight.fm3;
 
-  result.fm2 :=   -ALeft.fm12  * ARight.fm1
-                  +ALeft.fm23  * ARight.fm3
-                  -ALeft.fm31  * ARight.fm123;
+  result.fm2 :=   -ALeft.fm12 * ARight.fm1
+                  +ALeft.fm23 * ARight.fm3
+                  -ALeft.fm31 * ARight.fm123;
 
-  result.fm3 :=   -ALeft.fm12  * ARight.fm123
-                  -ALeft.fm23  * ARight.fm2
-                  +ALeft.fm31  * ARight.fm1;
+  result.fm3 :=   -ALeft.fm12 * ARight.fm123
+                  -ALeft.fm23 * ARight.fm2
+                  +ALeft.fm31 * ARight.fm1;
 
-  result.fm12 :=   ALeft.fm12  * ARight.fm0
-                  -ALeft.fm23  * ARight.fm31
-                  +ALeft.fm31  * ARight.fm23;
+  result.fm12 :=   ALeft.fm12 * ARight.fm0
+                  -ALeft.fm23 * ARight.fm31
+                  +ALeft.fm31 * ARight.fm23;
 
-  result.fm23 :=   ALeft.fm12  * ARight.fm31
-                  +ALeft.fm23  * ARight.fm0
-                  -ALeft.fm31  * ARight.fm12;
+  result.fm23 :=   ALeft.fm12 * ARight.fm31
+                  +ALeft.fm23 * ARight.fm0
+                  -ALeft.fm31 * ARight.fm12;
 
-  result.fm31 :=  -ALeft.fm12  * ARight.fm23
-                  +ALeft.fm23  * ARight.fm12
-                  +ALeft.fm31  * ARight.fm0;
+  result.fm31 :=  -ALeft.fm12 * ARight.fm23
+                  +ALeft.fm23 * ARight.fm12
+                  +ALeft.fm31 * ARight.fm0;
 
-  result.fm123 :=  ALeft.fm12  * ARight.fm3
-                  +ALeft.fm23  * ARight.fm1
-                  +ALeft.fm31  * ARight.fm2;
+  result.fm123 :=  ALeft.fm12 * ARight.fm3
+                  +ALeft.fm23 * ARight.fm1
+                  +ALeft.fm31 * ARight.fm2;
 end;
 
 class operator TBivector.*(const ALeft: TBivector; const ARight: TTrivector): TMultivector;
 begin
-  result.fm0   := 0;
+  result.fm0   :=  0.0;
   result.fm1   := -ALeft.fm23 * ARight.fm123;
   result.fm2   := -ALeft.fm31 * ARight.fm123;
   result.fm3   := -ALeft.fm12 * ARight.fm123;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
-  result.fm123 := 0;
+  result.fm12  :=  0.0;
+  result.fm23  :=  0.0;
+  result.fm31  :=  0.0;
+  result.fm123 :=  0.0;
 end;
 
 class operator TBivector.*(const ALeft: TTrivector; const ARight: TBivector): TMultivector;
 begin
-  result.fm0   := 0;
+  result.fm0   :=  0.0;
   result.fm1   := -ARight.fm23 * ALeft.fm123;
   result.fm2   := -ARight.fm31 * ALeft.fm123;
   result.fm3   := -ARight.fm12 * ALeft.fm123;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
-  result.fm123 := 0;
+  result.fm12  :=  0.0;
+  result.fm23  :=  0.0;
+  result.fm31  :=  0.0;
+  result.fm123 :=  0.0;
 end;
 
 class operator TBivector.*(const ALeft: TMultivector; const ARight: TBivector): TMultivector;
@@ -1322,6 +1393,18 @@ end;
 
 // TVector
 
+class operator TVector.:=(const ASelf: TVector): TMultivector;
+begin
+  result.fm0   := 0.0;
+  result.fm1   := ASelf.fm1;
+  result.fm2   := ASelf.fm2;
+  result.fm3   := ASelf.fm3;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
+  result.fm123 := 0.0;
+end;
+
 class operator TVector.<>(const ALeft, ARight: TVector): boolean;
 begin
   result := (ALeft.fm1 <> ARight.fm1) or
@@ -1331,14 +1414,14 @@ end;
 
 class operator TVector.<>(const ALeft: TMultivector; const ARight: TVector): boolean;
 begin
-  result := (ALeft.fm0   <> 0) or
+  result := (ALeft.fm0   <>        0.0) or
             (ALeft.fm1   <> ARight.fm1) or
             (ALeft.fm2   <> ARight.fm2) or
             (ALeft.fm3   <> ARight.fm3) or
-            (ALeft.fm12  <> 0) or
-            (ALeft.fm23  <> 0) or
-            (ALeft.fm31  <> 0) or
-            (ALeft.fm123 <> 0);
+            (ALeft.fm12  <>        0.0) or
+            (ALeft.fm23  <>        0.0) or
+            (ALeft.fm31  <>        0.0) or
+            (ALeft.fm123 <>        0.0);
 end;
 
 class operator TVector.<>(const ALeft: TVector; const ARight: TMultivector): boolean;
@@ -1374,10 +1457,10 @@ begin
   result.fm1   := ALeft.fm1;
   result.fm2   := ALeft.fm2;
   result.fm3   := ALeft.fm3;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
-  result.fm123 := 0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
+  result.fm123 := 0.0;
 end;
 
 class operator TVector.+(const ALeft: double; const ARight: TVector): TMultivector;
@@ -1386,57 +1469,57 @@ begin
   result.fm1   := ARight.fm1;
   result.fm2   := ARight.fm2;
   result.fm3   := ARight.fm3;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
-  result.fm123 := 0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
+  result.fm123 := 0.0;
 end;
 
 class operator TVector.+(const ALeft: TVector; const ARight: TBivector): TMultivector;
 begin
-  result.fm0   := 0;
+  result.fm0   := 0.0;
   result.fm1   := ALeft.fm1;
   result.fm2   := ALeft.fm2;
   result.fm3   := ALeft.fm3;
   result.fm12  := ARight.fm12;
   result.fm23  := ARight.fm23;
   result.fm31  := ARight.fm31;
-  result.fm123 := 0;
+  result.fm123 := 0.0;
 end;
 
 class operator TVector.+(const ALeft: TBivector; const ARight: TVector): TMultivector;
 begin
-  result.fm0   := 0;
+  result.fm0   := 0.0;
   result.fm1   := ARight.fm1;
   result.fm2   := ARight.fm2;
   result.fm3   := ARight.fm3;
   result.fm12  := ALeft.fm12;
   result.fm23  := ALeft.fm23;
   result.fm31  := ALeft.fm31;
-  result.fm123 := 0;
+  result.fm123 := 0.0;
 end;
 
 class operator TVector.+(const ALeft: TVector; const ARight: TTrivector): TMultivector;
 begin
-  result.fm0   := 0;
+  result.fm0   := 0.0;
   result.fm1   := ALeft.fm1;
   result.fm2   := ALeft.fm2;
   result.fm3   := ALeft.fm3;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
   result.fm123 := ARight.fm123;
 end;
 
 class operator TVector.+(const ALeft: TTrivector; const ARight: TVector): TMultivector;
 begin
-  result.fm0   := 0;
+  result.fm0   := 0.0;
   result.fm1   := ARight.fm1;
   result.fm2   := ARight.fm2;
   result.fm3   := ARight.fm3;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
   result.fm123 := ALeft.fm123;
 end;
 
@@ -1485,10 +1568,10 @@ begin
   result.fm1   :=  ALeft.fm1;
   result.fm2   :=  ALeft.fm2;
   result.fm3   :=  ALeft.fm3;
-  result.fm12  :=  0;
-  result.fm23  :=  0;
-  result.fm31  :=  0;
-  result.fm123 :=  0;
+  result.fm12  :=  0.0;
+  result.fm23  :=  0.0;
+  result.fm31  :=  0.0;
+  result.fm123 :=  0.0;
 end;
 
 class operator TVector.-(const ALeft: double; const ARight: TVector): TMultivector;
@@ -1497,57 +1580,57 @@ begin
   result.fm1   := -ARight.fm1;
   result.fm2   := -ARight.fm2;
   result.fm3   := -ARight.fm3;
-  result.fm12  :=  0;
-  result.fm23  :=  0;
-  result.fm31  :=  0;
-  result.fm123 :=  0;
+  result.fm12  :=  0.0;
+  result.fm23  :=  0.0;
+  result.fm31  :=  0.0;
+  result.fm123 :=  0.0;
 end;
 
 class operator TVector.-(const ALeft: TVector; const ARight: TBivector): TMultivector;
 begin
-  result.fm0   :=  0;
+  result.fm0   :=  0.0;
   result.fm1   :=  ALeft.fm1;
   result.fm2   :=  ALeft.fm2;
   result.fm3   :=  ALeft.fm3;
   result.fm12  := -ARight.fm12;
   result.fm23  := -ARight.fm23;
   result.fm31  := -ARight.fm31;
-  result.fm123 :=  0;
+  result.fm123 :=  0.0;
 end;
 
 class operator TVector.-(const ALeft: TBivector; const ARight: TVector): TMultivector;
 begin
-  result.fm0   :=  0;
+  result.fm0   :=  0.0;
   result.fm1   := -ARight.fm1;
   result.fm2   := -ARight.fm2;
   result.fm3   := -ARight.fm3;
   result.fm12  :=  ALeft.fm12;
   result.fm23  :=  ALeft.fm23;
   result.fm31  :=  ALeft.fm31;
-  result.fm123 :=  0;
+  result.fm123 :=  0.0;
 end;
 
 class operator TVector.-(const ALeft: TVector; const ARight: TTrivector): TMultivector;
 begin
-  result.fm0   :=  0;
+  result.fm0   :=  0.0;
   result.fm1   :=  ALeft.fm1;
   result.fm2   :=  ALeft.fm2;
   result.fm3   :=  ALeft.fm3;
-  result.fm12  :=  0;
-  result.fm23  :=  0;
-  result.fm31  :=  0;
+  result.fm12  :=  0.0;
+  result.fm23  :=  0.0;
+  result.fm31  :=  0.0;
   result.fm123 := -ARight.fm123;
 end;
 
 class operator TVector.-(const ALeft: TTrivector; const ARight: TVector): TMultivector;
 begin
-  result.fm0   :=  0;
+  result.fm0   :=  0.0;
   result.fm1   := -ARight.fm1;
   result.fm2   := -ARight.fm2;
   result.fm3   := -ARight.fm3;
-  result.fm12  :=  0;
-  result.fm23  :=  0;
-  result.fm31  :=  0;
+  result.fm12  :=  0.0;
+  result.fm23  :=  0.0;
+  result.fm31  :=  0.0;
   result.fm123 :=  ALeft.fm123;
 end;
 
@@ -1592,36 +1675,36 @@ end;
 class operator TVector.*(const ALeft, ARight: TVector): TMultivector;
 begin
   result.fm0   := ALeft.fm1 * ARight.fm1 + ALeft.fm2 * ARight.fm2 + ALeft.fm3 * ARight.fm3;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
   result.fm12  := ALeft.fm1 * ARight.fm2 - ALeft.fm2 * ARight.fm1;
   result.fm23  := ALeft.fm2 * ARight.fm3 - ALeft.fm3 * ARight.fm2;
   result.fm31  := ALeft.fm3 * ARight.fm1 - ALeft.fm1 * ARight.fm3;
-  result.fm123 := 0;
+  result.fm123 := 0.0;
 end;
 
 class operator TVector.*(const ALeft: TVector; const ARight: TBivector): TMultivector;
 begin
-  result.fm0   :=  0;
-  result.fm1   :=  ALeft.fm3 * ARight.fm31 - ALeft.fm2 * ARight.fm12;
-  result.fm2   :=  ALeft.fm1 * ARight.fm12 - ALeft.fm3 * ARight.fm23;
-  result.fm3   :=  ALeft.fm2 * ARight.fm23 - ALeft.fm1 * ARight.fm31;
-  result.fm12  :=  0;
-  result.fm23  :=  0;
-  result.fm31  :=  0;
-  result.fm123 :=  ALeft.fm1 * ARight.fm23 + ALeft.fm2 * ARight.fm31 + ALeft.fm3 * ARight.fm12;
+  result.fm0   := 0.0;
+  result.fm1   := ALeft.fm3 * ARight.fm31 - ALeft.fm2 * ARight.fm12;
+  result.fm2   := ALeft.fm1 * ARight.fm12 - ALeft.fm3 * ARight.fm23;
+  result.fm3   := ALeft.fm2 * ARight.fm23 - ALeft.fm1 * ARight.fm31;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
+  result.fm123 := ALeft.fm1 * ARight.fm23 + ALeft.fm2 * ARight.fm31 + ALeft.fm3 * ARight.fm12;
 end;
 
 class operator TVector.*(const ALeft: TBivector; const ARight: TVector): TMultivector;
 begin
-  result.fm0   := 0;
+  result.fm0   := 0.0;
   result.fm1   := ALeft.fm12 * ARight.fm2 - ALeft.fm31 * ARight.fm3;
   result.fm2   := ALeft.fm23 * ARight.fm3 - ALeft.fm12 * ARight.fm1;
   result.fm3   := ALeft.fm31 * ARight.fm1 - ALeft.fm23 * ARight.fm2;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
   result.fm123 := ALeft.fm12 * ARight.fm3 + ALeft.fm23 * ARight.fm1 + ALeft.fm31 * ARight.fm2;
 end;
 
@@ -1641,72 +1724,72 @@ end;
 
 class operator TVector.*(const ALeft: TVector; const ARight: TMultivector): TMultivector;
 begin
-  result.fm0   :=   ALeft.fm1 * ARight.fm1
-                  + ALeft.fm2 * ARight.fm2
-                  + ALeft.fm3 * ARight.fm3;
+  result.fm0   :=  ALeft.fm1 * ARight.fm1
+                  +ALeft.fm2 * ARight.fm2
+                  +ALeft.fm3 * ARight.fm3;
 
-  result.fm1   :=   ALeft.fm1 * ARight.fm0
-                  - ALeft.fm2 * ARight.fm12
-                  + ALeft.fm3 * ARight.fm31;
+  result.fm1   :=  ALeft.fm1 * ARight.fm0
+                  -ALeft.fm2 * ARight.fm12
+                  +ALeft.fm3 * ARight.fm31;
 
-  result.fm2   :=   ALeft.fm1 * ARight.fm12
-                  + ALeft.fm2 * ARight.fm0
-                  - ALeft.fm3 * ARight.fm23;
+  result.fm2   :=  ALeft.fm1 * ARight.fm12
+                  +ALeft.fm2 * ARight.fm0
+                  -ALeft.fm3 * ARight.fm23;
 
-  result.fm3   :=   ALeft.fm3 * ARight.fm0
-                  - ALeft.fm1 * ARight.fm31
-                  + ALeft.fm2 * ARight.fm23;
+  result.fm3   :=  ALeft.fm3 * ARight.fm0
+                  -ALeft.fm1 * ARight.fm31
+                  +ALeft.fm2 * ARight.fm23;
 
-  result.fm12  :=   ALeft.fm1 * ARight.fm2
-                  - ALeft.fm2 * ARight.fm1
-                  + ALeft.fm3 * ARight.fm123;
+  result.fm12  :=  ALeft.fm1 * ARight.fm2
+                  -ALeft.fm2 * ARight.fm1
+                  +ALeft.fm3 * ARight.fm123;
 
-  result.fm23  :=   ALeft.fm1 * ARight.fm123
-                  + ALeft.fm2 * ARight.fm3
-                  - ALeft.fm3 * ARight.fm2;
+  result.fm23  :=  ALeft.fm1 * ARight.fm123
+                  +ALeft.fm2 * ARight.fm3
+                  -ALeft.fm3 * ARight.fm2;
 
-  result.fm31  :=   ALeft.fm3 * ARight.fm1
-                  - ALeft.fm1 * ARight.fm3
-                  + ALeft.fm2 * ARight.fm123;
+  result.fm31  :=  ALeft.fm3 * ARight.fm1
+                  -ALeft.fm1 * ARight.fm3
+                  +ALeft.fm2 * ARight.fm123;
 
-  result.fm123 :=   ALeft.fm1 * ARight.fm23
-                  + ALeft.fm2 * ARight.fm31
-                  + ALeft.fm3 * ARight.fm12;
+  result.fm123 :=  ALeft.fm1 * ARight.fm23
+                  +ALeft.fm2 * ARight.fm31
+                  +ALeft.fm3 * ARight.fm12;
 end;
 
 class operator TVector.*(const ALeft: TMultivector; const ARight: TVector): TMultivector;
 begin
-  result.fm0   :=   ALeft.fm1   * ARight.fm1
-                  + ALeft.fm2   * ARight.fm2
-                  + ALeft.fm3   * ARight.fm3;
+  result.fm0   :=  ALeft.fm1   * ARight.fm1
+                  +ALeft.fm2   * ARight.fm2
+                  +ALeft.fm3   * ARight.fm3;
 
-  result.fm1   :=   ALeft.fm0   * ARight.fm1
-                  + ALeft.fm12  * ARight.fm2
-                  - ALeft.fm31  * ARight.fm3;
+  result.fm1   :=  ALeft.fm0   * ARight.fm1
+                  +ALeft.fm12  * ARight.fm2
+                  -ALeft.fm31  * ARight.fm3;
 
-  result.fm2   :=   ALeft.fm0   * ARight.fm2
-                  - ALeft.fm12  * ARight.fm1
-                  + ALeft.fm23  * ARight.fm3;
+  result.fm2   :=  ALeft.fm0   * ARight.fm2
+                  -ALeft.fm12  * ARight.fm1
+                  +ALeft.fm23  * ARight.fm3;
 
-  result.fm3   :=   ALeft.fm0   * ARight.fm3
-                  - ALeft.fm23  * ARight.fm2
-                  + ALeft.fm31  * ARight.fm1;
+  result.fm3   :=  ALeft.fm0   * ARight.fm3
+                  -ALeft.fm23  * ARight.fm2
+                  +ALeft.fm31  * ARight.fm1;
 
-  result.fm12  :=   ALeft.fm1   * ARight.fm2
-                  - ALeft.fm2   * ARight.fm1
-                  + ALeft.fm123 * ARight.fm3;
+  result.fm12  :=  ALeft.fm1   * ARight.fm2
+                  -ALeft.fm2   * ARight.fm1
+                  +ALeft.fm123 * ARight.fm3;
 
-  result.fm23  :=   ALeft.fm2   * ARight.fm3
-                  - ALeft.fm3   * ARight.fm2
-                  + ALeft.fm123 * ARight.fm1;
+  result.fm23  :=  ALeft.fm2   * ARight.fm3
+                  -ALeft.fm3   * ARight.fm2
+                  +ALeft.fm123 * ARight.fm1;
 
-  result.fm31  :=   ALeft.fm123 * ARight.fm2
-                  - ALeft.fm1   * ARight.fm3
-                  + ALeft.fm3   * ARight.fm1;
+  result.fm31  :=  ALeft.fm123 * ARight.fm2
+                  -ALeft.fm1   * ARight.fm3
+                  +ALeft.fm3   * ARight.fm1;
 
-  result.fm123 :=   ALeft.fm12  * ARight.fm3
-                  + ALeft.fm23  * ARight.fm1
-                  + ALeft.fm31  * ARight.fm2;
+  result.fm123 :=  ALeft.fm12  * ARight.fm3
+                  +ALeft.fm23  * ARight.fm1
+                  +ALeft.fm31  * ARight.fm2;
 end;
 
 
@@ -1808,18 +1891,21 @@ begin
 end;
 
 function TMultivectorHelper.Reciprocal: TMultivector;
+var
+  Numerator: TMultivector;
 begin
-  result := Reverse/SquaredNorm;
+  if ((fm0  <>0) and ((fm1 <>0) or (fm2 <>0) or (fm3 <>0))) or
+     ((fm123<>0) and ((fm12<>0) or (fm23<>0) or (fm31<>0))) then
+  begin
+    Numerator := Conjugate*Inverse*Reverse;
+    result    := Numerator / (Self*Numerator).fm0;
+  end else
+    result := Reverse / SquaredNorm;
 end;
 
-function TMultivectorHelper.Norm(AGrade: TMultivectorGrade): double;
+function TMultivectorHelper.Norm(AComponents: TMultivectorComponents): double;
 begin
-  case AGrade of
-    gScalar    : result := abs(fm0);
-    gVector    : result := sqrt(sqr(fm1)  + sqr(fm2)  + sqr(fm3));
-    gBivector  : result := sqrt(sqr(fm12) + sqr(fm23) + sqr(fm31));
-    gTrivector : result := abs(fm123);
-  end;
+  result := sqrt(SquaredNorm(AComponents));
 end;
 
 function TMultivectorHelper.Norm: double;
@@ -1827,9 +1913,22 @@ begin
   result := sqrt(SquaredNorm);
 end;
 
+function TMultivectorHelper.SquaredNorm(AComponents: TMultivectorComponents): double;
+begin
+  result := 0;
+  if mc0   in AComponents then result := result + sqr(fm0);
+  if mc1   in AComponents then result := result + sqr(fm1);
+  if mc2   in AComponents then result := result + sqr(fm2);
+  if mc3   in AComponents then result := result + sqr(fm3);
+  if mc12  in AComponents then result := result + sqr(fm12);
+  if mc23  in AComponents then result := result + sqr(fm23);
+  if mc31  in AComponents then result := result + sqr(fm31);
+  if mc123 in AComponents then result := result + sqr(fm123);
+end;
+
 function TMultivectorHelper.SquaredNorm: double;
 begin
-  result := (Self * Reverse).ExtractScalar;
+  result := sqr(fm0) + sqr(fm1) + sqr(fm2) + sqr(fm3) +sqr(fm12) + sqr(fm23) + sqr(fm31) + sqr(fm123);
 end;
 
 function TMultivectorHelper.Dot(const AVector: TVector): TMultivector;
@@ -1853,7 +1952,7 @@ begin
   result.fm12  :=  fm123 * AVector.fm3;
   result.fm23  :=  fm123 * AVector.fm1;
   result.fm31  :=  fm123 * AVector.fm2;
-  result.fm123 :=  0;
+  result.fm123 :=  0.0;
 end;
 
 function TMultivectorHelper.Dot(const AVector: TBivector): TMultivector;
@@ -1894,64 +1993,64 @@ end;
 
 function TMultivectorHelper.Dot(const AVector: TMultivector): TMultivector;
 begin
-  result.fm0 :=     fm0   * AVector.fm0
-                  + fm1   * AVector.fm1
-                  + fm2   * AVector.fm2
-                  + fm3   * AVector.fm3
-                  - fm12  * AVector.fm12
-                  - fm23  * AVector.fm23
-                  - fm31  * AVector.fm31
-                  - fm123 * AVector.fm123;
+  result.fm0 :=    fm0   * AVector.fm0
+                  +fm1   * AVector.fm1
+                  +fm2   * AVector.fm2
+                  +fm3   * AVector.fm3
+                  -fm12  * AVector.fm12
+                  -fm23  * AVector.fm23
+                  -fm31  * AVector.fm31
+                  -fm123 * AVector.fm123;
 
-  result.fm1 :=     fm0   * AVector.fm1
-                  + fm1   * AVector.fm0
-                  - fm2   * AVector.fm12
-                  + fm3   * AVector.fm31
-                  + fm12  * AVector.fm2
-                  - fm23  * AVector.fm123
-                  - fm31  * AVector.fm3
-                  - fm123 * AVector.fm23;
+  result.fm1 :=    fm0   * AVector.fm1
+                  +fm1   * AVector.fm0
+                  -fm2   * AVector.fm12
+                  +fm3   * AVector.fm31
+                  +fm12  * AVector.fm2
+                  -fm23  * AVector.fm123
+                  -fm31  * AVector.fm3
+                  -fm123 * AVector.fm23;
 
-  result.fm2 :=     fm0   * AVector.fm2
-                  + fm1   * AVector.fm12
-                  + fm2   * AVector.fm0
-                  - fm3   * AVector.fm23
-                  - fm12  * AVector.fm1
-                  + fm23  * AVector.fm3
-                  - fm31  * AVector.fm123
-                  - fm123 * AVector.fm31;
+  result.fm2 :=    fm0   * AVector.fm2
+                  +fm1   * AVector.fm12
+                  +fm2   * AVector.fm0
+                  -fm3   * AVector.fm23
+                  -fm12  * AVector.fm1
+                  +fm23  * AVector.fm3
+                  -fm31  * AVector.fm123
+                  -fm123 * AVector.fm31;
 
-  result.fm3 :=     fm0   * AVector.fm3
-                  - fm1   * AVector.fm31
-                  + fm2   * AVector.fm23
-                  + fm3   * AVector.fm0
-                  - fm12  * AVector.fm123
-                  - fm23  * AVector.fm2
-                  + fm31  * AVector.fm1
-                  - fm123 * AVector.fm12;
+  result.fm3 :=    fm0   * AVector.fm3
+                  -fm1   * AVector.fm31
+                  +fm2   * AVector.fm23
+                  +fm3   * AVector.fm0
+                  -fm12  * AVector.fm123
+                  -fm23  * AVector.fm2
+                  +fm31  * AVector.fm1
+                  -fm123 * AVector.fm12;
 
-  result.fm12 :=    fm0   * AVector.fm12
-                  + fm3   * AVector.fm123
-                  + fm12  * AVector.fm0
-                  + fm123 * AVector.fm3;
+  result.fm12 :=   fm0   * AVector.fm12
+                  +fm3   * AVector.fm123
+                  +fm12  * AVector.fm0
+                  +fm123 * AVector.fm3;
 
-  result.fm23 :=    fm0   * AVector.fm23
-                  + fm1   * Avector.fm123
-                  + fm23  * AVector.fm0
-                  + fm123 * AVector.fm1;
+  result.fm23 :=   fm0   * AVector.fm23
+                  +fm1   * Avector.fm123
+                  +fm23  * AVector.fm0
+                  +fm123 * AVector.fm1;
 
-  result.fm31 :=    fm0   * AVector.fm31
-                  + fm2   * AVector.fm123
-                  + fm31  * AVector.fm0
-                  + fm123 * AVector.fm2;
+  result.fm31 :=   fm0   * AVector.fm31
+                  +fm2   * AVector.fm123
+                  +fm31  * AVector.fm0
+                  +fm123 * AVector.fm2;
 
-  result.fm123 :=   fm0   * AVector.fm123
-                  + fm123 * AVector.fm0;
+  result.fm123 :=  fm0   * AVector.fm123
+                  +fm123 * AVector.fm0;
 end;
 
 function TMultivectorHelper.Wedge(const AVector: TVector): TMultivector;
 begin
-  result.fm0   :=  0;
+  result.fm0   :=  0.0;
   result.fm1   :=  fm0  * AVector.fm1;
   result.fm2   :=  fm0  * AVector.fm2;
   result.fm3   :=  fm0  * AVector.fm3;
@@ -1972,10 +2071,10 @@ end;
 
 function TMultivectorHelper.Wedge(const AVector: TBivector): TMultivector;
 begin
-  result.fm0   :=  0;
-  result.fm1   :=  0;
-  result.fm2   :=  0;
-  result.fm3   :=  0;
+  result.fm0   :=  0.0;
+  result.fm1   :=  0.0;
+  result.fm2   :=  0.0;
+  result.fm3   :=  0.0;
   result.fm12  :=  fm0 * AVector.fm12;
   result.fm23  :=  fm0 * AVector.fm23;
   result.fm31  :=  fm0 * AVector.fm31;
@@ -1991,40 +2090,40 @@ end;
 
 function TMultivectorHelper.Wedge(const AVector: TMultivector): TMultivector;
 begin
-  result.fm0   :=   fm0   * AVector.fm0;
+  result.fm0   :=  fm0   * AVector.fm0;
 
-  result.fm1   :=   fm0   * AVector.fm1
-                  + fm1   * AVector.fm0;
+  result.fm1   :=  fm0   * AVector.fm1
+                  +fm1   * AVector.fm0;
 
-  result.fm2   :=   fm0   * AVector.fm2
-                  + fm2   * AVector.fm0;
+  result.fm2   :=  fm0   * AVector.fm2
+                  +fm2   * AVector.fm0;
 
-  result.fm3   :=   fm0   * AVector.fm3
-                  + fm3   * AVector.fm0;
+  result.fm3   :=  fm0   * AVector.fm3
+                  +fm3   * AVector.fm0;
 
-  result.fm12  :=   fm0   * AVector.fm12
-                  + fm1   * AVector.fm2
-                  - fm2   * AVector.fm1
-                  + fm12  * AVector.fm0;
+  result.fm12  :=  fm0   * AVector.fm12
+                  +fm1   * AVector.fm2
+                  -fm2   * AVector.fm1
+                  +fm12  * AVector.fm0;
 
-  result.fm23  :=   fm0   * AVector.fm23
-                  + fm2   * AVector.fm3
-                  - fm3   * AVector.fm2
-                  + fm23  * AVector.fm0;
+  result.fm23  :=  fm0   * AVector.fm23
+                  +fm2   * AVector.fm3
+                  -fm3   * AVector.fm2
+                  +fm23  * AVector.fm0;
 
-  result.fm31  :=   fm0   * AVector.fm31
-                  - fm1   * AVector.fm3
-                  + fm3   * AVector.fm1
-                  + fm31  * AVector.fm0;
+  result.fm31  :=  fm0   * AVector.fm31
+                  -fm1   * AVector.fm3
+                  +fm3   * AVector.fm1
+                  +fm31  * AVector.fm0;
 
-  result.fm123 := + fm0   * AVector.fm123
-                  + fm1   * AVector.fm23
-                  + fm2   * AVector.fm31
-                  + fm3   * AVector.fm12
-                  + fm12  * AVector.fm3
-                  + fm23  * AVector.fm1
-                  + fm31  * AVector.fm2
-                  + fm123 * AVector.fm0;
+  result.fm123 := +fm0   * AVector.fm123
+                  +fm1   * AVector.fm23
+                  +fm2   * AVector.fm31
+                  +fm3   * AVector.fm12
+                  +fm12  * AVector.fm3
+                  +fm23  * AVector.fm1
+                  +fm31  * AVector.fm2
+                  +fm123 * AVector.fm0;
 end;
 
 function TMultivectorHelper.Projection(const AVector: TVector): TMultivector;
@@ -2121,74 +2220,126 @@ end;
 
 function TMultivectorHelper.SameValue(const AValue: TTrivector): boolean;
 begin
-  result := Math.SameValue(fm0,              0) and
-            Math.SameValue(fm1,              0) and
-            Math.SameValue(fm2,              0) and
-            Math.SameValue(fm3,              0) and
-            Math.SameValue(fm12,             0) and
-            Math.SameValue(fm23,             0) and
-            Math.SameValue(fm31,             0) and
+  result := Math.SameValue(fm0,            0.0) and
+            Math.SameValue(fm1,            0.0) and
+            Math.SameValue(fm2,            0.0) and
+            Math.SameValue(fm3,            0.0) and
+            Math.SameValue(fm12,           0.0) and
+            Math.SameValue(fm23,           0.0) and
+            Math.SameValue(fm31,           0.0) and
             Math.SameValue(fm123, AValue.fm123);
 end;
 
 function TMultivectorHelper.SameValue(const AValue: TBivector): boolean;
 begin
-  result := Math.SameValue(fm0,             0) and
-            Math.SameValue(fm1,             0) and
-            Math.SameValue(fm2,             0) and
-            Math.SameValue(fm3,             0) and
+  result := Math.SameValue(fm0,           0.0) and
+            Math.SameValue(fm1,           0.0) and
+            Math.SameValue(fm2,           0.0) and
+            Math.SameValue(fm3,           0.0) and
             Math.SameValue(fm12,  AValue.fm12) and
             Math.SameValue(fm23,  AValue.fm23) and
             Math.SameValue(fm31,  AValue.fm31) and
-            Math.SameValue(fm123,           0);
+            Math.SameValue(fm123,         0.0);
 end;
 
 function TMultivectorHelper.SameValue(const AValue: TVector): boolean;
 begin
-  result := Math.SameValue(fm0,            0) and
+  result := Math.SameValue(fm0,          0.0) and
             Math.SameValue(fm1,   AValue.fm1) and
             Math.SameValue(fm2,   AValue.fm2) and
             Math.SameValue(fm3,   AValue.fm3) and
-            Math.SameValue(fm12,           0) and
-            Math.SameValue(fm23,           0) and
-            Math.SameValue(fm31,           0) and
-            Math.SameValue(fm123,          0);
+            Math.SameValue(fm12,         0.0) and
+            Math.SameValue(fm23,         0.0) and
+            Math.SameValue(fm31,         0.0) and
+            Math.SameValue(fm123,        0.0);
 end;
 
 function TMultivectorHelper.SameValue(const AValue: double): boolean;
 begin
-  result := Math.SameValue(fm0,       AValue) and
-            Math.SameValue(fm1,            0) and
-            Math.SameValue(fm2,            0) and
-            Math.SameValue(fm3,            0) and
-            Math.SameValue(fm12,           0) and
-            Math.SameValue(fm23,           0) and
-            Math.SameValue(fm31,           0) and
-            Math.SameValue(fm123,          0);
+  result := Math.SameValue(fm0,   AValue) and
+            Math.SameValue(fm1,      0.0) and
+            Math.SameValue(fm2,      0.0) and
+            Math.SameValue(fm3,      0.0) and
+            Math.SameValue(fm12,     0.0) and
+            Math.SameValue(fm23,     0.0) and
+            Math.SameValue(fm31,     0.0) and
+            Math.SameValue(fm123,    0.0);
 end;
 
 function TMultivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+var
+  i: longint;
 begin
-  result := Format('%s %se1 %se2 %se3 %se12 %se23 %se31 %se123',
-    [Fmt(fm0, APrecision, ADigits),
-     Fmt(fm1, APrecision, ADigits),
-     Fmt(fm2, APrecision, ADigits),
-     Fmt(fm3, APrecision, ADigits),
-     Fmt(fm12, APrecision, ADigits),
-     Fmt(fm23, APrecision, ADigits),
-     Fmt(fm31, APrecision, ADigits),
-     Fmt(fm123, APrecision, ADigits)]);
+  result := '';
+  if not Math.SameValue(fm0,   0.0) then result := result + Fmt(fm0,   APrecision, ADigits) + ' ';
+  if not Math.SameValue(fm1,   0.0) then result := result + Fmt(fm1,   APrecision, ADigits) + 'e1 ';
+  if not Math.SameValue(fm2,   0.0) then result := result + Fmt(fm2,   APrecision, ADigits) + 'e2 ';
+  if not Math.SameValue(fm3,   0.0) then result := result + Fmt(fm3,   APrecision, ADigits) + 'e3 ';
+  if not Math.SameValue(fm12,  0.0) then result := result + Fmt(fm12,  APrecision, ADigits) + 'e12 ';
+  if not Math.SameValue(fm23,  0.0) then result := result + Fmt(fm23,  APrecision, ADigits) + 'e23 ';
+  if not Math.SameValue(fm31,  0.0) then result := result + Fmt(fm31,  APrecision, ADigits) + 'e31 ';
+  if not Math.SameValue(fm123, 0.0) then result := result + Fmt(fm123, APrecision, ADigits) + 'e123 ';
+
+  i := Length(result);
+  if i > 0 then
+    SetLength(result, i - 1)
+  else
+    result := '0';
 end;
 
 function TMultivectorHelper.ToString: string;
+var
+  i: longint;
 begin
-  result := Format('%s %se1 %se2 %se3 %se12 %se23 %se31 %se123',
-    [Fmt(fm0), Fmt(fm1), Fmt(fm2), Fmt(fm3), Fmt(fm12), Fmt(fm23), Fmt(fm31), Fmt(fm123)]);
+  result := '';
+  if not Math.SameValue(fm0,   0.0) then result := result + Fmt(fm0  ) + ' ';
+  if not Math.SameValue(fm1,   0.0) then result := result + Fmt(fm1  ) + 'e1 ';
+  if not Math.SameValue(fm2,   0.0) then result := result + Fmt(fm2  ) + 'e2 ';
+  if not Math.SameValue(fm3,   0.0) then result := result + Fmt(fm3  ) + 'e3 ';
+  if not Math.SameValue(fm12,  0.0) then result := result + Fmt(fm12 ) + 'e12 ';
+  if not Math.SameValue(fm23,  0.0) then result := result + Fmt(fm23 ) + 'e23 ';
+  if not Math.SameValue(fm31,  0.0) then result := result + Fmt(fm31 ) + 'e31 ';
+  if not Math.SameValue(fm123, 0.0) then result := result + Fmt(fm123) + 'e123 ';
+
+  i := Length(result);
+  if i > 0 then
+    SetLength(result, i - 1)
+  else
+    result := '0';
+end;
+
+function TMultivectorHelper.Extract(AComponents: TMultivectorComponents): TMultivector;
+begin
+  Result := NullMultivector;
+  if mc0   in AComponents then result.fm0   := fm0;
+  if mc1   in AComponents then result.fm1   := fm1;
+  if mc2   in AComponents then result.fm2   := fm2;
+  if mc3   in AComponents then result.fm3   := fm3;
+  if mc12  in AComponents then result.fm12  := fm12;
+  if mc23  in AComponents then result.fm23  := fm23;
+  if mc31  in AComponents then result.fm31  := fm31;
+  if mc123 in AComponents then result.fm123 := fm123;
+end;
+
+function TMultivectorHelper.Extract(AComponents: TBivectorComponents): TBivector;
+begin
+  Result := NullBivector;
+  if bc12 in AComponents then result.fm12 := fm12;
+  if bc23 in AComponents then result.fm23 := fm23;
+  if bc31 in AComponents then result.fm31 := fm31;
+end;
+
+function TMultivectorHelper.Extract(AComponents: TVectorComponents): TVector;
+begin
+  Result := NullVector;
+  if vc1 in AComponents then result.fm1 := fm1;
+  if vc2 in AComponents then result.fm2 := fm2;
+  if vc3 in AComponents then result.fm3 := fm3;
 end;
 
 function TMultivectorHelper.ExtractTrivector: TTrivector;
 begin
-  result.fm123 := fm123;;
+  result.fm123 := fm123;
 end;
 
 function TMultivectorHelper.ExtractBivector: TBivector;
@@ -2217,50 +2368,50 @@ end;
 
 function TMultivectorHelper.IsScalar: boolean;
 begin
-  result := (not Math.SameValue(fm0,   0)) and
-            (    Math.SameValue(fm1,   0)) and
-            (    Math.SameValue(fm2,   0)) and
-            (    Math.SameValue(fm3,   0)) and
-            (    Math.SameValue(fm12,  0)) and
-            (    Math.SameValue(fm23,  0)) and
-            (    Math.SameValue(fm31,  0)) and
-            (    Math.SameValue(fm123, 0));
+  result := (not Math.SameValue(fm0,   0.0)) and
+            (    Math.SameValue(fm1,   0.0)) and
+            (    Math.SameValue(fm2,   0.0)) and
+            (    Math.SameValue(fm3,   0.0)) and
+            (    Math.SameValue(fm12,  0.0)) and
+            (    Math.SameValue(fm23,  0.0)) and
+            (    Math.SameValue(fm31,  0.0)) and
+            (    Math.SameValue(fm123, 0.0));
 end;
 
 function TMultivectorHelper.IsVector: boolean;
 begin
-  result :=  (    Math.SameValue(fm0,   0))  and
-            ((not Math.SameValue(fm1,   0))  or
-             (not Math.SameValue(fm2,   0))  or
-             (not Math.SameValue(fm3,   0))) and
-             (    Math.SameValue(fm12,  0))  and
-             (    Math.SameValue(fm23,  0))  and
-             (    Math.SameValue(fm31,  0))  and
-             (    Math.SameValue(fm123, 0));
+  result :=  (    Math.SameValue(fm0,   0.0))  and
+            ((not Math.SameValue(fm1,   0.0))  or
+             (not Math.SameValue(fm2,   0.0))  or
+             (not Math.SameValue(fm3,   0.0))) and
+             (    Math.SameValue(fm12,  0.0))  and
+             (    Math.SameValue(fm23,  0.0))  and
+             (    Math.SameValue(fm31,  0.0))  and
+             (    Math.SameValue(fm123, 0.0));
 end;
 
 function TMultivectorHelper.IsBiVector: boolean;
 begin
-  result :=  (    Math.SameValue(fm0,   0))  and
-             (    Math.SameValue(fm1,   0))  and
-             (    Math.SameValue(fm2,   0))  and
-             (    Math.SameValue(fm3,   0))  and
-            ((not Math.SameValue(fm12,  0))  or
-             (not Math.SameValue(fm23,  0))  or
-             (not Math.SameValue(fm31,  0))) and
-             (    Math.SameValue(fm123, 0));
+  result :=  (    Math.SameValue(fm0,   0.0))  and
+             (    Math.SameValue(fm1,   0.0))  and
+             (    Math.SameValue(fm2,   0.0))  and
+             (    Math.SameValue(fm3,   0.0))  and
+            ((not Math.SameValue(fm12,  0.0))  or
+             (not Math.SameValue(fm23,  0.0))  or
+             (not Math.SameValue(fm31,  0.0))) and
+             (    Math.SameValue(fm123, 0.0));
 end;
 
 function TMultivectorHelper.IsTrivector: boolean;
 begin
-  result := (    Math.SameValue(fm0,   0)) and
-            (    Math.SameValue(fm1,   0)) and
-            (    Math.SameValue(fm2,   0)) and
-            (    Math.SameValue(fm3,   0)) and
-            (    Math.SameValue(fm12,  0)) and
-            (    Math.SameValue(fm23,  0)) and
-            (    Math.SameValue(fm31,  0)) and
-            (not Math.SameValue(fm123, 0));
+  result := (    Math.SameValue(fm0,   0.0)) and
+            (    Math.SameValue(fm1,   0.0)) and
+            (    Math.SameValue(fm2,   0.0)) and
+            (    Math.SameValue(fm3,   0.0)) and
+            (    Math.SameValue(fm12,  0.0)) and
+            (    Math.SameValue(fm23,  0.0)) and
+            (    Math.SameValue(fm31,  0.0)) and
+            (not Math.SameValue(fm123, 0.0));
 end;
 
 function TMultivectorHelper.IsA: string;
@@ -2274,9 +2425,9 @@ end;
 
 // TTrivectorHelper
 
-function TTrivectorHelper.Dual: double; // Self * e123
+function TTrivectorHelper.Dual: double;
 begin
-  result := -fm123;
+  result := -fm123; // Self * e123
 end;
 
 function TTrivectorHelper.Inverse: TTrivector;
@@ -2347,17 +2498,17 @@ end;
 
 function TTrivectorHelper.Wedge(const AVector: TVector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TTrivectorHelper.Wedge(const AVector: TBivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TTrivectorHelper.Wedge(const AVector: TTrivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TTrivectorHelper.Wedge(const AVector: TMultivector): TTrivector;
@@ -2387,17 +2538,17 @@ end;
 
 function TTrivectorHelper.Rejection(const AVector: TVector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TTrivectorHelper.Rejection(const AVector: TBivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TTrivectorHelper.Rejection(const AVector: TTrivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TTrivectorHelper.Rejection(const AVector: TMultivector): TMultivector;
@@ -2448,13 +2599,13 @@ end;
 
 function TTrivectorHelper.SameValue(const AValue: TMultivector): boolean;
 begin
-  result := Math.SameValue(0,     AValue.fm0  ) and
-            Math.SameValue(0,     AValue.fm1  ) and
-            Math.SameValue(0,     AValue.fm2  ) and
-            Math.SameValue(0,     AValue.fm3  ) and
-            Math.SameValue(0,     AValue.fm12 ) and
-            Math.SameValue(0,     AValue.fm23 ) and
-            Math.SameValue(0,     AValue.fm31 ) and
+  result := Math.SameValue(0.0,   AValue.fm0  ) and
+            Math.SameValue(0.0,   AValue.fm1  ) and
+            Math.SameValue(0.0,   AValue.fm2  ) and
+            Math.SameValue(0.0,   AValue.fm3  ) and
+            Math.SameValue(0.0,   AValue.fm12 ) and
+            Math.SameValue(0.0,   AValue.fm23 ) and
+            Math.SameValue(0.0,   AValue.fm31 ) and
             Math.SameValue(fm123, AValue.fm123);
 end;
 
@@ -2463,25 +2614,39 @@ begin
   result := Math.SameValue(fm123, AValue.fm123);
 end;
 
+
+function TTrivectorHelper.Extract(AComponents: TTrivectorComponents): TTrivector;
+begin
+  Result := NullTrivector;
+  if tc123 in AComponents then result.fm123 := fm123;
+end;
+
+
 function TTrivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
 begin
-  result := Format('%se123', [Fmt(fm123, APrecision, ADigits)]);
+  if not Math.SameValue(fm123, 0.0) then
+    result := Fmt(fm123, APrecision, ADigits) + 'e123'
+  else
+    result := '0e123';
 end;
 
 function TTrivectorHelper.ToString: string;
 begin
-  result := Format('%se123', [Fmt(fm123)]);
+  if not Math.SameValue(fm123, 0.0) then
+    result := Fmt(fm123) + 'e123'
+  else
+    result := '0e123';
 end;
 
 function TTrivectorHelper.ToMultivector: TMultivector;
 begin
-  result.fm0   := 0;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
+  result.fm0   := 0.0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
   result.fm123 := fm123;
 end;
 
@@ -2517,7 +2682,7 @@ end;
 
 function TBivectorHelper.Reciprocal: TBivector;
 begin
-  result := Conjugate / SquaredNorm;
+  result := Reverse / SquaredNorm;
 end;
 
 function TBivectorHelper.Normalized: TBivector;
@@ -2537,19 +2702,16 @@ end;
 
 function TBivectorHelper.Dot(const AVector: TVector): TVector;
 begin
-  result.fm1 :=  fm12 * AVector.fm2
-                -fm31 * AVector.fm3;
-  result.fm2 :=  fm23 * AVector.fm3
-                -fm12 * AVector.fm1;
-  result.fm3 :=  fm31 * AVector.fm1
-                -fm23 * AVector.fm2;
+  result.fm1 := fm12 * AVector.fm2 - fm31 * AVector.fm3;
+  result.fm2 := fm23 * AVector.fm3 - fm12 * AVector.fm1;
+  result.fm3 := fm31 * AVector.fm1 - fm23 * AVector.fm2;
 end;
 
 function TBivectorHelper.Dot(const AVector: TBivector): double;
 begin
-  result := - fm12 * AVector.fm12
-            - fm23 * AVector.fm23
-            - fm31 * AVector.fm31;
+  result := -fm12 * AVector.fm12
+            -fm23 * AVector.fm23
+            -fm31 * AVector.fm31;
 end;
 
 function TBivectorHelper.Dot(const AVector: TTrivector): TVector;
@@ -2561,57 +2723,41 @@ end;
 
 function TBivectorHelper.Dot(const AVector: TMultivector): TMultivector;
 begin
-  result.fm0   := - fm12 * AVector.fm12
-                  - fm23 * AVector.fm23
-                  - fm31 * AVector.fm31;
-
-  result.fm1   := + fm12 * AVector.fm2
-                  - fm23 * AVector.fm123
-                  - fm31 * AVector.fm3;
-
-  result.fm2   := - fm12 * AVector.fm1
-                  - fm31 * AVector.fm123
-                  + fm23 * AVector.fm3;
-
-  result.fm3   := - fm12 * AVector.fm123
-                  - fm23 * AVector.fm2
-                  + fm31 * AVector.fm1;
-
-  result.fm12  :=   fm12 * AVector.fm0;
-  result.fm23  :=   fm23 * AVector.fm0;
-  result.fm31  :=   fm31 * AVector.fm0;
-  result.fm123 :=   0;
+  result.fm0   := -fm12 * AVector.fm12  - fm23 * AVector.fm23  - fm31 * AVector.fm31;
+  result.fm1   := +fm12 * AVector.fm2   - fm23 * AVector.fm123 - fm31 * AVector.fm3;
+  result.fm2   := -fm12 * AVector.fm1   - fm31 * AVector.fm123 + fm23 * AVector.fm3;
+  result.fm3   := -fm12 * AVector.fm123 - fm23 * AVector.fm2   + fm31 * AVector.fm1;
+  result.fm12  :=  fm12 * AVector.fm0;
+  result.fm23  :=  fm23 * AVector.fm0;
+  result.fm31  :=  fm31 * AVector.fm0;
+  result.fm123 :=  0.0;
 end;
 
 function TBivectorHelper.Wedge(const AVector: TVector): TTrivector;
 begin
-  result.fm123 :=  fm12 * AVector.fm3
-                  +fm23 * AVector.fm1
-                  +fm31 * AVector.fm2;
+  result.fm123 := fm12 * AVector.fm3 + fm23 * AVector.fm1 + fm31 * AVector.fm2;
 end;
 
 function TBivectorHelper.Wedge(const AVector: TBivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TBivectorHelper.Wedge(const AVector: TTrivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TBivectorHelper.Wedge (const AVector: TMultivector): TMultivector;
 begin
-  result.fm0   := 0;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
-  result.fm12  :=   fm12 * AVector.fm0;
-  result.fm23  :=   fm23 * AVector.fm0;
-  result.fm31  :=   fm31 * AVector.fm0;
-  result.fm123 :=   fm12 * AVector.fm3
-                  + fm23 * AVector.fm1
-                  + fm31 * AVector.fm2;
+  result.fm0   := 0.0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
+  result.fm12  := fm12 * AVector.fm0;
+  result.fm23  := fm23 * AVector.fm0;
+  result.fm31  := fm31 * AVector.fm0;
+  result.fm123 := fm12 * AVector.fm3 + fm23 * AVector.fm1 + fm31 * AVector.fm2;
 end;
 
 function TBivectorHelper.Projection(const AVector: TVector): TBivector;
@@ -2641,12 +2787,12 @@ end;
 
 function TBivectorHelper.Rejection (const AVector: TBivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TBivectorHelper.Rejection (const AVector: TTrivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TBivectorHelper.Rejection (const AVector: TMultivector): TMultivector;
@@ -2696,14 +2842,14 @@ end;
 
 function TBivectorHelper.SameValue(const AValue: TMultivector): boolean;
 begin
-  result := Math.SameValue(0,    AValue.fm0  ) and
-            Math.SameValue(0,    AValue.fm1  ) and
-            Math.SameValue(0,    AValue.fm2  ) and
-            Math.SameValue(0,    AValue.fm3  ) and
+  result := Math.SameValue(0.0,  AValue.fm0  ) and
+            Math.SameValue(0.0,  AValue.fm1  ) and
+            Math.SameValue(0.0,  AValue.fm2  ) and
+            Math.SameValue(0.0,  AValue.fm3  ) and
             Math.SameValue(fm12, AValue.fm12 ) and
             Math.SameValue(fm23, AValue.fm23 ) and
             Math.SameValue(fm31, AValue.fm31 ) and
-            Math.SameValue(0,    AValue.fm123);
+            Math.SameValue(0.0,  AValue.fm123);
 end;
 
 function TBivectorHelper.SameValue(const AValue: TBivector): boolean;
@@ -2713,29 +2859,56 @@ begin
             Math.SameValue(fm31, AValue.fm31);
 end;
 
-function TBivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TBivectorHelper.Extract(AComponents: TBivectorComponents): TBivector;
 begin
-  result := Format('%se12 %se23 %se31',
-    [Fmt(fm12, APrecision, ADigits),
-     Fmt(fm23, APrecision, ADigits),
-     Fmt(fm31, APrecision, ADigits)]);
+  Result := NullBivector;
+  if bc12 in AComponents then result.fm12 := fm12;
+  if bc23 in AComponents then result.fm23 := fm23;
+  if bc31 in AComponents then result.fm31 := fm31;
+end;
+
+function TBivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+var
+  i: longint;
+begin
+  Result := '';
+  if not Math.SameValue(fm12, 0.0) then Result := Result + Fmt(fm12,  APrecision, ADigits) + 'e12 ';
+  if not Math.SameValue(fm23, 0.0) then Result := Result + Fmt(fm23,  APrecision, ADigits) + 'e23 ';
+  if not Math.SameValue(fm31, 0.0) then Result := Result + Fmt(fm31,  APrecision, ADigits) + 'e31 ';
+
+  i := Length(Result);
+  if i > 0 then
+    SetLength(Result, i - 1)
+  else
+    Result := '0e12';
 end;
 
 function TBivectorHelper.ToString: string;
+var
+  i: longint;
 begin
-  result := Format('%se12 %se23 %se31', [Fmt(fm12), Fmt(fm23), Fmt(fm31)]);
+  Result := '';
+  if not Math.SameValue(fm12, 0.0) then Result := Result + Fmt(fm12) + 'e12 ';
+  if not Math.SameValue(fm23, 0.0) then Result := Result + Fmt(fm23) + 'e23 ';
+  if not Math.SameValue(fm31, 0.0) then Result := Result + Fmt(fm31) + 'e31 ';
+
+  i := Length(Result);
+  if i > 0 then
+    SetLength(Result, i - 1)
+  else
+    Result := '0e12';
 end;
 
 function TBivectorHelper.ToMultivector: TMultivector;
 begin
-  result.fm0   := 0;
-  result.fm1   := 0;
-  result.fm2   := 0;
-  result.fm3   := 0;
+  result.fm0   := 0.0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
   result.fm12  := fm12;
   result.fm23  := fm23;
   result.fm31  := fm31;
-  result.fm123 := 0;
+  result.fm123 := 0.0;
 end;
 
 // TVectorHelper
@@ -2770,7 +2943,7 @@ end;
 
 function TVectorHelper.Reciprocal: TVector;
 begin
-  result := Self / SquaredNorm;
+  result := Reverse / SquaredNorm;
 end;
 
 function TVectorHelper.Normalized: TVector;
@@ -2816,7 +2989,7 @@ begin
   result.fm12  := fm3 * AVector.fm123;
   result.fm23  := fm1 * Avector.fm123;
   result.fm31  := fm2 * AVector.fm123;
-  result.fm123 := 0;
+  result.fm123 := 0.0;
 end;
 
 function TVectorHelper.Wedge(const AVector: TVector): TBivector;
@@ -2833,12 +3006,12 @@ end;
 
 function TVectorHelper.Wedge(const AVector: TTrivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TVectorHelper.Wedge(const AVector: TMultivector): TMultivector;
 begin
-  result.fm0   := 0;
+  result.fm0   := 0.0;
   result.fm1   := fm1 * AVector.fm0;
   result.fm2   := fm2 * AVector.fm0;
   result.fm3   := fm3 * AVector.fm0;
@@ -2880,7 +3053,7 @@ end;
 
 function TVectorHelper.Rejection(const AVector: TTrivector): double;
 begin
-  result := 0;
+  result := 0.0;
 end;
 
 function TVectorHelper.Rejection (const AVector: TMultivector): TMultivector;
@@ -2950,14 +3123,14 @@ end;
 
 function TVectorHelper.SameValue(const AValue: TMultivector): boolean;
 begin
-  result := Math.SameValue(0  , AValue.fm0  ) and
+  result := Math.SameValue(0.0, AValue.fm0  ) and
             Math.SameValue(fm1, AValue.fm1  ) and
             Math.SameValue(fm2, AValue.fm2  ) and
             Math.SameValue(fm3, AValue.fm3  ) and
-            Math.SameValue(0,   AValue.fm12 ) and
-            Math.SameValue(0,   AValue.fm23 ) and
-            Math.SameValue(0,   AValue.fm31 ) and
-            Math.SameValue(0,   AValue.fm123);
+            Math.SameValue(0.0, AValue.fm12 ) and
+            Math.SameValue(0.0, AValue.fm23 ) and
+            Math.SameValue(0.0, AValue.fm31 ) and
+            Math.SameValue(0.0, AValue.fm123);
 end;
 
 function TVectorHelper.SameValue(const AValue: TVector): boolean;
@@ -2967,29 +3140,57 @@ begin
             Math.SameValue(fm3, AValue.fm3);
 end;
 
-function TVectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TVectorHelper.Extract(AComponents: TVectorComponents): TVector;
 begin
-  result := Format('%se1 %se2 %se3',
-    [Fmt(fm1, APrecision, ADigits),
-     Fmt(fm2, APrecision, ADigits),
-     Fmt(fm3, APrecision, ADigits)]);
+  Result := NullVector;
+  if vc1 in AComponents then result.fm1 := fm1;
+  if vc2 in AComponents then result.fm2 := fm2;
+  if vc3 in AComponents then result.fm3 := fm3;
+end;
+
+
+function TVectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+var
+  i: longint;
+begin
+  result := '';
+  if not Math.SameValue(fm1, 0.0) then Result := Result + Fmt(fm1,  APrecision, ADigits) + 'e1 ';
+  if not Math.SameValue(fm2, 0.0) then Result := Result + Fmt(fm2,  APrecision, ADigits) + 'e2 ';
+  if not Math.SameValue(fm3, 0.0) then Result := Result + Fmt(fm3,  APrecision, ADigits) + 'e3 ';
+
+    i := Length(Result);
+  if i > 0 then
+    SetLength(Result, i - 1)
+  else
+    Result := '0e1';
 end;
 
 function TVectorHelper.ToString: string;
+var
+  i: longint;
 begin
-  result := Format('%se1 %se2 %se3', [Fmt(fm1), Fmt(fm2), Fmt(fm3)]);
+  result := '';
+  if not Math.SameValue(fm1, 0.0) then Result := Result + Fmt(fm1) + 'e1 ';
+  if not Math.SameValue(fm2, 0.0) then Result := Result + Fmt(fm2) + 'e2 ';
+  if not Math.SameValue(fm3, 0.0) then Result := Result + Fmt(fm3) + 'e3 ';
+
+  i := Length(Result);
+  if i > 0 then
+    SetLength(Result, i - 1)
+  else
+    Result := '0e1';
 end;
 
 function TVectorHelper.ToMultivector: TMultivector;
 begin
-  result.fm0   := 0;
+  result.fm0   := 0.0;
   result.fm1   := fm1;
   result.fm2   := fm2;
   result.fm3   := fm3;
-  result.fm12  := 0;
-  result.fm23  := 0;
-  result.fm31  := 0;
-  result.fm123 := 0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
+  result.fm123 := 0.0;
 end;
 
 // TVersor
@@ -2997,50 +3198,46 @@ end;
 class operator TVersor1.*(const AValue: double; const ASelf: TVersor1): TVector;
 begin
   result.fm1   := AValue;
-  result.fm2   := 0;
-  result.fm3   := 0;
+  result.fm2   := 0.0;
+  result.fm3   := 0.0;
 end;
 
 class operator TVersor2.*(const AValue: double; const ASelf: TVersor2): TVector;
 begin
-  result.fm1   := 0;
+  result.fm1   := 0.0;
   result.fm2   := AValue;
-  result.fm3   := 0;
+  result.fm3   := 0.0;
 end;
 
 class operator TVersor3.*(const AValue: double; const ASelf: TVersor3): TVector;
 begin
-  result.fm1   := 0;
-  result.fm2   := 0;
+  result.fm1   := 0.0;
+  result.fm2   := 0.0;
   result.fm3   := AValue;
 end;
 
-// TBiversor
-
-class operator TBiversor12.*(const AValue: double; const ASelf: TBiversor12): TBivector;
+class operator TVersor12.*(const AValue: double; const ASelf: TVersor12): TBivector;
 begin
   result.fm12  := AValue;
-  result.fm23  := 0;
-  result.fm31  := 0;
+  result.fm23  := 0.0;
+  result.fm31  := 0.0;
 end;
 
-class operator TBiversor23.*(const AValue: double; const ASelf: TBiversor23): TBivector;
+class operator TVersor23.*(const AValue: double; const ASelf: TVersor23): TBivector;
 begin
-  result.fm12  := 0;
+  result.fm12  := 0.0;
   result.fm23  := AValue;
-  result.fm31  := 0;
+  result.fm31  := 0.0;
 end;
 
-class operator TBiversor31.*(const AValue: double; const ASelf: TBiversor31): TBivector;
+class operator TVersor31.*(const AValue: double; const ASelf: TVersor31): TBivector;
 begin
-  result.fm12  := 0;
-  result.fm23  := 0;
+  result.fm12  := 0.0;
+  result.fm23  := 0.0;
   result.fm31  := AValue;
 end;
 
-// TTriversor
-
-class operator TTriversor123.*(const AValue: double; const ASelf: TTriversor123): TTrivector;
+class operator TVersor123.*(const AValue: double; const ASelf: TVersor123): TTrivector;
 begin
   result.fm123 := AValue;
 end;
