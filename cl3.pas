@@ -67,6 +67,7 @@ type
     fm123: double;
   public
     class operator :=(const AValue: double): TMultivector;
+    class operator :=(const AValue: TMultivector): double;
     class operator <>(const ALeft, ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; const ARight: double): boolean;
     class operator <>(const ALeft: double; const ARight: TMultivector): boolean;
@@ -102,7 +103,8 @@ type
   private
     fm123: double;
   public
-    class operator :=(const ASelf: TTrivector): TMultivector;
+    class operator :=(const AValue: TTrivector): TMultivector;
+    class operator :=(const AValue: TMultivector): TTrivector;
     class operator <>(const ALeft, ARight: TTrivector): boolean;
     class operator <>(const ALeft: TTrivector; const ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; const ARight: TTrivector): boolean;
@@ -149,7 +151,8 @@ type
     fm23: double;
     fm31: double;
   public
-    class operator :=(const ASelf: TBivector): TMultivector;
+    class operator :=(const AValue: TBivector): TMultivector;
+    class operator :=(const AValue: TMultivector): TBivector;
     class operator <>(const ALeft, ARight: TBivector): boolean;
     class operator <>(const ALeft: TBivector; const ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; const ARight: TBivector): boolean;
@@ -204,7 +207,8 @@ type
     fm2: double;
     fm3: double;
   public
-    class operator :=(const ASelf: TVector): TMultivector;
+    class operator :=(const AValue: TVector): TMultivector;
+    class operator :=(const AValue: TMultivector): TVector;
     class operator <>(const ALeft, ARight: TVector): boolean;
     class operator <>(const ALeft: TVector; const ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; const ARight: TVector): boolean;
@@ -314,11 +318,6 @@ type
     function Extract(AComponents: TMultivectorComponents): TMultivector;
     function Extract(AComponents: TBivectorComponents): TBivector;
     function Extract(AComponents: TVectorComponents): TVector;
-
-    function ExtractTrivector: TTrivector;
-    function ExtractBivector: TBivector;
-    function ExtractVector: TVector;
-    function ExtractScalar: double;
 
     function IsNull: boolean;
     function IsScalar: boolean;
@@ -557,6 +556,11 @@ begin
   result.fm23  := 0.0;
   result.fm31  := 0.0;
   result.fm123 := 0.0;
+end;
+
+class operator TMultivector.:=(const AValue: TMultivector): double;
+begin
+  result := AValue;
 end;
 
 class operator TMultivector.<>(const ALeft, ARight: TMultivector): boolean;
@@ -817,7 +821,7 @@ end;
 
 // TTrivector
 
-class operator TTrivector.:=(const ASelf: TTrivector): TMultivector;
+class operator TTrivector.:=(const AValue: TTrivector): TMultivector;
 begin
   result.fm0   := 0.0;
   result.fm1   := 0.0;
@@ -826,7 +830,12 @@ begin
   result.fm12  := 0.0;
   result.fm23  := 0.0;
   result.fm31  := 0.0;
-  result.fm123 := ASelf.fm123;
+  result.fm123 := AValue.fm123;
+end;
+
+class operator TTrivector.:=(const AValue: TMultivector): TTrivector;
+begin
+  result.fm123 := AValue.fm123;
 end;
 
 class operator TTrivector.<>(const ALeft, ARight: TTrivector): boolean;
@@ -1050,16 +1059,23 @@ end;
 
 // TBivector
 
-class operator TBivector.:=(const ASelf: TBivector): TMultivector;
+class operator TBivector.:=(const AValue: TBivector): TMultivector;
 begin
   result.fm0   := 0.0;
   result.fm1   := 0.0;
   result.fm2   := 0.0;
   result.fm3   := 0.0;
-  result.fm12  := ASelf.fm12;
-  result.fm23  := ASelf.fm23;
-  result.fm31  := ASelf.fm31;
+  result.fm12  := AValue.fm12;
+  result.fm23  := AValue.fm23;
+  result.fm31  := AValue.fm31;
   result.fm123 := 0.0;
+end;
+
+class operator TBivector.:=(const AValue: TMultivector): TBivector;
+begin
+  result.fm12 := AValue.fm12;
+  result.fm23 := AValue.fm23;
+  result.fm31 := AValue.fm31;
 end;
 
 class operator TBivector.<>(const ALeft, ARight: TBivector): boolean;
@@ -1393,16 +1409,23 @@ end;
 
 // TVector
 
-class operator TVector.:=(const ASelf: TVector): TMultivector;
+class operator TVector.:=(const AValue: TVector): TMultivector;
 begin
   result.fm0   := 0.0;
-  result.fm1   := ASelf.fm1;
-  result.fm2   := ASelf.fm2;
-  result.fm3   := ASelf.fm3;
+  result.fm1   := AValue.fm1;
+  result.fm2   := AValue.fm2;
+  result.fm3   := AValue.fm3;
   result.fm12  := 0.0;
   result.fm23  := 0.0;
   result.fm31  := 0.0;
   result.fm123 := 0.0;
+end;
+
+class operator TVector.:=(const AValue: TMultivector): TVector;
+begin
+  result.fm1 := AValue.fm1;
+  result.fm2 := AValue.fm2;
+  result.fm3 := AValue.fm3;
 end;
 
 class operator TVector.<>(const ALeft, ARight: TVector): boolean;
@@ -2337,30 +2360,6 @@ begin
   if vc3 in AComponents then result.fm3 := fm3;
 end;
 
-function TMultivectorHelper.ExtractTrivector: TTrivector;
-begin
-  result.fm123 := fm123;
-end;
-
-function TMultivectorHelper.ExtractBivector: TBivector;
-begin
-  result.fm12 := fm12;
-  result.fm23 := fm23;
-  result.fm31 := fm31;
-end;
-
-function TMultivectorHelper.ExtractVector: TVector;
-begin
-  result.fm1 := fm1;
-  result.fm2 := fm2;
-  result.fm3 := fm3;
-end;
-
-function TMultivectorHelper.ExtractScalar: double;
-begin
-  result := fm0;
-end;
-
 function TMultivectorHelper.IsNull: boolean;
 begin
   result := SameValue(NullMultivector);
@@ -2427,7 +2426,8 @@ end;
 
 function TTrivectorHelper.Dual: double;
 begin
-  result := -fm123; // Self * e123
+  // Self * e123
+  result := -fm123;
 end;
 
 function TTrivectorHelper.Inverse: TTrivector;
@@ -2462,7 +2462,8 @@ end;
 
 function TTrivectorHelper.SquaredNorm: double;
 begin
-  result := fm123 * fm123; // Self * Reverse;
+  // Self * Reverse;
+  result := fm123 * fm123;
 end;
 
 function TTrivectorHelper.Dot(const AVector: TVector): TBivector;
@@ -2533,7 +2534,8 @@ end;
 
 function TTrivectorHelper.Projection(const AVector: TMultivector): TTrivector;
 begin
-  result := (Dot(AVector) * AVector.Reciprocal).ExtractTrivector;
+  // inplicit ExtractTrivector
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Rejection(const AVector: TVector): double;
@@ -2558,12 +2560,14 @@ end;
 
 function TTrivectorHelper.Reflection(const AVector: TVector): TTrivector;
 begin
-  result := (AVector * Self * AVector.Reciprocal).ExtractTrivector;
+  // implicit ExtractTrivector
+  result := AVector * Self * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Reflection(const AVector: TBivector): TTrivector;
 begin
-  result := (AVector * Self * AVector.Reciprocal).ExtractTrivector;
+  // implicit ExtractTrivector
+  result := AVector * Self * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Reflection(const AVector: TTrivector): TTrivector;
@@ -2573,18 +2577,20 @@ end;
 
 function TTrivectorHelper.Reflection(const AVector: TMultivector): TTrivector;
 begin
-  result := (AVector * Self * AVector.Reciprocal).ExtractTrivector;
+  // implicit ExtractTrivector
+  result := AVector * Self * AVector.Reciprocal;
 end;
 
 function TTrivectorHelper.Rotation(const AVector1, AVector2: TVector): TTrivector;
 begin
-  result := (AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal).ExtractTrivector;
+  // implicit ExtractTrivector
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
 function TTrivectorHelper.Rotation(const AVector1, AVector2: TBivector): TTrivector;
-
 begin
-  result := (AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal).ExtractTrivector;
+  // implicit ExtractTrivector
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
 function TTrivectorHelper.Rotation(const AVector1, AVector2: TTrivector): TTrivector;
@@ -2594,7 +2600,8 @@ end;
 
 function TTrivectorHelper.Rotation(const AVector1, AVector2: TMultivector): TTrivector;
 begin
-  result := (AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal).ExtractTrivector;
+  // implicit ExtractTrivector
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
 function TTrivectorHelper.SameValue(const AValue: TMultivector): boolean;
@@ -2762,7 +2769,8 @@ end;
 
 function TBivectorHelper.Projection(const AVector: TVector): TBivector;
 begin
-  result := (Dot(AVector) * AVector.Reciprocal).ExtractBivector;
+  // implicit ExtractBivector
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TBivectorHelper.Projection(const AVector: TBivector): TBivector;
@@ -2802,17 +2810,20 @@ end;
 
 function TBivectorHelper.Reflection(const AVector: TVector): TBivector;
 begin
-  result := (AVector * Self * AVector.Reciprocal).ExtractBivector;
+  // implicit ExtractBivector
+  result := AVector * Self * AVector.Reciprocal;
 end;
 
 function TBivectorHelper.Reflection(const AVector: TBivector): TBivector;
 begin
-  result := (AVector * Self * AVector.Reciprocal).ExtractBivector;
+  // implicit ExtractBivector
+  result := AVector * Self * AVector.Reciprocal;
 end;
 
 function TBivectorHelper.Reflection(const AVector: TTrivector): TBivector;
 begin
-  result := (AVector * Self * AVector.Reciprocal).ExtractBivector;
+  // implicit ExtractBivector
+  result := AVector * Self * AVector.Reciprocal;
 end;
 
 function TBivectorHelper.Reflection(const AVector: TMultivector): TMultivector;
@@ -2822,17 +2833,20 @@ end;
 
 function TBivectorHelper.Rotation(const AVector1, AVector2: TVector): TBivector;
 begin
-  result := (AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal).ExtractBivector;
+  // implicit ExtractBivector
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
 function TBivectorHelper.Rotation(const AVector1, AVector2: TBivector): TBivector;
 begin
-  result := (AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal).ExtractBivector;
+  // implicit ExtractBivector
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
 function TBivectorHelper.Rotation(const AVector1, AVector2: Ttrivector): TBivector;
 begin
-  result := (AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal).ExtractBivector;
+  // implicit ExtractBivector
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
 function TBivectorHelper.Rotation(const AVector1, AVector2: TMultivector): TMultivector;
@@ -3028,12 +3042,14 @@ end;
 
 function TVectorHelper.Projection(const AVector: TBivector): TVector;
 begin
-  result := (Dot(AVector) * AVector.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TVectorHelper.Projection(const AVector: TTrivector): TVector;
 begin
-  result := (Dot(AVector) * AVector.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := Dot(AVector) * AVector.Reciprocal;
 end;
 
 function TVectorHelper.Projection(const AVector: TMultivector): TMultivector;
@@ -3043,12 +3059,14 @@ end;
 
 function TVectorHelper.Rejection(const AVector: TVector): TVector;
 begin
-  result := (Wedge(AVector) * AVector.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function  TVectorHelper.Rejection(const AVector: TBivector): TVector;
 begin
-  result := (Wedge(AVector) * AVector.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := Wedge(AVector) * AVector.Reciprocal;
 end;
 
 function TVectorHelper.Rejection(const AVector: TTrivector): double;
@@ -3063,17 +3081,20 @@ end;
 
 function TVectorHelper.Reflection(const AVector: TVector): TVector;
 begin
-  result := (AVector * Self * AVector.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := AVector * Self * AVector.Reciprocal;
 end;
 
 function TVectorHelper.Reflection(const AVector: TBivector): TVector;
 begin
-  result := (AVector * Self * AVector.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := AVector * Self * AVector.Reciprocal;
 end;
 
 function TVectorHelper.Reflection(const AVector: TTrivector): TVector;
 begin
-  result := (AVector * Self * AVector.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := AVector * Self * AVector.Reciprocal;
 end;
 
 function TVectorHelper.Reflection(const AVector: TMultivector): TMultivector;
@@ -3083,17 +3104,20 @@ end;
 
 function TVectorHelper.Rotation(const AVector1, AVector2: TVector): TVector;
 begin
-  result := (AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;
 end;
 
 function TVectorHelper.Rotation(const AVector1, AVector2: TBivector): TVector;
 begin
-  result := (AVector2 * AVector1 * Self * AVector1.Reciprocal  * AVector2.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal  * AVector2.Reciprocal;
 end;
 
 function TVectorHelper.Rotation(const AVector1, AVector2: TTrivector): TVector;
 begin
-  result := (AVector2 * AVector1 * Self * AVector1.Reciprocal  * AVector2.Reciprocal).ExtractVector;
+  // implicit ExtractVector
+  result := AVector2 * AVector1 * Self * AVector1.Reciprocal  * AVector2.Reciprocal;
 end;
 
 function TVectorHelper.Rotation(const AVector1, AVector2: TMultivector): TMultivector;
