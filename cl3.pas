@@ -491,21 +491,21 @@ type
   TVersor3 = record class operator *(const AValue: double; const ASelf: TVersor3): TVector; end;
 
   // TBiversor
-  TVersor12 = record class operator *(const AValue: double; const ASelf: TVersor12): TBivector; end;
-  TVersor23 = record class operator *(const AValue: double; const ASelf: TVersor23): TBivector; end;
-  TVersor31 = record class operator *(const AValue: double; const ASelf: TVersor31): TBivector; end;
+  TBiversor12 = record class operator *(const AValue: double; const ASelf: TBiversor12): TBivector; end;
+  TBiversor23 = record class operator *(const AValue: double; const ASelf: TBiversor23): TBivector; end;
+  TBiversor31 = record class operator *(const AValue: double; const ASelf: TBiversor31): TBivector; end;
 
   // TTriversor
-  TVersor123 = record class operator *(const AValue: double; const ASelf: TVersor123): TTrivector; end;
+  TTriversor123 = record class operator *(const AValue: double; const ASelf: TTriversor123): TTrivector; end;
 
 const
-  e1   : TVersor1   = ();
-  e2   : TVersor2   = ();
-  e3   : TVersor3   = ();
-  e12  : TVersor12  = ();
-  e23  : TVersor23  = ();
-  e31  : TVersor31  = ();
-  e123 : TVersor123 = ();
+  e1   : TVersor1 = ();
+  e2   : TVersor2 = ();
+  e3   : TVersor3 = ();
+  e12  : TBiversor12 = ();
+  e23  : TBiversor23 = ();
+  e31  : TBiversor31 = ();
+  e123 : TTriversor123 = ();
 
   u1   : TVector = (fm1:1.0; fm2:0.0; fm3:0.0);
   u2   : TVector = (fm1:0.0; fm2:1.0; fm3:0.0);
@@ -3217,51 +3217,55 @@ begin
   result.fm123 := 0.0;
 end;
 
-// TVersor
+// TVersors
 
 class operator TVersor1.*(const AValue: double; const ASelf: TVersor1): TVector;
 begin
-  result.fm1   := AValue;
-  result.fm2   := 0.0;
-  result.fm3   := 0.0;
+  result.fm1 := AValue;
+  result.fm2 := 0.0;
+  result.fm3 := 0.0;
 end;
 
 class operator TVersor2.*(const AValue: double; const ASelf: TVersor2): TVector;
 begin
-  result.fm1   := 0.0;
-  result.fm2   := AValue;
-  result.fm3   := 0.0;
+  result.fm1 := 0.0;
+  result.fm2 := AValue;
+  result.fm3 := 0.0;
 end;
 
 class operator TVersor3.*(const AValue: double; const ASelf: TVersor3): TVector;
 begin
-  result.fm1   := 0.0;
-  result.fm2   := 0.0;
-  result.fm3   := AValue;
+  result.fm1 := 0.0;
+  result.fm2 := 0.0;
+  result.fm3 := AValue;
 end;
 
-class operator TVersor12.*(const AValue: double; const ASelf: TVersor12): TBivector;
+// TBiversors
+
+class operator TBiversor12.*(const AValue: double; const ASelf: TBiversor12): TBivector;
 begin
-  result.fm12  := AValue;
-  result.fm23  := 0.0;
-  result.fm31  := 0.0;
+  result.fm12 := AValue;
+  result.fm23 := 0.0;
+  result.fm31 := 0.0;
 end;
 
-class operator TVersor23.*(const AValue: double; const ASelf: TVersor23): TBivector;
+class operator TBiversor23.*(const AValue: double; const ASelf: TBiversor23): TBivector;
 begin
-  result.fm12  := 0.0;
-  result.fm23  := AValue;
-  result.fm31  := 0.0;
+  result.fm12 := 0.0;
+  result.fm23 := AValue;
+  result.fm31 := 0.0;
 end;
 
-class operator TVersor31.*(const AValue: double; const ASelf: TVersor31): TBivector;
+class operator TBiversor31.*(const AValue: double; const ASelf: TBiversor31): TBivector;
 begin
-  result.fm12  := 0.0;
-  result.fm23  := 0.0;
-  result.fm31  := AValue;
+  result.fm12 := 0.0;
+  result.fm23 := 0.0;
+  result.fm31 := AValue;
 end;
 
-class operator TVersor123.*(const AValue: double; const ASelf: TVersor123): TTrivector;
+// TTriversor
+
+class operator TTriversor123.*(const AValue: double; const ASelf: TTriversor123): TTrivector;
 begin
   result.fm123 := AValue;
 end;
