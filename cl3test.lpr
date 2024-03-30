@@ -30,7 +30,7 @@ begin
   Randomize;
 
   Writeln('CL3 TEST: begin');
-  for k := 0 to 100000 do
+  for k := 0 to 1000000 do
   begin
     a := Rnd;
     v := Rnd*e1  + Rnd*e2  + Rnd*e3;
