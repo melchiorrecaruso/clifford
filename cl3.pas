@@ -84,7 +84,7 @@ type
     class operator - (const ALeft, ARight: TMultivector): TMultivector;
     class operator - (const ALeft: TMultivector; const ARight: double): TMultivector;
     class operator - (const ALeft: double; const ARight: TMultivector): TMultivector;
-
+    //geometric product
     class operator * (const ALeft, ARight: TMultivector): TMultivector;
     class operator * (const ALeft: TMultivector; const ARight: double): TMultivector;
     class operator * (const ALeft: double; const ARight: TMultivector): TMultivector;
@@ -93,10 +93,6 @@ type
     class operator / (const ALeft: TMultivector; const ARight: double): TMultivector;
     class operator / (const ALeft: double; const ARight: TMultivector): TMultivector;
   end;
-
-  // TTrivectorComponents
-  TTrivectorComponent  = (tc123);
-  TTrivectorComponents = set of TTrivectorComponent;
 
   // TTrivector
   TTrivector = record
@@ -371,7 +367,7 @@ type
     function SameValue(const AValue: TMultivector): boolean;
     function SameValue(const AValue: TTrivector): boolean;
 
-    function Extract(AComponents: TTrivectorComponents): TTrivector;
+    function Extract: TTrivector;
 
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
@@ -2622,10 +2618,9 @@ begin
 end;
 
 
-function TTrivectorHelper.Extract(AComponents: TTrivectorComponents): TTrivector;
+function TTrivectorHelper.Extract: TTrivector;
 begin
-  Result := NullTrivector;
-  if tc123 in AComponents then result.fm123 := fm123;
+  result.fm123 := fm123;
 end;
 
 
