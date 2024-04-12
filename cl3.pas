@@ -1916,7 +1916,7 @@ begin
   if ((fm0  <>0) and ((fm1 <>0) or (fm2 <>0) or (fm3 <>0))) or
      ((fm123<>0) and ((fm12<>0) or (fm23<>0) or (fm31<>0))) then
   begin
-    Numerator := Conjugate*Inverse*Reverse;
+    Numerator := Conjugate * Inverse * Reverse;
     result    := Numerator / (Self*Numerator).fm0;
   end else
     result := Reverse / SquaredNorm;
