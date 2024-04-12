@@ -256,10 +256,6 @@ type
     class operator / (const ALeft: TMultivector; const ARight: TVector): TMultivector;
   end;
 
-  // TScalarComponents
-  TScalarComponent  = (sc0);
-  TScalarComponents = set of TScalarComponent;
-
   // TMultivectorHelper
   TMultivectorHelper = record helper for TMultivector
     function Dual: TMultivector;
@@ -267,10 +263,9 @@ type
     function Reverse: TMultivector;
     function Conjugate: TMultivector;
     function Reciprocal: TMultivector;
+    function Normalized: TMultivector;
     function Norm: double;
-    function Norm(AComponents: TMultivectorComponents): double;
     function SquaredNorm: double;
-    function SquaredNorm(AComponents: TMultivectorComponents): double;
 
     function Dot(const AVector: TVector): TMultivector; overload;
     function Dot(const AVector: TBivector): TMultivector; overload;
@@ -308,12 +303,14 @@ type
     function SameValue(const AValue: TVector): boolean;
     function SameValue(const AValue: double): boolean;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
-    function ToString: string;
-
     function Extract(AComponents: TMultivectorComponents): TMultivector;
     function Extract(AComponents: TBivectorComponents): TBivector;
     function Extract(AComponents: TVectorComponents): TVector;
+
+    function ExtractTrivector: TTrivector;
+    function ExtractBivector: TBivector;
+    function ExtractVector: TVector;
+    function ExtractScalar: double;
 
     function IsNull: boolean;
     function IsScalar: boolean;
@@ -321,6 +318,9 @@ type
     function IsBiVector: boolean;
     function IsTrivector: boolean;
     function IsA: string;
+
+    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString: string;
   end;
 
   // TTrivectorHelper
@@ -369,9 +369,9 @@ type
 
     function Extract: TTrivector;
 
+    function ToMultivector: TMultivector;
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
-    function ToMultivector: TMultivector;
   end;
 
   // TBivectorHelper
@@ -420,9 +420,9 @@ type
 
     function Extract(AComponents: TBivectorComponents): TBivector;
 
+    function ToMultivector: TMultivector;
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
-    function ToMultivector: TMultivector;
   end;
 
   // TVectorHelper
@@ -431,10 +431,10 @@ type
     function Inverse: TVector;
     function Reverse: TVector;
     function Conjugate: TVector;
-    function SquaredNorm: double;
-    function Norm: double;
-    function Normalized: TVector;
     function Reciprocal: TVector;
+    function Normalized: TVector;
+    function Norm: double;
+    function SquaredNorm: double;
 
     function Dot(const AVector: TVector): double; overload;
     function Dot(const AVector: TBivector): TVector; overload;
@@ -476,9 +476,9 @@ type
 
     function Extract(AComponents: TVectorComponents): TVector;
 
+    function ToMultivector: TMultivector;
     function ToVerboseString(APrecision, ADigits: longint): string;
     function ToString: string;
-    function ToMultivector: TMultivector;
   end;
 
   // TVersor
@@ -1916,33 +1916,20 @@ begin
   if ((fm0  <>0) and ((fm1 <>0) or (fm2 <>0) or (fm3 <>0))) or
      ((fm123<>0) and ((fm12<>0) or (fm23<>0) or (fm31<>0))) then
   begin
-    Numerator := Conjugate*Inverse*Reverse;
+    Numerator := Conjugate * Inverse * Reverse;
     result    := Numerator / (Self*Numerator).fm0;
   end else
     result := Reverse / SquaredNorm;
 end;
 
-function TMultivectorHelper.Norm(AComponents: TMultivectorComponents): double;
+function TMultivectorHelper.Normalized: TMultivector;
 begin
-  result := sqrt(SquaredNorm(AComponents));
+  result := Self / Norm;
 end;
 
 function TMultivectorHelper.Norm: double;
 begin
   result := sqrt(SquaredNorm);
-end;
-
-function TMultivectorHelper.SquaredNorm(AComponents: TMultivectorComponents): double;
-begin
-  result := 0;
-  if mc0   in AComponents then result := result + sqr(fm0);
-  if mc1   in AComponents then result := result + sqr(fm1);
-  if mc2   in AComponents then result := result + sqr(fm2);
-  if mc3   in AComponents then result := result + sqr(fm3);
-  if mc12  in AComponents then result := result + sqr(fm12);
-  if mc23  in AComponents then result := result + sqr(fm23);
-  if mc31  in AComponents then result := result + sqr(fm31);
-  if mc123 in AComponents then result := result + sqr(fm123);
 end;
 
 function TMultivectorHelper.SquaredNorm: double;
@@ -2354,6 +2341,30 @@ begin
   if vc1 in AComponents then result.fm1 := fm1;
   if vc2 in AComponents then result.fm2 := fm2;
   if vc3 in AComponents then result.fm3 := fm3;
+end;
+
+function TMultivectorHelper.ExtractTrivector: TTrivector;
+begin
+  result.fm123 := fm123;
+end;
+
+function TMultivectorHelper.ExtractBivector: TBivector;
+begin
+  result.fm12 := fm12;
+  result.fm23 := fm23;
+  result.fm31 := fm31;
+end;
+
+function TMultivectorHelper.ExtractVector: TVector;
+begin
+  result.fm1 := fm1;
+  result.fm2 := fm2;
+  result.fm3 := fm3;
+end;
+
+function TMultivectorHelper.ExtractScalar: double;
+begin
+  result := fm0;
 end;
 
 function TMultivectorHelper.IsNull: boolean;
