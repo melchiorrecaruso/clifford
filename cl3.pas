@@ -38,6 +38,7 @@ unit Cl3;
 // - James M. Chappell, Azhar Iqbal, Lachlan J. Gunn, Derek Abbott,
 //   Function of multivector variables, (2015) PLoS One.
 
+{$H+}{$J-}
 {$mode objfpc}{$h+}
 {$modeswitch advancedrecords}
 {$WARN 05024 OFF} // Suppress warning for unused routine parameter.
