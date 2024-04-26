@@ -1,6 +1,6 @@
 unit Cl3;
 
-{ Geometric Algebra for FreePascal.
+{ Geometric Algebra Cl(3) for FreePascal.
 
   Copyright (c) 2024 Melchiorre Caruso
 
