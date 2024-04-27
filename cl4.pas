@@ -1,6 +1,6 @@
 unit Cl4;
 
-{ Geometric Algebra for FreePascal.
+{ Geometric Algebra Cl(4) for FreePascal.
 
   Copyright (c) 2024 Melchiorre Caruso
 
