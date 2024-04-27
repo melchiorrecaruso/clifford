@@ -3,7 +3,7 @@ program cl3test;
 {$mode objfpc}{$h+}
 
 uses
-  Cl3, Math, SysUtils;
+  Cl3, DateUtils, Math, SysUtils;
 
 var
   k : longint;
@@ -12,6 +12,7 @@ var
   B, B1, B2, B3 : TBivector;
   I, I1, I2, I3 : TTrivector;
   M, M1, M2, M3 : TMultivector;
+  StartTime : TDateTime;
 
   function Rnd: double;
   var
@@ -27,14 +28,15 @@ var
 
 
 begin
-  Randomize;
+  StartTime := Now;
 
+  Randomize;
   Writeln('CL3 TEST: begin');
   for k := 0 to 1000000 do
   begin
     a := Rnd;
     v := Rnd*e1  + Rnd*e2  + Rnd*e3;
-    B := Rnd*e12 + Rnd*e23 + Rnd*e31;
+    B := Rnd*e12 + Rnd*e13 + Rnd*e23;
     I := Rnd*e123;
     M := a + v + B + I;
 
@@ -59,31 +61,31 @@ begin
     if (I.Projection(u2  ) <> M.Projection(u2  .ToMultivector)) then Writeln('TEST-115: NOT PASSED');
     if (I.Projection(u3  ) <> M.Projection(u3  .ToMultivector)) then Writeln('TEST-116: NOT PASSED');
     if (I.Projection(u12 ) <> M.Projection(u12 .ToMultivector)) then Writeln('TEST-117: NOT PASSED');
+    if (I.Projection(u13 ) <> M.Projection(u13 .ToMultivector)) then Writeln('TEST-119: NOT PASSED');
     if (I.Projection(u23 ) <> M.Projection(u23 .ToMultivector)) then Writeln('TEST-118: NOT PASSED');
-    if (I.Projection(u31 ) <> M.Projection(u31 .ToMultivector)) then Writeln('TEST-119: NOT PASSED');
     if (I.Projection(u123) <> M.Projection(u123.ToMultivector)) then Writeln('TEST-120: NOT PASSED');
 
     if (I.Rejection (u1  ) <> M.Rejection (u1  .ToMultivector)) then Writeln('TEST-121: NOT PASSED');
     if (I.Rejection (u2  ) <> M.Rejection (u2  .ToMultivector)) then Writeln('TEST-122: NOT PASSED');
     if (I.Rejection (u3  ) <> M.Rejection (u3  .ToMultivector)) then Writeln('TEST-123: NOT PASSED');
     if (I.Rejection (u12 ) <> M.Rejection (u12 .ToMultivector)) then Writeln('TEST-124: NOT PASSED');
+    if (I.Rejection (u13 ) <> M.Rejection (u13 .ToMultivector)) then Writeln('TEST-126: NOT PASSED');
     if (I.Rejection (u23 ) <> M.Rejection (u23 .ToMultivector)) then Writeln('TEST-125: NOT PASSED');
-    if (I.Rejection (u31 ) <> M.Rejection (u31 .ToMultivector)) then Writeln('TEST-126: NOT PASSED');
     if (I.Rejection (u123) <> M.Rejection (u123.ToMultivector)) then Writeln('TEST-127: NOT PASSED');
 
     if (I.Reflection(u1 ) <> M.Reflection(u1 .ToMultivector)) then Writeln('TEST-128: NOT PASSED');
     if (I.Reflection(u2 ) <> M.Reflection(u2 .ToMultivector)) then Writeln('TEST-129: NOT PASSED');
     if (I.Reflection(u3 ) <> M.Reflection(u3 .ToMultivector)) then Writeln('TEST-130: NOT PASSED');
     if (I.Reflection(u12) <> M.Reflection(u12.ToMultivector)) then Writeln('TEST-131: NOT PASSED');
+    if (I.Reflection(u13) <> M.Reflection(u13.ToMultivector)) then Writeln('TEST-133: NOT PASSED');
     if (I.Reflection(u23) <> M.Reflection(u23.ToMultivector)) then Writeln('TEST-132: NOT PASSED');
-    if (I.Reflection(u31) <> M.Reflection(u31.ToMultivector)) then Writeln('TEST-133: NOT PASSED');
 
     if (I.Rotation(u1 , u2 ) <> M.Rotation(u1 .ToMultivector, u2 .ToMultivector)) then Writeln('TEST-134: NOT PASSED');
     if (I.Rotation(u2 , u3 ) <> M.Rotation(u2 .ToMultivector, u3 .ToMultivector)) then Writeln('TEST-135: NOT PASSED');
     if (I.Rotation(u3 , u1 ) <> M.Rotation(u3 .ToMultivector, u1 .ToMultivector)) then Writeln('TEST-136: NOT PASSED');
-    if (I.Rotation(u12, u23) <> M.Rotation(u12.ToMultivector, u23.ToMultivector)) then Writeln('TEST-137: NOT PASSED');
-    if (I.Rotation(u23, u31) <> M.Rotation(u23.ToMultivector, u31.ToMultivector)) then Writeln('TEST-138: NOT PASSED');
-    if (I.Rotation(u31, u12) <> M.Rotation(u31.ToMultivector, u12.ToMultivector)) then Writeln('TEST-139: NOT PASSED');
+    if (I.Rotation(u12, u13) <> M.Rotation(u12.ToMultivector, u13.ToMultivector)) then Writeln('TEST-137: NOT PASSED');
+    if (I.Rotation(u13, u23) <> M.Rotation(u13.ToMultivector, u23.ToMultivector)) then Writeln('TEST-139: NOT PASSED');
+    if (I.Rotation(u23, u12) <> M.Rotation(u23.ToMultivector, u12.ToMultivector)) then Writeln('TEST-138: NOT PASSED');
 
     // TBivector
     M  := B.ToMultivector;
@@ -106,32 +108,32 @@ begin
     if (B.Projection(u2  ) <> M.Projection(u2  .ToMultivector)) then Writeln('TEST-216: NOT PASSED');
     if (B.Projection(u3  ) <> M.Projection(u3  .ToMultivector)) then Writeln('TEST-217: NOT PASSED');
     if (B.Projection(u12 ) <> M.Projection(u12 .ToMultivector)) then Writeln('TEST-218: NOT PASSED');
-    if (B.Projection(u23 ) <> M.Projection(u23 .ToMultivector)) then Writeln('TEST-219: NOT PASSED');
-    if (B.Projection(u31 ) <> M.Projection(u31 .ToMultivector)) then Writeln('TEST-220: NOT PASSED');
+    if (B.Projection(u13 ) <> M.Projection(u13 .ToMultivector)) then Writeln('TEST-219: NOT PASSED');
+    if (B.Projection(u23 ) <> M.Projection(u23 .ToMultivector)) then Writeln('TEST-220: NOT PASSED');
     if (B.Projection(u123) <> M.Projection(u123.ToMultivector)) then Writeln('TEST-221: NOT PASSED');
 
     if (B.Rejection (u1  ) <> M.Rejection (u1  .ToMultivector)) then Writeln('TEST-222: NOT PASSED');
     if (B.Rejection (u2  ) <> M.Rejection (u2  .ToMultivector)) then Writeln('TEST-223: NOT PASSED');
     if (B.Rejection (u3  ) <> M.Rejection (u3  .ToMultivector)) then Writeln('TEST-224: NOT PASSED');
     if (B.Rejection (u12 ) <> M.Rejection (u12 .ToMultivector)) then Writeln('TEST-225: NOT PASSED');
-    if (B.Rejection (u23 ) <> M.Rejection (u23 .ToMultivector)) then Writeln('TEST-226: NOT PASSED');
-    if (B.Rejection (u31 ) <> M.Rejection (u31 .ToMultivector)) then Writeln('TEST-227: NOT PASSED');
+    if (B.Rejection (u13 ) <> M.Rejection (u13 .ToMultivector)) then Writeln('TEST-226: NOT PASSED');
+    if (B.Rejection (u23)  <> M.Rejection (u23 .ToMultivector)) then Writeln('TEST-227: NOT PASSED');
     if (B.Rejection (u123) <> M.Rejection (u123.ToMultivector)) then Writeln('TEST-228: NOT PASSED');
 
     if (B.Reflection(u1  ) <> M.Reflection(u1  .ToMultivector)) then Writeln('TEST-229: NOT PASSED');
     if (B.Reflection(u2  ) <> M.Reflection(u2  .ToMultivector)) then Writeln('TEST-230: NOT PASSED');
     if (B.Reflection(u3  ) <> M.Reflection(u3  .ToMultivector)) then Writeln('TEST-231: NOT PASSED');
     if (B.Reflection(u12 ) <> M.Reflection(u12 .ToMultivector)) then Writeln('TEST-232: NOT PASSED');
-    if (B.Reflection(u23 ) <> M.Reflection(u23 .ToMultivector)) then Writeln('TEST-233: NOT PASSED');
-    if (B.Reflection(u31 ) <> M.Reflection(u31 .ToMultivector)) then Writeln('TEST-234: NOT PASSED');
+    if (B.Reflection(u13 ) <> M.Reflection(u13 .ToMultivector)) then Writeln('TEST-233: NOT PASSED');
+    if (B.Reflection(u23 ) <> M.Reflection(u23 .ToMultivector)) then Writeln('TEST-234: NOT PASSED');
     if (B.Reflection(u123) <> M.Reflection(u123.ToMultivector)) then Writeln('TEST-235: NOT PASSED');
 
     if (B.Rotation(u1 , u2 ) <> M.Rotation(u1 .ToMultivector, u2 .ToMultivector)) then Writeln('TEST-236: NOT PASSED');
     if (B.Rotation(u2 , u3 ) <> M.Rotation(u2 .ToMultivector, u3 .ToMultivector)) then Writeln('TEST-237: NOT PASSED');
     if (B.Rotation(u3 , u1 ) <> M.Rotation(u3 .ToMultivector, u1 .ToMultivector)) then Writeln('TEST-238: NOT PASSED');
-    if (B.Rotation(u12, u23) <> M.Rotation(u12.ToMultivector, u23.ToMultivector)) then Writeln('TEST-239: NOT PASSED');
-    if (B.Rotation(u23, u31) <> M.Rotation(u23.ToMultivector, u31.ToMultivector)) then Writeln('TEST-240: NOT PASSED');
-    if (B.Rotation(u31, u12) <> M.Rotation(u31.ToMultivector, u12.ToMultivector)) then Writeln('TEST-241: NOT PASSED');
+    if (B.Rotation(u12, u13) <> M.Rotation(u12.ToMultivector, u13.ToMultivector)) then Writeln('TEST-239: NOT PASSED');
+    if (B.Rotation(u13, u23) <> M.Rotation(u13.ToMultivector, u23.ToMultivector)) then Writeln('TEST-240: NOT PASSED');
+    if (B.Rotation(u23, u12) <> M.Rotation(u23.ToMultivector, u12.ToMultivector)) then Writeln('TEST-241: NOT PASSED');
 
     // TVector
     M  := v.ToMultivector;
@@ -154,32 +156,32 @@ begin
     if (v.Projection(u2  ) <> M.Projection(u2  .ToMultivector)) then Writeln('TEST-315: NOT PASSED');
     if (v.Projection(u3  ) <> M.Projection(u3  .ToMultivector)) then Writeln('TEST-316: NOT PASSED');
     if (v.Projection(u12 ) <> M.Projection(u12 .ToMultivector)) then Writeln('TEST-317: NOT PASSED');
-    if (v.Projection(u23 ) <> M.Projection(u23 .ToMultivector)) then Writeln('TEST-318: NOT PASSED');
-    if (v.Projection(u31 ) <> M.Projection(u31 .ToMultivector)) then Writeln('TEST-319: NOT PASSED');
+    if (v.Projection(u13 ) <> M.Projection(u13 .ToMultivector)) then Writeln('TEST-318: NOT PASSED');
+    if (v.Projection(u23 ) <> M.Projection(u23 .ToMultivector)) then Writeln('TEST-319: NOT PASSED');
     if (v.Projection(u123) <> M.Projection(u123.ToMultivector)) then Writeln('TEST-320: NOT PASSED');
 
     if (v.Rejection (u1  ) <> M.Rejection (u1  .ToMultivector)) then Writeln('TEST-321: NOT PASSED');
     if (v.Rejection (u2  ) <> M.Rejection (u2  .ToMultivector)) then Writeln('TEST-322: NOT PASSED');
     if (v.Rejection (u3  ) <> M.Rejection (u3  .ToMultivector)) then Writeln('TEST-323: NOT PASSED');
     if (v.Rejection (u12 ) <> M.Rejection (u12 .ToMultivector)) then Writeln('TEST-324: NOT PASSED');
-    if (v.Rejection (u23 ) <> M.Rejection (u23 .ToMultivector)) then Writeln('TEST-325: NOT PASSED');
-    if (v.Rejection (u31 ) <> M.Rejection (u31 .ToMultivector)) then Writeln('TEST-326: NOT PASSED');
+    if (v.Rejection (u13 ) <> M.Rejection (u13 .ToMultivector)) then Writeln('TEST-325: NOT PASSED');
+    if (v.Rejection (u23 ) <> M.Rejection (u23 .ToMultivector)) then Writeln('TEST-326: NOT PASSED');
     if (v.Rejection (u123) <> M.Rejection (u123.ToMultivector)) then Writeln('TEST-327: NOT PASSED');
 
     if (v.Reflection(u1  ) <> M.Reflection(u1  .ToMultivector)) then Writeln('TEST-328: NOT PASSED');
     if (v.Reflection(u2  ) <> M.Reflection(u2  .ToMultivector)) then Writeln('TEST-329: NOT PASSED');
     if (v.Reflection(u3  ) <> M.Reflection(u3  .ToMultivector)) then Writeln('TEST-330: NOT PASSED');
     if (v.Reflection(u12 ) <> M.Reflection(u12 .ToMultivector)) then Writeln('TEST-331: NOT PASSED');
-    if (v.Reflection(u23 ) <> M.Reflection(u23 .ToMultivector)) then Writeln('TEST-332: NOT PASSED');
-    if (v.Reflection(u31 ) <> M.Reflection(u31 .ToMultivector)) then Writeln('TEST-333: NOT PASSED');
+    if (v.Reflection(u13 ) <> M.Reflection(u13 .ToMultivector)) then Writeln('TEST-332: NOT PASSED');
+    if (v.Reflection(u23 ) <> M.Reflection(u23 .ToMultivector)) then Writeln('TEST-333: NOT PASSED');
     if (v.Reflection(u123) <> M.Reflection(u123.ToMultivector)) then Writeln('TEST-334: NOT PASSED');
 
     if (v.Rotation(u1 , u2 ) <> M.Rotation(u1 .ToMultivector, u2 .ToMultivector)) then Writeln('TEST-335: NOT PASSED');
     if (v.Rotation(u2 , u3 ) <> M.Rotation(u2 .ToMultivector, u3 .ToMultivector)) then Writeln('TEST-336: NOT PASSED');
     if (v.Rotation(u3 , u1 ) <> M.Rotation(u3 .ToMultivector, u1 .ToMultivector)) then Writeln('TEST-337: NOT PASSED');
-    if (v.Rotation(u12, u23) <> M.Rotation(u12.ToMultivector, u23.ToMultivector)) then Writeln('TEST-338: NOT PASSED');
-    if (v.Rotation(u23, u31) <> M.Rotation(u23.ToMultivector, u31.ToMultivector)) then Writeln('TEST-339: NOT PASSED');
-    if (v.Rotation(u31, u12) <> M.Rotation(u31.ToMultivector, u12.ToMultivector)) then Writeln('TEST-340: NOT PASSED');
+    if (v.Rotation(u12, u13) <> M.Rotation(u12.ToMultivector, u13.ToMultivector)) then Writeln('TEST-338: NOT PASSED');
+    if (v.Rotation(u13, u23) <> M.Rotation(u13.ToMultivector, u23.ToMultivector)) then Writeln('TEST-339: NOT PASSED');
+    if (v.Rotation(u23, u12) <> M.Rotation(u23.ToMultivector, u12.ToMultivector)) then Writeln('TEST-340: NOT PASSED');
   end;
 
   Writeln('CL3 TEST: end.');
@@ -188,17 +190,17 @@ begin
   v2 := Rnd*e1 + Rnd*e2 + Rnd*e3;
   v3 := Rnd*e1 + Rnd*e2 + Rnd*e3;
 
-  B1 := Rnd*e12 + Rnd*e23 + Rnd*e31;
-  B2 := Rnd*e12 + Rnd*e23 + Rnd*e31;
-  B3 := Rnd*e12 + Rnd*e23 + Rnd*e31;
+  B1 := Rnd*e12 + Rnd*e13 + Rnd*e23;
+  B2 := Rnd*e12 + Rnd*e13 + Rnd*e23;
+  B3 := Rnd*e12 + Rnd*e13 + Rnd*e23;
 
   I1 := Rnd*e123;
   I2 := Rnd*e123;
   I3 := Rnd*e123;
 
-  M1 := Rnd + Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e12 + Rnd*e23 + Rnd*e31 + Rnd*e123;
-  M2 := Rnd + Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e12 + Rnd*e23 + Rnd*e31 + Rnd*e123;
-  M3 := Rnd + Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e12 + Rnd*e23 + Rnd*e31 + Rnd*e123;
+  M1 := Rnd + Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e12 + Rnd*e13 + Rnd*e23 + Rnd*e123;
+  M2 := Rnd + Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e12 + Rnd*e13 + Rnd*e23 + Rnd*e123;
+  M3 := Rnd + Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e12 + Rnd*e13 + Rnd*e23 + Rnd*e123;
 
   writeln;
   Writeln(Format('v1 = %s (Norm = %s)', [v1.ToString, v1.Norm.ToString]));
@@ -382,4 +384,5 @@ begin
   writeln('Rotation  : multivector &   trivectors : ',  M1.Rotation(I2.ToMultivector, I3.ToMultivector).IsA);
   writeln('Rotation  : multivector & multivectors : ',  M1.Rotation(M2              , M3).IsA);
   writeln;
+  writeln(Format('Time elapsed : %ds', [SecondsBetween(Now, StartTime)]));
 end.
