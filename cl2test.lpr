@@ -3,7 +3,7 @@ program cl2test;
 {$mode objfpc}{$h+}
 
 uses
-  Cl2, Math, SysUtils;
+  Cl2, DateUtils, Math, SysUtils;
 
 var
   k : longint;
@@ -11,6 +11,7 @@ var
   v, v1, v2, v3 : TVector;
   B, B1, B2, B3 : TBivector;
   M, M1, M2, M3 : TMultivector;
+  StartTime : TDateTime;
 
   function Rnd: double;
   var
@@ -26,8 +27,9 @@ var
 
 
 begin
-  Randomize;
+  StartTime := Now;
 
+  Randomize;
   Writeln('CL2 TEST: begin');
   for k := 0 to 1000000 do
   begin
@@ -230,4 +232,5 @@ begin
   writeln('Rotation  : multivector &    bivectors : ',  M1.Rotation(B2.ToMultivector, B3.ToMultivector).IsA);
   writeln('Rotation  : multivector & multivectors : ',  M1.Rotation(M2              , M3).IsA);
   writeln;
+  writeln(Format('Time elapsed : %ds', [SecondsBetween(Now, StartTime)]));
 end.
