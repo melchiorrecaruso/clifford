@@ -11,8 +11,16 @@
     </CompilerOptions>
     <Files>
       <Item>
+        <Filename Value="cl2.pas"/>
+        <UnitName Value="Cl2"/>
+      </Item>
+      <Item>
         <Filename Value="cl3.pas"/>
         <UnitName Value="Cl3"/>
+      </Item>
+      <Item>
+        <Filename Value="cl4.pas"/>
+        <UnitName Value="Cl4"/>
       </Item>
     </Files>
     <RequiredPkgs>

@@ -8,7 +8,7 @@ unit Clifford;
 interface
 
 uses
-  Cl3, LazarusPackageIntf;
+  Cl2, Cl3, Cl4, LazarusPackageIntf;
 
 implementation
 
