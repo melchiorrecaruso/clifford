@@ -1,0 +1,147 @@
+object MainForm: TMainForm
+  Left = 640
+  Height = 487
+  Top = 362
+  Width = 896
+  Caption = 'Cayley Table'
+  ClientHeight = 487
+  ClientWidth = 896
+  LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
+  object Table: TStringGrid
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = PositiveBox
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 416
+    Top = 71
+    Width = 896
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    AutoFillColumns = True
+    BorderSpacing.Top = 20
+    FixedCols = 0
+    FixedRows = 0
+    GridLineColor = clGray
+    ScrollBars = ssNone
+    TabOrder = 0
+    OnPrepareCanvas = TablePrepareCanvas
+    OnResize = TableResize
+    ColWidths = (
+      179
+      179
+      179
+      179
+      178
+    )
+  end
+  object PositiveBox: TComboBox
+    AnchorSideLeft.Control = PositiveLabel
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Owner
+    Left = 72
+    Height = 31
+    Top = 20
+    Width = 120
+    BorderSpacing.Top = 20
+    ItemHeight = 0
+    ItemIndex = 3
+    Items.Strings = (
+      '0'
+      '1'
+      '2'
+      '3'
+      '4'
+      '5'
+      '6'
+    )
+    Style = csDropDownList
+    TabOrder = 1
+    Text = '3'
+    OnChange = BoxChange
+  end
+  object NegativeBox: TComboBox
+    AnchorSideLeft.Control = NegativeLabel
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Owner
+    Left = 286
+    Height = 31
+    Top = 20
+    Width = 120
+    BorderSpacing.Top = 20
+    ItemHeight = 0
+    ItemIndex = 0
+    Items.Strings = (
+      '0'
+      '1'
+      '2'
+      '3'
+      '4'
+      '5'
+      '6'
+    )
+    Style = csDropDownList
+    TabOrder = 2
+    Text = '0'
+    OnChange = BoxChange
+  end
+  object PositiveLabel: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = PositiveBox
+    AnchorSideRight.Control = PositiveBox
+    AnchorSideBottom.Control = PositiveBox
+    AnchorSideBottom.Side = asrBottom
+    Left = 10
+    Height = 31
+    Top = 20
+    Width = 52
+    Anchors = [akTop, akLeft, akBottom]
+    BorderSpacing.Left = 10
+    BorderSpacing.Right = 10
+    Caption = 'Positive'
+    Layout = tlCenter
+  end
+  object NegativeLabel: TLabel
+    AnchorSideLeft.Control = PositiveBox
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = NegativeBox
+    AnchorSideBottom.Control = NegativeBox
+    AnchorSideBottom.Side = asrBottom
+    Left = 217
+    Height = 31
+    Top = 20
+    Width = 59
+    Anchors = [akTop, akLeft, akBottom]
+    BorderSpacing.Left = 25
+    BorderSpacing.Right = 10
+    Caption = 'Negative'
+    Layout = tlCenter
+  end
+  object ProductBox: TComboBox
+    AnchorSideTop.Control = NegativeBox
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = NegativeLabel
+    AnchorSideBottom.Side = asrBottom
+    Left = 646
+    Height = 31
+    Top = 20
+    Width = 240
+    Anchors = [akTop, akRight, akBottom]
+    BorderSpacing.Right = 10
+    ItemHeight = 0
+    ItemIndex = 0
+    Items.Strings = (
+      'Inner product'
+      'Outer product'
+      'Geometric product'
+    )
+    Style = csDropDownList
+    TabOrder = 3
+    Text = 'Inner product'
+    OnChange = BoxChange
+  end
+end
