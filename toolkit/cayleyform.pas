@@ -5,23 +5,27 @@ unit cayleyform;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Grids, StdCtrls;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Grids, StdCtrls,
+  ExtCtrls, ComCtrls, SynHighlighterPas, SynEdit;
 
 type
 
   { TMainForm }
 
   TMainForm = class(TForm)
+    PageControl: TPageControl;
     ProductBox: TComboBox;
     NegativeLabel: TLabel;
     PositiveBox: TComboBox;
     NegativeBox: TComboBox;
     PositiveLabel: TLabel;
+    UnitSourcecodeSynEdit: TSynEdit;
     Table: TStringGrid;
+    TableTabSheet: TTabSheet;
+    UnitSourceCodeTabSheet: TTabSheet;
     procedure BoxChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure TablePrepareCanvas(Sender: TObject; aCol, aRow: Integer; aState: TGridDrawState);
-    procedure TableResize(Sender: TObject);
   private
     function InnerProduct    (const A, B: string): string;
     function WedgeProduct    (const A, B: string): string;
@@ -51,13 +55,11 @@ begin
   begin
     SetLength(Basis, Length(Basis) + 1);
     Basis[High(Basis)] := Prefix;
-    Exit;
-  end;
-
-  for i := start to N do
-  begin
-    GenerateCombinations(N, K - 1, Prefix + 'e' + IntToStr(i), i + 1, Basis);
-  end;
+  end else
+    for i := start to N do
+    begin
+      GenerateCombinations(N, K - 1, Prefix + 'e' + IntToStr(i), i + 1, Basis);
+    end;
 end;
 
 function CheckInner(const A, B: string): boolean;
@@ -210,12 +212,6 @@ begin
   end;
 end;
 
-procedure TMainForm.TableResize(Sender: TObject);
-begin
-  Table.DefaultRowHeight := Trunc(Table.Height / Table.RowCount);
-  Table.DefaultColWidth  := Trunc(Table.Width  / Table.ColCount);
-end;
-
 procedure TMainForm.BoxChange(Sender: TObject);
 var
   Style: TTextStyle;
@@ -255,9 +251,10 @@ begin
     Style.Alignment        := taCenter;
     style.Layout           := tlCenter;
     Table.DefaultTextStyle := Style;
-    TableResize(Sender);
   end else
-    MessageDlg('Warning', 'Maximun 5 dimensions!', mtWarning,  [mbOK], '');
+    MessageDlg('Warning', Format('Maximum %d dimensions!', [MaxDimensions]), mtWarning,  [mbOK], '');
+
+  PageControl.TabIndex:= 0;
 end;
 
 end.

@@ -11,7 +11,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="41"/>
+        <UsageCount Value="44"/>
       </Unit>
       <Unit>
         <Filename Value="cayleyform.pas"/>
@@ -21,9 +21,9 @@
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
         <TopLine Value="23"/>
-        <CursorPos X="7" Y="31"/>
-        <FoldState Value=" T3i20F211 Pi2iP0T"/>
-        <UsageCount Value="41"/>
+        <CursorPos X="83" Y="36"/>
+        <FoldState Value=" T3i60D5 PjHiV0t"/>
+        <UsageCount Value="44"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit>
@@ -87,7 +87,128 @@
         <UsageCount Value="10"/>
       </Unit>
     </Units>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory HistoryIndex="29">
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="59" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="60" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="59" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="60" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="61" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="62" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="61" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="62" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="61" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="60" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="59" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="58" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="57" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="56" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="55" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="62" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="61" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="60" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="59" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="58" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="62" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="61" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="60" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="59" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="60" TopLine="5"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="215" Column="5" TopLine="201"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="29" Column="96"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="254" Column="37" TopLine="198"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="253" Column="37" TopLine="197"/>
+      </Position>
+      <Position>
+        <Filename Value="cayleyform.pas"/>
+        <Caret Line="182" Column="12" TopLine="124"/>
+      </Position>
+    </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
       <Modes ActiveMode=""/>
