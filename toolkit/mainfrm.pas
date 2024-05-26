@@ -10,6 +10,13 @@ uses
 
 type
 
+  TCLClass = record
+    ClassName: string;
+    ClassComponents: TStringList;
+  end;
+
+  TCLClassList = array of TCLClass;
+
   { TMainForm }
 
   TMainForm = class(TForm)
@@ -34,17 +41,11 @@ type
     procedure FormCreate(Sender: TObject);
     procedure DoPrepareCanvas(Sender: TObject; aCol, aRow: Integer; aState: TGridDrawState);
   private
-    ClassList: TStringList;
-    ClassNames: TStringList;
-    ClassComponents: TStringList;
+    ClassList: TCLClassList;
+    SpaceDimension: longint;
 
     SectionA0: TStringList;
-    SectionA1: TStringList;
-    SectionA2: TStringList;
-
     SectionB0: TStringList;
-    SectionB1: TStringList;
-    SectionB2: TStringList;
 
     function GetDotProduct(const A, B: string): string;
     function GetWedgeProduct(const A, B: string): string;
@@ -52,7 +53,9 @@ type
 
     procedure AddOperatorEqual(ALeftIndex, ARightIndex: longint);
     procedure AddOperatorNotEqual(ALeftIndex, ARightIndex: longint);
-    procedure AddOperatorSum(ALeftIndex, ARightIndex: longint);
+    procedure AddOperatorAdd(ALeftIndex, ARightIndex: longint);
+    procedure AddOperatorSubtract(ALeftIndex, ARightIndex: longint);
+
     procedure AddClass(AIndex: longint);
   public
     procedure Build;
@@ -275,9 +278,12 @@ begin
         GeometricProduct.Cells[i, j] := GetGeometricProduct(DotProduct.Cells[0, j], DotProduct.Cells[i, 0]);
       end;
 
-    Style.Alignment        := taCenter;
-    style.Layout           := tlCenter;
-    DotProduct.DefaultTextStyle := Style;
+    Style.Alignment := taCenter;
+    style.Layout    := tlCenter;
+    DotProduct      .DefaultTextStyle := Style;
+    WedgeProduct    .DefaultTextStyle := Style;
+    GeometricProduct.DefaultTextStyle := Style;
+
     Build;
   end else
     MessageDlg('Warning', Format('Maximum %d dimensions!', [MaxDimensions]), mtWarning,  [mbOK], '');
@@ -296,79 +302,70 @@ end;
 procedure TMainForm.AddOperatorEqual(ALeftIndex, ARightIndex: longint);
 var
   i: longint;
-  Index: longint;
+  Line: string;
+  List: TStringList;
   LeftComponent: string;
   RightComponent: string;
-  Line: string;
+  BaseIndex: longint;
 begin
   if ALeftIndex <> ARightIndex then
   begin
-    if (ClassNames[ALeftIndex ] <> 'TMultivector') and
-       (ClassNames[ARightIndex] <> 'TMultivector') then Exit;
+    if (ClassList[ALeftIndex ].ClassName <> 'TMultivector') and
+       (ClassList[ARightIndex].ClassName <> 'TMultivector') then Exit;
   end;
 
-  Index := Min(ALeftIndex, ARightIndex);
-  if Index = 0 then
+  BaseIndex := Min(ALeftIndex, ARightIndex);
+  if BaseIndex = 0 then
   begin
-    Index := Max(ALeftIndex, ARightIndex);
+    BaseIndex := Max(ALeftIndex, ARightIndex);
   end;
 
   if ALeftIndex <> ARightIndex then
   begin
-    SectionA0.Add(Format('    class operator = (const ALeft: %s; ARight: %s): boolean;', [ClassNames[ALeftIndex], ClassNames[ARightIndex]]));
-    SectionB0.Add(Format('class operator %s.=(const ALeft: %s; ARight: %s): boolean;', [ClassNames[Index], ClassNames[ALeftIndex], ClassNames[ARightIndex]]))
+    SectionA0.Add(Format('    class operator = (const ALeft: %s; ARight: %s): boolean;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.=(const ALeft: %s; ARight: %s): boolean;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]))
   end else
   begin
-    SectionA0.Add(Format('    class operator = (const ALeft, ARight: %s): boolean;', [ClassNames[ALeftIndex]]));
-    SectionB0.Add(Format('class operator %s.=(const ALeft, ARight: %s): boolean;', [ClassNames[Index], ClassNames[ALeftIndex]]));
+    SectionA0.Add(Format('    class operator = (const ALeft, ARight: %s): boolean;', [
+      ClassList[ALeftIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.=(const ALeft, ARight: %s): boolean;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex ].ClassName]));
   end;
 
   SectionB0.Add('begin');
   SectionB0.Add('  result :=');
-  for i := 0 to ClassComponents.Count -1 do
+
+  List := ClassList[High(ClassList)].ClassComponents;
+  for i := 0 to List.Count -1 do
   begin
-    if i <> ClassComponents.Count -1 then
-      Line := '    SameValue(%-14s, %-15s) and'
+    if i <> List.Count -1 then
+      Line := '    SameValue(%s, %s) and'
     else
-      Line := '    SameValue(%-14s, %-15s);';
+      Line := '    SameValue(%s, %s);';
 
-    if ClassNames[ALeftIndex] = 'double' then
+    LeftComponent := '0';
+    if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
     begin
-      if i = 0 then
-        LeftComponent := 'ALeft'
-      else
-        LeftComponent := '0'
-    end else
-      if ClassNames[ALeftIndex] = 'TMultivector' then
+      LeftComponent := 'ALeft.' + List[i];
+      if ClassList[ALeftIndex].ClassName = 'double' then
       begin
-        LeftComponent := 'ALeft.' + ClassComponents[i];
-      end else
-      begin
-        if Length(StringReplace(ClassComponents[i], 'fm', '', [rfReplaceAll, rfIgnoreCase])) = ALeftIndex then
-          LeftComponent := 'ALeft.' + ClassComponents[i]
-        else
-          LeftComponent := '0';
+        LeftComponent := 'ALeft';
       end;
+    end;
 
-    if ClassNames[ARightIndex] = 'double' then
+    RightComponent := '0';
+    if ClassList[ARightIndex].ClassComponents.IndexOf(List[i]) <> -1 then
     begin
-      if i = 0 then
+      RightComponent := 'ARight.' + List[i];
+      if ClassList[ArightIndex].ClassName = 'double' then
+      begin
         RightComponent := 'ARight'
-      else
-        RightComponent := '0'
-    end else
-      if ClassNames[ARightIndex] = 'TMultivector' then
-      begin
-        RightComponent := 'ARight.' + ClassComponents[i];
-      end else
-      begin
-        if Length(StringReplace(ClassComponents[i], 'fm', '', [rfReplaceAll, rfIgnoreCase])) = ARightIndex then
-          RightComponent := 'ARight.' + ClassComponents[i]
-        else
-          RightComponent := '0';
       end;
+    end;
 
-    if (LeftComponent  <> '0') or
+    if (LeftComponent  <> '0') and
        (RightComponent <> '0') then
     begin
       SectionB0.Add(Format(Line, [LeftComponent, RightComponent]));
@@ -381,79 +378,70 @@ end;
 procedure TMainForm.AddOperatorNotEqual(ALeftIndex, ARightIndex: longint);
 var
   i: longint;
-  Index: longint;
+  Line: string;
+  List: TStringList;
   LeftComponent: string;
   RightComponent: string;
-  Line: string;
+  BaseIndex: longint;
 begin
   if ALeftIndex <> ARightIndex then
   begin
-    if (ClassNames[ALeftIndex ] <> 'TMultivector') and
-       (ClassNames[ARightIndex] <> 'TMultivector') then Exit;
+    if (ClassList[ALeftIndex ].ClassName <> 'TMultivector') and
+       (ClassList[ARightIndex].ClassName <> 'TMultivector') then Exit;
   end;
 
-  Index := Min(ALeftIndex, ARightIndex);
-  if Index = 0 then
+  BaseIndex := Min(ALeftIndex, ARightIndex);
+  if BaseIndex = 0 then
   begin
-    Index := Max(ALeftIndex, ARightIndex);
+    BaseIndex := Max(ALeftIndex, ARightIndex);
   end;
 
   if ALeftIndex <> ARightIndex then
    begin
-     SectionA0.Add(Format('    class operator <>(const ALeft: %s; ARight: %s): boolean;', [ClassNames[ALeftIndex], ClassNames[ARightIndex]]));
-     SectionB0.Add(Format('class operator %s.<>(const ALeft: %s; ARight: %s): boolean;', [ClassNames[Index], ClassNames[ALeftIndex], ClassNames[ARightIndex]]))
+     SectionA0.Add(Format('    class operator <>(const ALeft: %s; ARight: %s): boolean;', [
+       ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+     SectionB0.Add(Format('class operator %s.<>(const ALeft: %s; ARight: %s): boolean;', [
+       ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]))
    end else
    begin
-     SectionA0.Add(Format('    class operator <>(const ALeft, ARight: %s): boolean;', [ClassNames[ALeftIndex]]));
-     SectionB0.Add(Format('class operator %s.<>(const ALeft, ARight: %s): boolean;', [ClassNames[Index], ClassNames[ALeftIndex]]));
+     SectionA0.Add(Format('    class operator <>(const ALeft, ARight: %s): boolean;', [
+       ClassList[ALeftIndex].ClassName]));
+     SectionB0.Add(Format('class operator %s.<>(const ALeft, ARight: %s): boolean;', [
+       ClassList[BaseIndex].ClassName, ClassList[ALeftIndex ].ClassName]));
    end;
 
   SectionB0.Add('begin');
   SectionB0.Add('  result :=');
-  for i := 0 to ClassComponents.Count -1 do
+
+  List := ClassList[High(ClassList)].ClassComponents;
+  for i := 0 to List.Count -1 do
   begin
-    if i <> ClassComponents.Count -1 then
-      Line := '    (not SameValue(%-14s, %-15s)) or'
+    if i <> List.Count -1 then
+      Line := '    (not SameValue(%s, %s)) or '
     else
-      Line := '    (not SameValue(%-14s, %-15s));';
+      Line := '    (not SameValue(%s, %s));';
 
-    if ClassNames[ALeftIndex] = 'double' then
+    LeftComponent := '0';
+    if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
     begin
-      if i = 0 then
-        LeftComponent := 'ALeft'
-      else
-        LeftComponent := '0'
-    end else
-      if ClassNames[ALeftIndex] = 'TMultivector' then
+      LeftComponent := 'ALeft' + List[i];
+      if ClassList[ALeftIndex].ClassName = 'double' then
       begin
-        LeftComponent := 'ALeft.' + ClassComponents[i];
-      end else
-      begin
-        if Length(StringReplace(ClassComponents[i], 'fm', '', [rfReplaceAll, rfIgnoreCase])) = ALeftIndex then
-          LeftComponent := 'ALeft.' + ClassComponents[i]
-        else
-          LeftComponent := '0';
+        LeftComponent := 'ALeft';
       end;
+    end;
 
-    if ClassNames[ARightIndex] = 'double' then
+    RightComponent := '0';
+    if ClassList[ARightIndex].ClassComponents.IndexOf(List[i]) <> -1 then
     begin
-      if i = 0 then
+      RightComponent := 'ARight.' + List[i];
+      if ClassList[ArightIndex].ClassName = 'double' then
+      begin
         RightComponent := 'ARight'
-      else
-        RightComponent := '0'
-    end else
-      if ClassNames[ARightIndex] = 'TMultivector' then
-      begin
-        RightComponent := 'ARight.' + ClassComponents[i];
-      end else
-      begin
-        if Length(StringReplace(ClassComponents[i], 'fm', '', [rfReplaceAll, rfIgnoreCase])) = ARightIndex then
-          RightComponent := 'ARight.' + ClassComponents[i]
-        else
-          RightComponent := '0';
       end;
+    end;
 
-    if (LeftComponent  <> '0') or
+    if (LeftComponent  <> '0') and
        (RightComponent <> '0') then
     begin
       SectionB0.Add(Format(Line, [LeftComponent, RightComponent]));
@@ -463,76 +451,221 @@ begin
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddOperatorSum(ALeftIndex, ARightIndex: longint);
+procedure TMainForm.AddOperatorAdd(ALeftIndex, ARightIndex: longint);
+var
+  i: longint;
+  Line: string;
+  List: TStringList;
+  LeftComponent: string;
+  RightComponent: string;
+  BaseIndex: longint;
 begin
+  BaseIndex := Min(ALeftIndex, ARightIndex);
+  if BaseIndex = 0 then
+  begin
+    BaseIndex := Max(ALeftIndex, ARightIndex);
+  end;
 
+  if ALeftIndex <> ARightIndex then
+  begin
+    SectionA0.Add(Format('    class operator + (const ALeft: %s; ARight: %s): TMultivector;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.+(const ALeft: %s; ARight: %s): TMultivector;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+  end else
+  begin
+    SectionA0.Add(Format('    class operator + (const ALeft, ARight: %s): %s;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ALeftIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.+(const ALeft, ARight: %s): %s;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex ].ClassName, ClassList[ALeftIndex].ClassName]));
+  end;
+
+  SectionB0.Add('begin');
+
+  List := ClassList[High(ClassList)].ClassComponents;
+  for i := 0 to List.Count -1 do
+  begin
+    LeftComponent := '0';
+    if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      LeftComponent := 'ALeft.' + List[i];
+      if ClassList[ALeftIndex].ClassName = 'double' then
+      begin
+        LeftComponent := 'ALeft';
+      end;
+    end;
+
+    RightComponent := '0';
+    if ClassList[ARightIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      RightComponent := 'ARight.' + List[i];
+      if ClassList[ArightIndex].ClassName = 'double' then
+      begin
+        RightComponent := 'ARight';
+      end;
+    end;
+
+    Line := '';
+    if ALeftIndex <> ARightIndex then
+    begin
+      Line := Format('  result.%s := ', [List[i]]);
+      if LeftComponent <> '0' then
+      begin
+        Line := Line + LeftComponent;
+        if RightComponent <> '0' then
+          Line := Line + ' + ' + RightComponent;
+      end else
+      begin
+        Line := Line + RightComponent;
+      end;
+    end else
+    begin
+      if (LeftComponent  <> '0') and
+         (RightComponent <> '0') then
+        Line := Format('  result.%s := %s + %s', [List[i], LeftComponent, RightComponent]);
+    end;
+
+    if Line <> '' then SectionB0.Add(Line + ';');
+  end;
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddOperatorSubtract(ALeftIndex, ARightIndex: longint);
+var
+  i: longint;
+  Line: string;
+  List: TStringList;
+  LeftComponent: string;
+  RightComponent: string;
+  BaseIndex: longint;
+begin
+  BaseIndex := Min(ALeftIndex, ARightIndex);
+  if BaseIndex = 0 then
+  begin
+    BaseIndex := Max(ALeftIndex, ARightIndex);
+  end;
+
+  if ALeftIndex <> ARightIndex then
+  begin
+    SectionA0.Add(Format('    class operator - (const ALeft: %s; ARight: %s): TMultivector;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.-(const ALeft: %s; ARight: %s): TMultivector;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+  end else
+  begin
+    SectionA0.Add(Format('    class operator - (const ALeft, ARight: %s): %s;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ALeftIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.-(const ALeft, ARight: %s): %s;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex ].ClassName, ClassList[ALeftIndex].ClassName]));
+  end;
+
+  SectionB0.Add('begin');
+
+  List := ClassList[High(ClassList)].ClassComponents;
+  for i := 0 to List.Count -1 do
+  begin
+    LeftComponent := '0';
+    if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      LeftComponent := 'ALeft.' + List[i];
+      if ClassList[ALeftIndex].ClassName = 'double' then
+      begin
+        LeftComponent := 'ALeft';
+      end;
+    end;
+
+    RightComponent := '0';
+    if ClassList[ARightIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      RightComponent := 'ARight.' + List[i];
+      if ClassList[ArightIndex].ClassName = 'double' then
+      begin
+        RightComponent := 'ARight';
+      end;
+    end;
+
+    Line := '';
+    if ALeftIndex <> ARightIndex then
+    begin
+      Line := Format('  result.%s := ', [List[i]]);
+      if LeftComponent <> '0' then
+      begin
+        Line := Line + LeftComponent;
+        if RightComponent <> '0' then
+          Line := Line + ' - ' + RightComponent;
+      end else
+      begin
+        if RightComponent <> '0' then
+          Line := Line + '-' + RightComponent
+        else
+          Line := Line + '0';
+      end;
+    end else
+    begin
+      if (LeftComponent  <> '0') and
+         (RightComponent <> '0') then
+        Line := Format('  result.%s := %s - %s', [List[i], LeftComponent, RightComponent]);
+    end;
+
+    if Line <> '' then SectionB0.Add(Line + ';');
+  end;
+  SectionB0.Add('end;');
+  SectionB0.Add('');
 end;
 
 procedure TMainForm.AddClass(AIndex: longint);
 var
-  BaseComponents: string;
   i: longint;
 begin
-  if ClassList[AIndex] = 'TMultivector' then
-  begin
-    BaseComponents := '';
-    for i := 0 to ClassComponents.Count -1 do
-      BaseComponents := BaseComponents + ', ' + ClassComponents[i];
-  end else
-  begin
-    BaseComponents := '';
-    for i := 1 to ClassComponents.Count -1 do
-      case Length(StringReplace(ClassComponents[i], 'fm', '', [rfReplaceAll, rfIgnoreCase])) of
-        1: if ClassList[AIndex] = 'TVector'       then BaseComponents := BaseComponents + ', ' + ClassComponents[i];
-        2: if ClassList[AIndex] = 'TBivector'     then BaseComponents := BaseComponents + ', ' + ClassComponents[i];
-        3: if ClassList[AIndex] = 'TTrivector'    then BaseComponents := BaseComponents + ', ' + ClassComponents[i];
-        4: if ClassList[AIndex] = 'TQuadrivector' then BaseComponents := BaseComponents + ', ' + ClassComponents[i];
-        5: if ClassList[AIndex] = 'TPentavector'  then BaseComponents := BaseComponents + ', ' + ClassComponents[i];
-        6: if ClassList[AIndex] = 'THexavector'   then BaseComponents := BaseComponents + ', ' + ClassComponents[i];
-      end;
-  end;
-  if Pos(',', BaseComponents) = 1 then Delete(BaseComponents, 1, 1);
-  if Pos(' ', BaseComponents) = 1 then Delete(BaseComponents, 1, 1);
-
-  SectionA0.Add(Format('// %s', [ClassList[AIndex]]));
-  SectionA0.Add('type');
-  SectionA0.Add(Format('  %sComponent  = (%s);', [ClassList[AIndex], BaseComponents]));
-  SectionA0.Add(Format('  %sComponents = set of %s', [ClassList[AIndex], ClassList[AIndex]]));
-  SectionA0.Add('');
-  SectionA0.Add(Format('  %s = record', [ClassList[AIndex]]));
-  // Adding equal operator
+  SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
+  SectionA0.Add(Format('  %s = record', [ClassList[AIndex].ClassName]));
+  // Adding = operator
   AddOperatorEqual(AIndex, 0);
   AddOperatorEqual(0, AIndex);
   i := AIndex;
-  while i < ClassList.Count do
+  while i < Length(ClassList) do
   begin
     AddOperatorEqual(AIndex, i);
     if AIndex <> i then
       AddOperatorEqual(i, AIndex);
     Inc(i);
   end;
-  // Adding not equal operator
+  // Adding <> operator
   AddOperatorNotEqual(AIndex, 0);
   AddOperatorNotEqual(0, AIndex);
   i := AIndex;
-  while i < ClassList.Count do
+  while i < Length(ClassList) do
   begin
     AddOperatorNotEqual(AIndex, i);
     if AIndex <> i then
       AddOperatorNotEqual(i, AIndex);
     Inc(i);
   end;
-  // Adding sum operator
-  AddOperatorSum(AIndex, 0);
-  AddOperatorSum(0, AIndex);
+  // Adding + operator
+  AddOperatorAdd(AIndex, 0);
+  AddOperatorAdd(0, AIndex);
   i := AIndex;
-  while i < ClassList.Count do
+  while i < Length(ClassList) do
   begin
-    AddOperatorSum(AIndex, i);
+    AddOperatorAdd(AIndex, i);
     if AIndex <> i then
-      AddOperatorSum(i, AIndex);
+      AddOperatorAdd(i, AIndex);
     Inc(i);
   end;
+  // Adding - operator
+  AddOperatorSubtract(AIndex, 0);
+  AddOperatorSubtract(0, AIndex);
+  i := AIndex;
+  while i < Length(ClassList) do
+  begin
+    AddOperatorSubtract(AIndex, i);
+    if AIndex <> i then
+      AddOperatorSubtract(i, AIndex);
+    Inc(i);
+  end;
+
+
 
 
 
@@ -543,45 +676,42 @@ end;
 
 procedure TMainForm.Build;
 var
-  N: longint;
   Base: string;
-  i: longint;
+  i, j: longint;
 begin
   SourceCode.BeginUpdate();
   SourceCode.Lines.Clear;
 
-  ClassComponents := TStringList.Create;
-  ClassComponents.Add('fm0');
-  for i := 1 to DotProduct.ColCount -1 do
+  SpaceDimension := PositiveBox.ItemIndex + NegativeBox.ItemIndex;
+
+  ClassList := nil;
+  SetLength(ClassList, SpaceDimension + 2);
+  for i := Low(ClassList) to High(ClassList) do
   begin
-    ClassComponents.Add(StringReplace(DotProduct.Cells[i, 0], 'e', 'fm', [rfReplaceAll, rfIgnoreCase]));
+    case i of
+      0: ClassList[i].ClassName := 'double';
+      1: ClassList[i].ClassName := 'TVector';
+      2: ClassList[i].ClassName := 'TBivector';
+      3: ClassList[i].ClassName := 'TTrivector';
+      4: ClassList[i].ClassName := 'TQuadrivector';
+      5: ClassList[i].ClassName := 'TPentavector';
+      6: ClassList[i].ClassName := 'THexavector';
+    end;
+    ClassList[i].ClassComponents := TStringList.Create;
   end;
+  ClassList[High(ClassList)].ClassName := 'TMultivector';
 
-  ClassNames := TStringList.Create;
-  N := PositiveBox.ItemIndex + NegativeBox.ItemIndex;
-  if N >= 0 then ClassNames.Add('double');
-  if N >= 1 then ClassNames.Add('TVector');
-  if N >= 2 then ClassNames.Add('TBivector');
-  if N >= 3 then ClassNames.Add('TTrivector');
-  if N >= 4 then ClassNames.Add('TQuadrivector');
-  if N >= 5 then ClassNames.Add('TPentavector');
-  if N >= 6 then ClassNames.Add('THexavector');
-                 ClassNames.Add('TMultivector');
-
-  ClassList := TStringList.Create;
-  ClassList.Add('double');
+  ClassList[Low (ClassList)].ClassComponents.Add('fm0');
+  ClassList[High(ClassList)].ClassComponents.Add('fm0');
   for i := 1 to DotProduct.ColCount -1 do
   begin
     Base := StringReplace(DotProduct.Cells[i, 0], 'e', '', [rfReplaceAll, rfIgnoreCase]);
-    if ClassList.IndexOf(ClassNames[Length(Base)]) = -1 then
-    begin
-      ClassList.Add(ClassNames[Length(Base)]);
-    end;
+    ClassList[Length(Base     )].ClassComponents.Add('fm' + Base);
+    ClassList[High  (ClassList)].ClassComponents.Add('fm' + Base);
   end;
-  ClassList.Add('TMultivector');
 
   SectionA0 := TStringList.Create;
-  SectionA0.Add(Format('unit Cl%d%d%d', [PositiveBox.ItemIndex, NegativeBox.ItemIndex, 0]));
+  SectionA0.Add(Format('unit CL%d%d%d;', [PositiveBox.ItemIndex, NegativeBox.ItemIndex, 0]));
   SectionA0.Add('');
   SectionA0.Add(Format('{ Geometric Algebra Cl%d%d%d for FreePascal.', [PositiveBox.ItemIndex, NegativeBox.ItemIndex, 0]));
   SectionA0.Add('');
@@ -632,19 +762,40 @@ begin
   SectionB0.Add('implementation');
   SectionB0.Add('');
 
-  for i := ClassList.Count -1 downto 1 do
+  if SpaceDimension > 0 then
   begin
-    AddClass(i);
+    Base := '';
+    for i := 0 to ClassList[High(ClassList)].ClassComponents.Count -1 do
+    begin
+      Base := Base + StringReplace(ClassList[High(ClassList)].ClassComponents[i], 'fm', ', cc', [rfReplaceAll, rfIgnoreCase]);
+    end;
+    if Pos(',', Base) = 1 then Delete(Base, 1, 1);
+    if Pos(' ', Base) = 1 then Delete(Base, 1, 1);
+
+    SectionA0.Add('type');
+    SectionA0.Add('  // TMultivector components');
+    SectionA0.Add(Format('  TCLComponent  = (%s);', [Base]));
+    SectionA0.Add(Format('  TCLComponents = set of TCLComponent;', []));
+    SectionA0.Add('');
+
+    for i := High(ClassList) downto Low(ClassList) + 1 do
+    begin
+      AddClass(i);
+    end;
   end;
+
+
+  SectionB0.Add('');
+  SectionB0.Add('end.');
 
   for i := 0 to SectionA0.Count -1 do SourceCode.Lines.Add(SectionA0[i]);
   for i := 0 to SectionB0.Count -1 do SourceCode.Lines.Add(SectionB0[i]);
 
-  SectionB0.Destroy;
   SectionA0.Destroy;
-  ClassList.Destroy;
-  ClassNames.Destroy;
-  ClassComponents.Destroy;
+  SectionB0.Destroy;
+  for i := Low(ClassList) to high(ClassList) do
+    ClassList[i].ClassComponents.Destroy;
+  ClassList := nil;
   SourceCode.EndUpdate;
 end;
 

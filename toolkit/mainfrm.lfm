@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 874
+  Left = 752
   Height = 779
-  Top = 317
+  Top = 308
   Width = 1194
   Caption = 'Geometric Algebra ToolKit'
   ClientHeight = 779
@@ -693,6 +693,7 @@ object MainForm: TMainForm
     Top = 24
   end
   object SynPasSyn: TSynPasSyn
+    Enabled = False
     CompilerMode = pcmObjFPC
     NestedComments = True
     TypeHelpers = False
