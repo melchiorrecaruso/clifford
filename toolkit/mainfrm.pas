@@ -1,0 +1,803 @@
+unit mainfrm;
+
+{$mode objfpc}{$H+}
+
+interface
+
+uses
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Grids, StdCtrls,
+  ExtCtrls, ComCtrls, Buttons, SynHighlighterPas, SynEdit;
+
+type
+
+  TCLClass = record
+    ClassName: string;
+    ClassComponents: TStringList;
+  end;
+
+  TCLClassList = array of TCLClass;
+
+  { TMainForm }
+
+  TMainForm = class(TForm)
+    ExportBtn: TBitBtn;
+    PageControl: TPageControl;
+    NegativeLabel: TLabel;
+    PositiveBox: TComboBox;
+    NegativeBox: TComboBox;
+    PositiveLabel: TLabel;
+    SaveDialog: TSaveDialog;
+    SynPasSyn: TSynPasSyn;
+    WedgeProduct: TStringGrid;
+    GeometricProduct: TStringGrid;
+    WedgeProductSheet: TTabSheet;
+    GeometricProductSheet: TTabSheet;
+    SourceCode: TSynEdit;
+    DotProduct: TStringGrid;
+    DotProductSheet: TTabSheet;
+    SourceCodeSheet: TTabSheet;
+    procedure BoxChange(Sender: TObject);
+    procedure ExportBtnClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure DoPrepareCanvas(Sender: TObject; aCol, aRow: Integer; aState: TGridDrawState);
+  private
+    ClassList: TCLClassList;
+    SpaceDimension: longint;
+
+    SectionA0: TStringList;
+    SectionB0: TStringList;
+
+    function GetDotProduct(const A, B: string): string;
+    function GetWedgeProduct(const A, B: string): string;
+    function GetGeometricProduct(const A, B: string): string;
+
+    procedure AddOperatorEqual(ALeftIndex, ARightIndex: longint);
+    procedure AddOperatorNotEqual(ALeftIndex, ARightIndex: longint);
+    procedure AddOperatorAdd(ALeftIndex, ARightIndex: longint);
+    procedure AddOperatorSubtract(ALeftIndex, ARightIndex: longint);
+
+    procedure AddClass(AIndex: longint);
+  public
+    procedure Build;
+  end;
+
+var
+  MainForm: TMainForm;
+
+implementation
+
+{$R *.lfm}
+
+uses
+  Math;
+  
+type
+  TBasis = array of string;
+
+const
+  MaxDimensions = 6;
+
+procedure GenerateCombinations(N, K: Integer; Prefix: string; Start: Integer; var Basis: TBasis);
+var
+  i: Integer;
+begin
+  if K = 0 then
+  begin
+    SetLength(Basis, Length(Basis) + 1);
+    Basis[High(Basis)] := Prefix;
+  end else
+    for i := start to N do
+    begin
+      GenerateCombinations(N, K - 1, Prefix + 'e' + IntToStr(i), i + 1, Basis);
+    end;
+end;
+
+function CheckInner(const A, B: string): boolean;
+var
+  i, Count: longint;
+  Short, Long: string;
+begin
+  if Length(A) = Length(B) then
+  begin
+    result := A = B;
+  end else
+  begin
+    if Length(A) < Length(B) then
+    begin
+      Short := StringReplace(A, 'e', '', [rfReplaceAll, rfIgnoreCase]);
+      Long  := StringReplace(B, 'e', '', [rfReplaceAll, rfIgnoreCase]);
+    end else
+    begin
+      Long  := StringReplace(A, 'e', '', [rfReplaceAll, rfIgnoreCase]);;
+      Short := StringReplace(B, 'e', '', [rfReplaceAll, rfIgnoreCase]);;
+    end;
+
+    Count := 0;
+    for i := Low(Short) to High(Short) do
+      if Pos(Short[i], Long) > 0 then
+        Inc(Count);
+
+    result := Count = Length(Short);
+  end;
+end;
+
+function CheckWedge(const A, B: string): boolean;
+var
+  i: longint;
+  Short, Long: string;
+begin
+  Short := StringReplace(A, 'e', '', [rfReplaceAll, rfIgnoreCase]);
+  Long  := StringReplace(B, 'e', '', [rfReplaceAll, rfIgnoreCase]);
+
+  for i := Low(Short) to High(Short) do
+    if Pos(Short[i], Long) > 0 then Exit(False);
+
+  result := True;
+end;
+
+function TMainform.GetDotProduct(const A, B: string): string;
+begin
+  if CheckInner(A, B) then
+    result := GetGeometricProduct(A, B)
+  else
+    result := '0';
+end;
+
+function TMainform.GetWedgeProduct(const A, B: string): string;
+begin
+  if CheckWedge(A, B) then
+    result := GetGeometricProduct(A, B)
+  else
+    result := '0';
+end;
+
+function TMainform.GetGeometricProduct(const A, B: string): string;
+var
+  i, k, dk: longint;
+  T: string;
+begin
+  result := StringReplace(A + B, 'e', '', [rfReplaceAll, rfIgnoreCase]);
+  // Ordinamento
+  k := 0;
+  repeat
+    dk := 0;
+    for i := Low(result) to High(result) -1 do
+    begin
+      if result[i] > result[i + 1] then
+      begin
+        T := result[i] + result[i + 1];
+        result[i    ] := T[2];
+        result[i + 1] := T[1];
+        Inc(dk);
+      end;
+    end;
+    Inc(k, dk);
+  until dk = 0;
+  // Calcola il segno del risultato
+  dk := 0;
+  for i := 1 to PositiveBox.ItemIndex do
+    if Pos(i.ToString + i.ToString, result) > 0 then
+    begin
+      result := StringReplace(result, i.ToString + i.ToString, '', [rfReplaceAll, rfIgnoreCase]);
+      Inc(dk);
+    end;
+
+  for i := (PositiveBox.ItemIndex + 1) to (PositiveBox.ItemIndex + NegativeBox.ItemIndex) do
+    if Pos(i.ToString + i.ToString, result) > 0 then
+    begin
+      result := StringReplace(result, i.ToString + i.ToString, '', [rfReplaceAll, rfIgnoreCase]);
+      Inc(dk);
+      Inc(k);
+    end;
+  // Definisce il risultato
+  if k mod 2 = 0 then
+  begin
+    if result = '' then
+      result := '1'
+    else
+      result := 'e' + result;
+  end else
+  begin
+    if result = '' then
+      result := '-1'
+    else
+      result := '-e' + result
+  end;
+end;
+
+{ TMainForm }
+
+procedure TMainForm.FormCreate(Sender: TObject);
+begin
+  BoxChange(Sender);
+end;
+
+procedure TMainForm.DoPrepareCanvas(Sender: TObject; aCol, aRow: Integer; aState: TGridDrawState);
+var
+  S: string;
+begin
+  if TStringGrid(Sender).Cells[aCol, aRow] =  '0' then TStringGrid(Sender).Canvas.Brush.Color := RGBToColor(238, 238, 238) else
+  if TStringGrid(Sender).Cells[aCol, aRow] =  '1' then TStringGrid(Sender).Canvas.Brush.Color := RGBToColor(0,   255,   0) else
+  if TStringGrid(Sender).Cells[aCol, aRow] = '-1' then TStringGrid(Sender).Canvas.Brush.Color := RGBToColor(255,   0,   0) else
+  begin
+    S := StringReplace(TStringGrid(Sender).Cells[aCol, aRow], '-', '', [rfReplaceAll, rfIgnoreCase]);
+   case Length(S) of
+     2: TStringGrid(Sender).Canvas.Brush.Color := RGBToColor( 81, 157, 255);
+     3: TStringGrid(Sender).Canvas.Brush.Color := RGBToColor(243, 166, 255);
+     4: TStringGrid(Sender).Canvas.Brush.Color := RGBToColor(255, 126,   0);
+     5: TStringGrid(Sender).Canvas.Brush.Color := RGBToColor(255, 228,   0);
+     6: TStringGrid(Sender).Canvas.Brush.Color := clWhite;
+   else TStringGrid(Sender).Canvas.Brush.Color := clWhite;
+   end;
+  end;
+end;
+
+procedure TMainForm.BoxChange(Sender: TObject);
+var
+  Style: TTextStyle;
+  N, K, i, j: Integer;
+  Basis: TBasis = nil;
+begin
+  N := PositiveBox.ItemIndex + NegativeBox.ItemIndex;
+  if N <= MaxDimensions then
+  begin
+    DotProduct      .ColCount := 1 shl N;
+    DotProduct      .RowCount := 1 shl N;
+    WedgeProduct    .ColCount := 1 shl N;
+    WedgeProduct    .RowCount := 1 shl N;
+    GeometricProduct.ColCount := 1 shl N;
+    GeometricProduct.RowCount := 1 shl N;
+
+    j := 1;
+    for K := 1 to N do
+    begin
+      SetLength(Basis, 0);
+      GenerateCombinations(N, K, '', 1, Basis);
+
+      for i := 0 to High(Basis) do
+      begin
+        DotProduct      .Cells[j, 0] := 'e' + StringReplace(Basis[i], 'e', '', [rfReplaceAll, rfIgnoreCase]);
+        DotProduct      .Cells[0, j] := DotProduct.Cells[j, 0];
+        WedgeProduct    .Cells[j, 0] := 'e' + StringReplace(Basis[i], 'e', '', [rfReplaceAll, rfIgnoreCase]);
+        WedgeProduct    .Cells[0, j] := DotProduct.Cells[j, 0];
+        GeometricProduct.Cells[j, 0] := 'e' + StringReplace(Basis[i], 'e', '', [rfReplaceAll, rfIgnoreCase]);
+        GeometricProduct.Cells[0, j] := GeometricProduct.Cells[j, 0];
+        Inc(j);
+       end;
+   end;
+    Basis := nil;
+    DotProduct      .Cells[0, 0] := '1';
+    WedgeProduct    .Cells[0, 0] := '1';
+    GeometricProduct.Cells[0, 0] := '1';
+
+    for i := 1 to DotProduct.ColCount -1 do
+      for j := 1 to DotProduct.RowCount -1 do
+      begin
+        DotProduct      .Cells[i, j] := GetDotProduct      (DotProduct.Cells[0, j], DotProduct.Cells[i, 0]);
+        WedgeProduct    .Cells[i, j] := GetWedgeProduct    (DotProduct.Cells[0, j], DotProduct.Cells[i, 0]);
+        GeometricProduct.Cells[i, j] := GetGeometricProduct(DotProduct.Cells[0, j], DotProduct.Cells[i, 0]);
+      end;
+
+    Style.Alignment := taCenter;
+    style.Layout    := tlCenter;
+    DotProduct      .DefaultTextStyle := Style;
+    WedgeProduct    .DefaultTextStyle := Style;
+    GeometricProduct.DefaultTextStyle := Style;
+
+    Build;
+  end else
+    MessageDlg('Warning', Format('Maximum %d dimensions!', [MaxDimensions]), mtWarning,  [mbOK], '');
+
+  PageControl.TabIndex:= 0;
+end;
+
+procedure TMainForm.ExportBtnClick(Sender: TObject);
+begin
+  if SaveDialog.Execute then
+  begin
+    SourceCode.Lines.SaveToFile(SaveDialog.FileName);
+  end;
+end;
+
+procedure TMainForm.AddOperatorEqual(ALeftIndex, ARightIndex: longint);
+var
+  i: longint;
+  Line: string;
+  List: TStringList;
+  LeftComponent: string;
+  RightComponent: string;
+  BaseIndex: longint;
+begin
+  if ALeftIndex <> ARightIndex then
+  begin
+    if (ClassList[ALeftIndex ].ClassName <> 'TMultivector') and
+       (ClassList[ARightIndex].ClassName <> 'TMultivector') then Exit;
+  end;
+
+  BaseIndex := Min(ALeftIndex, ARightIndex);
+  if BaseIndex = 0 then
+  begin
+    BaseIndex := Max(ALeftIndex, ARightIndex);
+  end;
+
+  if ALeftIndex <> ARightIndex then
+  begin
+    SectionA0.Add(Format('    class operator = (const ALeft: %s; ARight: %s): boolean;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.=(const ALeft: %s; ARight: %s): boolean;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]))
+  end else
+  begin
+    SectionA0.Add(Format('    class operator = (const ALeft, ARight: %s): boolean;', [
+      ClassList[ALeftIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.=(const ALeft, ARight: %s): boolean;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex ].ClassName]));
+  end;
+
+  SectionB0.Add('begin');
+  SectionB0.Add('  result :=');
+
+  List := ClassList[High(ClassList)].ClassComponents;
+  for i := 0 to List.Count -1 do
+  begin
+    if i <> List.Count -1 then
+      Line := '    SameValue(%s, %s) and'
+    else
+      Line := '    SameValue(%s, %s);';
+
+    LeftComponent := '0';
+    if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      LeftComponent := 'ALeft.' + List[i];
+      if ClassList[ALeftIndex].ClassName = 'double' then
+      begin
+        LeftComponent := 'ALeft';
+      end;
+    end;
+
+    RightComponent := '0';
+    if ClassList[ARightIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      RightComponent := 'ARight.' + List[i];
+      if ClassList[ArightIndex].ClassName = 'double' then
+      begin
+        RightComponent := 'ARight'
+      end;
+    end;
+
+    if (LeftComponent  <> '0') and
+       (RightComponent <> '0') then
+    begin
+      SectionB0.Add(Format(Line, [LeftComponent, RightComponent]));
+    end;
+  end;
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddOperatorNotEqual(ALeftIndex, ARightIndex: longint);
+var
+  i: longint;
+  Line: string;
+  List: TStringList;
+  LeftComponent: string;
+  RightComponent: string;
+  BaseIndex: longint;
+begin
+  if ALeftIndex <> ARightIndex then
+  begin
+    if (ClassList[ALeftIndex ].ClassName <> 'TMultivector') and
+       (ClassList[ARightIndex].ClassName <> 'TMultivector') then Exit;
+  end;
+
+  BaseIndex := Min(ALeftIndex, ARightIndex);
+  if BaseIndex = 0 then
+  begin
+    BaseIndex := Max(ALeftIndex, ARightIndex);
+  end;
+
+  if ALeftIndex <> ARightIndex then
+   begin
+     SectionA0.Add(Format('    class operator <>(const ALeft: %s; ARight: %s): boolean;', [
+       ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+     SectionB0.Add(Format('class operator %s.<>(const ALeft: %s; ARight: %s): boolean;', [
+       ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]))
+   end else
+   begin
+     SectionA0.Add(Format('    class operator <>(const ALeft, ARight: %s): boolean;', [
+       ClassList[ALeftIndex].ClassName]));
+     SectionB0.Add(Format('class operator %s.<>(const ALeft, ARight: %s): boolean;', [
+       ClassList[BaseIndex].ClassName, ClassList[ALeftIndex ].ClassName]));
+   end;
+
+  SectionB0.Add('begin');
+  SectionB0.Add('  result :=');
+
+  List := ClassList[High(ClassList)].ClassComponents;
+  for i := 0 to List.Count -1 do
+  begin
+    if i <> List.Count -1 then
+      Line := '    (not SameValue(%s, %s)) or '
+    else
+      Line := '    (not SameValue(%s, %s));';
+
+    LeftComponent := '0';
+    if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      LeftComponent := 'ALeft' + List[i];
+      if ClassList[ALeftIndex].ClassName = 'double' then
+      begin
+        LeftComponent := 'ALeft';
+      end;
+    end;
+
+    RightComponent := '0';
+    if ClassList[ARightIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      RightComponent := 'ARight.' + List[i];
+      if ClassList[ArightIndex].ClassName = 'double' then
+      begin
+        RightComponent := 'ARight'
+      end;
+    end;
+
+    if (LeftComponent  <> '0') and
+       (RightComponent <> '0') then
+    begin
+      SectionB0.Add(Format(Line, [LeftComponent, RightComponent]));
+    end;
+  end;
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddOperatorAdd(ALeftIndex, ARightIndex: longint);
+var
+  i: longint;
+  Line: string;
+  List: TStringList;
+  LeftComponent: string;
+  RightComponent: string;
+  BaseIndex: longint;
+begin
+  BaseIndex := Min(ALeftIndex, ARightIndex);
+  if BaseIndex = 0 then
+  begin
+    BaseIndex := Max(ALeftIndex, ARightIndex);
+  end;
+
+  if ALeftIndex <> ARightIndex then
+  begin
+    SectionA0.Add(Format('    class operator + (const ALeft: %s; ARight: %s): TMultivector;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.+(const ALeft: %s; ARight: %s): TMultivector;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+  end else
+  begin
+    SectionA0.Add(Format('    class operator + (const ALeft, ARight: %s): %s;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ALeftIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.+(const ALeft, ARight: %s): %s;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex ].ClassName, ClassList[ALeftIndex].ClassName]));
+  end;
+
+  SectionB0.Add('begin');
+
+  List := ClassList[High(ClassList)].ClassComponents;
+  for i := 0 to List.Count -1 do
+  begin
+    LeftComponent := '0';
+    if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      LeftComponent := 'ALeft.' + List[i];
+      if ClassList[ALeftIndex].ClassName = 'double' then
+      begin
+        LeftComponent := 'ALeft';
+      end;
+    end;
+
+    RightComponent := '0';
+    if ClassList[ARightIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      RightComponent := 'ARight.' + List[i];
+      if ClassList[ArightIndex].ClassName = 'double' then
+      begin
+        RightComponent := 'ARight';
+      end;
+    end;
+
+    Line := '';
+    if ALeftIndex <> ARightIndex then
+    begin
+      Line := Format('  result.%s := ', [List[i]]);
+      if LeftComponent <> '0' then
+      begin
+        Line := Line + LeftComponent;
+        if RightComponent <> '0' then
+          Line := Line + ' + ' + RightComponent;
+      end else
+      begin
+        Line := Line + RightComponent;
+      end;
+    end else
+    begin
+      if (LeftComponent  <> '0') and
+         (RightComponent <> '0') then
+        Line := Format('  result.%s := %s + %s', [List[i], LeftComponent, RightComponent]);
+    end;
+
+    if Line <> '' then SectionB0.Add(Line + ';');
+  end;
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddOperatorSubtract(ALeftIndex, ARightIndex: longint);
+var
+  i: longint;
+  Line: string;
+  List: TStringList;
+  LeftComponent: string;
+  RightComponent: string;
+  BaseIndex: longint;
+begin
+  BaseIndex := Min(ALeftIndex, ARightIndex);
+  if BaseIndex = 0 then
+  begin
+    BaseIndex := Max(ALeftIndex, ARightIndex);
+  end;
+
+  if ALeftIndex <> ARightIndex then
+  begin
+    SectionA0.Add(Format('    class operator - (const ALeft: %s; ARight: %s): TMultivector;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.-(const ALeft: %s; ARight: %s): TMultivector;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName]));
+  end else
+  begin
+    SectionA0.Add(Format('    class operator - (const ALeft, ARight: %s): %s;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ALeftIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.-(const ALeft, ARight: %s): %s;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex ].ClassName, ClassList[ALeftIndex].ClassName]));
+  end;
+
+  SectionB0.Add('begin');
+
+  List := ClassList[High(ClassList)].ClassComponents;
+  for i := 0 to List.Count -1 do
+  begin
+    LeftComponent := '0';
+    if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      LeftComponent := 'ALeft.' + List[i];
+      if ClassList[ALeftIndex].ClassName = 'double' then
+      begin
+        LeftComponent := 'ALeft';
+      end;
+    end;
+
+    RightComponent := '0';
+    if ClassList[ARightIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      RightComponent := 'ARight.' + List[i];
+      if ClassList[ArightIndex].ClassName = 'double' then
+      begin
+        RightComponent := 'ARight';
+      end;
+    end;
+
+    Line := '';
+    if ALeftIndex <> ARightIndex then
+    begin
+      Line := Format('  result.%s := ', [List[i]]);
+      if LeftComponent <> '0' then
+      begin
+        Line := Line + LeftComponent;
+        if RightComponent <> '0' then
+          Line := Line + ' - ' + RightComponent;
+      end else
+      begin
+        if RightComponent <> '0' then
+          Line := Line + '-' + RightComponent
+        else
+          Line := Line + '0';
+      end;
+    end else
+    begin
+      if (LeftComponent  <> '0') and
+         (RightComponent <> '0') then
+        Line := Format('  result.%s := %s - %s', [List[i], LeftComponent, RightComponent]);
+    end;
+
+    if Line <> '' then SectionB0.Add(Line + ';');
+  end;
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddClass(AIndex: longint);
+var
+  i: longint;
+begin
+  SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
+  SectionA0.Add(Format('  %s = record', [ClassList[AIndex].ClassName]));
+  // Adding = operator
+  AddOperatorEqual(AIndex, 0);
+  AddOperatorEqual(0, AIndex);
+  i := AIndex;
+  while i < Length(ClassList) do
+  begin
+    AddOperatorEqual(AIndex, i);
+    if AIndex <> i then
+      AddOperatorEqual(i, AIndex);
+    Inc(i);
+  end;
+  // Adding <> operator
+  AddOperatorNotEqual(AIndex, 0);
+  AddOperatorNotEqual(0, AIndex);
+  i := AIndex;
+  while i < Length(ClassList) do
+  begin
+    AddOperatorNotEqual(AIndex, i);
+    if AIndex <> i then
+      AddOperatorNotEqual(i, AIndex);
+    Inc(i);
+  end;
+  // Adding + operator
+  AddOperatorAdd(AIndex, 0);
+  AddOperatorAdd(0, AIndex);
+  i := AIndex;
+  while i < Length(ClassList) do
+  begin
+    AddOperatorAdd(AIndex, i);
+    if AIndex <> i then
+      AddOperatorAdd(i, AIndex);
+    Inc(i);
+  end;
+  // Adding - operator
+  AddOperatorSubtract(AIndex, 0);
+  AddOperatorSubtract(0, AIndex);
+  i := AIndex;
+  while i < Length(ClassList) do
+  begin
+    AddOperatorSubtract(AIndex, i);
+    if AIndex <> i then
+      AddOperatorSubtract(i, AIndex);
+    Inc(i);
+  end;
+
+
+
+
+
+
+  SectionA0.Add('  end;');
+  SectionA0.Add('');
+end;
+
+procedure TMainForm.Build;
+var
+  Base: string;
+  i, j: longint;
+begin
+  SourceCode.BeginUpdate();
+  SourceCode.Lines.Clear;
+
+  SpaceDimension := PositiveBox.ItemIndex + NegativeBox.ItemIndex;
+
+  ClassList := nil;
+  SetLength(ClassList, SpaceDimension + 2);
+  for i := Low(ClassList) to High(ClassList) do
+  begin
+    case i of
+      0: ClassList[i].ClassName := 'double';
+      1: ClassList[i].ClassName := 'TVector';
+      2: ClassList[i].ClassName := 'TBivector';
+      3: ClassList[i].ClassName := 'TTrivector';
+      4: ClassList[i].ClassName := 'TQuadrivector';
+      5: ClassList[i].ClassName := 'TPentavector';
+      6: ClassList[i].ClassName := 'THexavector';
+    end;
+    ClassList[i].ClassComponents := TStringList.Create;
+  end;
+  ClassList[High(ClassList)].ClassName := 'TMultivector';
+
+  ClassList[Low (ClassList)].ClassComponents.Add('fm0');
+  ClassList[High(ClassList)].ClassComponents.Add('fm0');
+  for i := 1 to DotProduct.ColCount -1 do
+  begin
+    Base := StringReplace(DotProduct.Cells[i, 0], 'e', '', [rfReplaceAll, rfIgnoreCase]);
+    ClassList[Length(Base     )].ClassComponents.Add('fm' + Base);
+    ClassList[High  (ClassList)].ClassComponents.Add('fm' + Base);
+  end;
+
+  SectionA0 := TStringList.Create;
+  SectionA0.Add(Format('unit CL%d%d%d;', [PositiveBox.ItemIndex, NegativeBox.ItemIndex, 0]));
+  SectionA0.Add('');
+  SectionA0.Add(Format('{ Geometric Algebra Cl%d%d%d for FreePascal.', [PositiveBox.ItemIndex, NegativeBox.ItemIndex, 0]));
+  SectionA0.Add('');
+  SectionA0.Add('  Copyright (c) 2024 Melchiorre Caruso');
+  SectionA0.Add('  Permission is hereby granted, free of charge, to any person obtaining a copy');
+  SectionA0.Add('  of this software and associated documentation files (the "Software"), to');
+  SectionA0.Add('  deal in the Software without restriction, including without limitation the');
+  SectionA0.Add('  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or');
+  SectionA0.Add('  sell copies of the Software, and to permit persons to whom the Software is');
+  SectionA0.Add('  furnished to do so, subject to the following conditions:');
+  SectionA0.Add('');
+  SectionA0.Add('  The above copyright notice and this permission notice shall be included in');
+  SectionA0.Add('  all copies or substantial portions of the Software.');
+  SectionA0.Add('');
+  SectionA0.Add('  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR');
+  SectionA0.Add('  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,');
+  SectionA0.Add('  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE');
+  SectionA0.Add('  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER');
+  SectionA0.Add('  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING');
+  SectionA0.Add('  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS');
+  SectionA0.Add('  IN THE SOFTWARE.');
+  SectionA0.Add('}');
+  SectionA0.Add('');
+  SectionA0.Add('{ References:');
+  SectionA0.Add('  - Chris Doran, Anthony Lasenby,');
+  SectionA0.Add('    Geometric algebra for Physicists, (2003) Cambridge University Press.');
+  SectionA0.Add('  - Eckhard Hitzer, Stephen Sangwine,');
+  SectionA0.Add('    Multivector and multivector matrix inverses in real Clifford algebras,');
+  SectionA0.Add('    (2016) Preprint: Technical Report CES-534, ISSN: 1744-8050.');
+  SectionA0.Add('  - James M. Chappell, Azhar Iqbal, Lachlan J. Gunn, Derek Abbott,');
+  SectionA0.Add('    Function of multivector variables, (2015) PLoS One.');
+  SectionA0.Add('}');
+  SectionA0.Add('');
+  SectionA0.Add('{$H+}{$J-}');
+  SectionA0.Add('{$mode objfpc}{$h+}');
+  SectionA0.Add('{$modeswitch advancedrecords}');
+  SectionA0.Add('{$WARN 5024 OFF} // Suppress warning for unused routine parameter.');
+  SectionA0.Add('{$WARN 5033 OFF} // Suppress warning for unassigned function''s return value.');
+  SectionA0.Add('{$MACRO ON}');
+  SectionA0.Add('');
+  SectionA0.Add('interface');
+  SectionA0.Add('');
+  SectionA0.Add('uses');
+  SectionA0.Add('  SysUtils;');
+  SectionA0.Add('');
+
+  SectionB0 := TStringList.Create;
+  SectionB0.Add('implementation');
+  SectionB0.Add('');
+
+  if SpaceDimension > 0 then
+  begin
+    Base := '';
+    for i := 0 to ClassList[High(ClassList)].ClassComponents.Count -1 do
+    begin
+      Base := Base + StringReplace(ClassList[High(ClassList)].ClassComponents[i], 'fm', ', cc', [rfReplaceAll, rfIgnoreCase]);
+    end;
+    if Pos(',', Base) = 1 then Delete(Base, 1, 1);
+    if Pos(' ', Base) = 1 then Delete(Base, 1, 1);
+
+    SectionA0.Add('type');
+    SectionA0.Add('  // TMultivector components');
+    SectionA0.Add(Format('  TCLComponent  = (%s);', [Base]));
+    SectionA0.Add(Format('  TCLComponents = set of TCLComponent;', []));
+    SectionA0.Add('');
+
+    for i := High(ClassList) downto Low(ClassList) + 1 do
+    begin
+      AddClass(i);
+    end;
+  end;
+
+
+  SectionB0.Add('');
+  SectionB0.Add('end.');
+
+  for i := 0 to SectionA0.Count -1 do SourceCode.Lines.Add(SectionA0[i]);
+  for i := 0 to SectionB0.Count -1 do SourceCode.Lines.Add(SectionB0[i]);
+
+  SectionA0.Destroy;
+  SectionB0.Destroy;
+  for i := Low(ClassList) to high(ClassList) do
+    ClassList[i].ClassComponents.Destroy;
+  ClassList := nil;
+  SourceCode.EndUpdate;
+end;
+
+end.
+
