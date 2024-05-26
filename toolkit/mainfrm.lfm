@@ -1,9 +1,9 @@
 object MainForm: TMainForm
-  Left = 790
+  Left = 874
   Height = 779
-  Top = 293
+  Top = 317
   Width = 1194
-  Caption = 'Clifford ToolKit'
+  Caption = 'Geometric Algebra ToolKit'
   ClientHeight = 779
   ClientWidth = 1194
   LCLVersion = '3.99.0.0'
@@ -90,30 +90,6 @@ object MainForm: TMainForm
     Caption = 'Negative'
     Layout = tlCenter
   end
-  object ProductBox: TComboBox
-    AnchorSideTop.Control = NegativeBox
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = NegativeLabel
-    AnchorSideBottom.Side = asrBottom
-    Left = 944
-    Height = 31
-    Top = 20
-    Width = 240
-    Anchors = [akTop, akRight, akBottom]
-    BorderSpacing.Right = 10
-    ItemHeight = 0
-    ItemIndex = 0
-    Items.Strings = (
-      'Inner product'
-      'Outer product'
-      'Geometric product'
-    )
-    Style = csDropDownList
-    TabOrder = 2
-    Text = 'Inner product'
-    OnChange = BoxChange
-  end
   object PageControl: TPageControl
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = PositiveBox
@@ -126,16 +102,17 @@ object MainForm: TMainForm
     Height = 698
     Top = 81
     Width = 1194
-    ActivePage = TableTabSheet
+    ActivePage = SourceCodeSheet
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Top = 30
-    TabIndex = 0
-    TabOrder = 3
-    object TableTabSheet: TTabSheet
-      Caption = 'Cayley table'
+    TabIndex = 3
+    TabOrder = 2
+    object DotProductSheet: TTabSheet
+      Caption = 'Dot Product Table'
       ClientHeight = 665
       ClientWidth = 1184
-      object Table: TStringGrid
+      object DotProduct: TStringGrid
+        AnchorSideRight.Side = asrBottom
         Left = 0
         Height = 665
         Top = 0
@@ -147,15 +124,52 @@ object MainForm: TMainForm
         FixedRows = 0
         GridLineColor = clGray
         RowCount = 0
+        ScrollBars = ssBoth
         TabOrder = 0
-        OnPrepareCanvas = TablePrepareCanvas
+        OnPrepareCanvas = DoPrepareCanvas
       end
     end
-    object UnitSourceCodeTabSheet: TTabSheet
-      Caption = 'Unit source code'
+    object WedgeProductSheet: TTabSheet
+      Caption = 'Wedge Product Table'
       ClientHeight = 665
       ClientWidth = 1184
-      inline UnitSourcecodeSynEdit: TSynEdit
+      object WedgeProduct: TStringGrid
+        Left = 0
+        Height = 665
+        Top = 0
+        Width = 1184
+        Align = alClient
+        ColCount = 0
+        FixedCols = 0
+        FixedRows = 0
+        RowCount = 0
+        TabOrder = 0
+        OnPrepareCanvas = DoPrepareCanvas
+      end
+    end
+    object GeometricProductSheet: TTabSheet
+      Caption = 'Geometric Product Table'
+      ClientHeight = 665
+      ClientWidth = 1184
+      object GeometricProduct: TStringGrid
+        Left = 0
+        Height = 665
+        Top = 0
+        Width = 1184
+        Align = alClient
+        ColCount = 0
+        FixedCols = 0
+        FixedRows = 0
+        RowCount = 0
+        TabOrder = 0
+        OnPrepareCanvas = DoPrepareCanvas
+      end
+    end
+    object SourceCodeSheet: TTabSheet
+      Caption = 'Unit Source Code'
+      ClientHeight = 665
+      ClientWidth = 1184
+      inline SourceCode: TSynEdit
         Left = 0
         Height = 665
         Top = 0
@@ -173,6 +187,7 @@ object MainForm: TMainForm
         Gutter.MouseActions = <>
         RightGutter.Width = 0
         RightGutter.MouseActions = <>
+        Highlighter = SynPasSyn
         Keystrokes = <        
           item
             Command = ecUp
@@ -656,5 +671,33 @@ object MainForm: TMainForm
         end
       end
     end
+  end
+  object ExportBtn: TBitBtn
+    AnchorSideTop.Control = NegativeBox
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = NegativeBox
+    AnchorSideBottom.Side = asrBottom
+    Left = 1064
+    Height = 31
+    Top = 20
+    Width = 120
+    Anchors = [akTop, akRight, akBottom]
+    BorderSpacing.Right = 10
+    Caption = 'Export'
+    TabOrder = 3
+    OnClick = ExportBtnClick
+  end
+  object SaveDialog: TSaveDialog
+    Left = 992
+    Top = 24
+  end
+  object SynPasSyn: TSynPasSyn
+    CompilerMode = pcmObjFPC
+    NestedComments = True
+    TypeHelpers = False
+    StringMultilineMode = []
+    Left = 904
+    Top = 24
   end
 end

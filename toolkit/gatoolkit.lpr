@@ -1,4 +1,4 @@
-program cayley;
+program gatoolkit;
 
 {$mode objfpc}{$H+}
 
@@ -10,7 +10,7 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, cayleyform
+  Forms, mainfrm
   { you can add units after this };
 
 {$R *.res}
