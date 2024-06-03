@@ -60,6 +60,7 @@ type
     procedure AddOperatorAdd(ALeftIndex, ARightIndex: longint);
     procedure AddOperatorSubtract(ALeftIndex, ARightIndex: longint);
     procedure AddOperatorGeometric(ALeftIndex, ARightIndex: longint);
+    procedure AddOperatorWedge(ALeftIndex, ARightIndex: longint);
     procedure AddOperatorDiv(ALeftIndex, ARightIndex: longint);
 
     procedure AddClass(AIndex: longint);
@@ -658,10 +659,10 @@ end;
 
 procedure TMainForm.AddOperatorGeometric(ALeftIndex, ARightIndex: longint);
 type
-  TReturnComponent = (rtScalar, rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
+  TReturnComponent = (rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
   TReturnComponents = set of TReturnComponent;
 var
-  i, j: longint;
+  i, j, k: longint;
   Base: string;
   BaseIndex: longint;
   Return: array of TStringList = nil;
@@ -709,12 +710,11 @@ begin
       end;
     end;
 
-  ReturnIndex := -1;
+  ReturnIndex := 0;
   ReturnComponents := [];
   for i := Low(Return) to High(Return) do
   begin
     case i of
-      0: if Return[0].Count > 0 then Include(ReturnComponents, rtScalar);
       1: if Return[1].Count > 0 then Include(ReturnComponents, rtVector);
       2: if Return[2].Count > 0 then Include(ReturnComponents, rtBivector);
       3: if Return[3].Count > 0 then Include(ReturnComponents, rtTrivector);
@@ -724,7 +724,7 @@ begin
     end;
   end;
 
-  if ReturnComponents = [rtScalar      ] then ReturnIndex := 0 else
+  if ReturnComponents = [              ] then ReturnIndex := 0 else
   if ReturnComponents = [rtVector      ] then ReturnIndex := 1 else
   if ReturnComponents = [rtBivector    ] then ReturnIndex := 2 else
   if ReturnComponents = [rtTrivector   ] then ReturnIndex := 3 else
@@ -746,6 +746,7 @@ begin
       ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
   end;
 
+  k := 0;
   SectionB0.Add('begin');
   for i := Low(Return) to High(Return) do
   begin
@@ -758,11 +759,142 @@ begin
           SectionB0.Add('    ' + Return[i][j] + ';')
         else
           SectionB0.Add('    ' + Return[i][j]);
+        Inc(k);
       end;
+      SectionB0.Add('');
     end else
-      SectionB0.Add(Format('  result.%s := 0;', [GetComp(i)]));
-    SectionB0.Add('');
+      if ClassList[ReturnIndex].ClassName = 'TMultivector' then
+      begin
+        SectionB0.Add(Format('  result.%s := 0;', [GetComp(i)]));
+        Inc(k);
+      end;
   end;
+
+  if k = 0 then
+    SectionB0.Add('  result := 0;');
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+
+  for i := Low(Return) to High(Return) do
+    Return[i].Destroy;
+  Return := nil;
+end;
+
+procedure TMainForm.AddOperatorWedge(ALeftIndex, ARightIndex: longint);
+type
+  TReturnComponent = (rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
+  TReturnComponents = set of TReturnComponent;
+var
+  i, j, k: longint;
+  Base: string;
+  BaseIndex: longint;
+  Return: array of TStringList = nil;
+  ReturnIndex: longint;
+  ReturnComponents: TReturnComponents;
+begin
+  BaseIndex := Min(ALeftIndex, ARightIndex);
+  if BaseIndex = 0 then
+  begin
+    BaseIndex := Max(ALeftIndex, ARightIndex);
+  end;
+
+  SetLength(Return, 1 shl SpaceDimension);
+  for i := Low(Return) to High(Return) do
+    Return[i] := TStringList.Create;
+
+  for i := 0 to ClassList[ALeftIndex].ClassComponents.Count -1 do
+    for j := 0 to ClassList[ARightIndex].ClassComponents.Count -1 do
+    begin
+      Base := WedgeProduct.Cells[
+        ClassList[ARightIndex].ClassComponents[j],
+        ClassList[ALeftIndex ].ClassComponents[i]];
+
+      if Base = '0' then
+      begin
+        // nothing to do
+      end else
+      if Base = '1' then
+      begin
+        Return[0].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+      end else
+      if Base = '-1' then
+      begin
+        Return[0].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+      end else
+      begin
+        ReturnIndex := GetIndex(Base);
+        if Pos('-', Base) = 0 then
+        begin
+          Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end else
+        begin
+          Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end;
+      end;
+    end;
+
+  ReturnIndex := 0;
+  ReturnComponents := [];
+  for i := Low(Return) to High(Return) do
+  begin
+    case i of
+      1: if Return[1].Count > 0 then Include(ReturnComponents, rtVector);
+      2: if Return[2].Count > 0 then Include(ReturnComponents, rtBivector);
+      3: if Return[3].Count > 0 then Include(ReturnComponents, rtTrivector);
+      4: if Return[4].Count > 0 then Include(ReturnComponents, rtQuadrivector);
+      5: if Return[5].Count > 0 then Include(ReturnComponents, rtPentavector);
+      6: if Return[6].Count > 0 then Include(ReturnComponents, rtHexavector);
+    end;
+  end;
+
+  if ReturnComponents = [              ] then ReturnIndex := 0 else
+  if ReturnComponents = [rtVector      ] then ReturnIndex := 1 else
+  if ReturnComponents = [rtBivector    ] then ReturnIndex := 2 else
+  if ReturnComponents = [rtTrivector   ] then ReturnIndex := 3 else
+  if ReturnComponents = [rtQuadrivector] then ReturnIndex := 4 else
+  if ReturnComponents = [rtPentavector ] then ReturnIndex := 5 else
+  if ReturnComponents = [rtHexavector  ] then ReturnIndex := 6 else ReturnIndex := High(ClassList);
+
+  if ALeftIndex = ARightIndex then
+  begin
+    SectionA0.Add(Format('    class function Wedge(const ALeft, ARight: %s): %s;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+    SectionB0.Add(Format('class function %s.Wedge(const ALeft, ARight: %s): %s;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+  end else
+  begin
+    SectionA0.Add(Format('    class function Wedge(const ALeft: %s; const ARight: %s): %s;', [
+      ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+    SectionB0.Add(Format('class function %s.Wedge(const ALeft: %s; const ARight: %s): %s;', [
+      ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+  end;
+
+  k := 0;
+  SectionB0.Add('begin');
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+      SectionB0.Add(Format('  result.%s := ', [GetComp(i)]));
+      for j := 0 to Return[i].Count -1 do
+      begin
+        if j = Return[i].Count -1 then
+          SectionB0.Add('    ' + Return[i][j] + ';')
+        else
+          SectionB0.Add('    ' + Return[i][j]);
+        Inc(k);
+      end;
+      SectionB0.Add('');
+    end else
+      if ClassList[ReturnIndex].ClassName = 'TMultivector' then
+      begin
+        SectionB0.Add(Format('  result.%s := 0;', [GetComp(i)]));
+        Inc(k);
+      end;
+  end;
+
+  if k = 0 then
+    SectionB0.Add('  result := 0;');
   SectionB0.Add('end;');
   SectionB0.Add('');
 
@@ -946,6 +1078,17 @@ begin
     AddOperatorDiv(AIndex, i);
     if AIndex <> i then
       AddOperatorDiv(i, AIndex);
+    Inc(i);
+  end;
+  // Adding Wedge procuct
+  AddOperatorWedge(AIndex, 0);
+  AddOperatorWedge(0, AIndex);
+  i := AIndex;
+  while i < Length(ClassList) do
+  begin
+    AddOperatorWedge(AIndex, i);
+    if AIndex <> i then
+      AddOperatorWedge(i, AIndex);
     Inc(i);
   end;
 
