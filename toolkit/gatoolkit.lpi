@@ -46,7 +46,7 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="75"/>
+        <UsageCount Value="82"/>
       </Unit>
       <Unit>
         <Filename Value="mainfrm.pas"/>
@@ -55,9 +55,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="617"/>
-        <CursorPos X="14" Y="623"/>
-        <UsageCount Value="75"/>
+        <TopLine Value="898"/>
+        <CursorPos X="21" Y="931"/>
+        <UsageCount Value="82"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit>
@@ -72,6 +72,11 @@
       <IncludeFiles Value="$(ProjOutDir)"/>
       <UnitOutputDirectory Value="build/lib"/>
     </SearchPaths>
+    <CodeGeneration>
+      <Optimizations>
+        <OptimizationLevel Value="0"/>
+      </Optimizations>
+    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf3"/>
@@ -84,6 +89,17 @@
     </Linking>
   </CompilerOptions>
   <Debugging>
+    <Watches>
+      <Item>
+        <Expression Value="BaseIndex"/>
+      </Item>
+      <Item>
+        <Expression Value="ALeftIndex"/>
+      </Item>
+      <Item>
+        <Expression Value="ClassList[ALeftIndex].ClassName"/>
+      </Item>
+    </Watches>
     <Exceptions>
       <Item>
         <Name Value="EAbort"/>
