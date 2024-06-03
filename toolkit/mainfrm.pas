@@ -63,8 +63,12 @@ type
     procedure AddOperatorSubtract(ALeftIndex, ARightIndex: longint);
     procedure AddOperatorMul(ALeftIndex, ARightIndex: longint; AProductType: TCLProductType);
     procedure AddOperatorDiv(ALeftIndex, ARightIndex: longint);
+    procedure AddPrivateSection(AIndex: longint);
 
     procedure AddClass(AIndex: longint);
+    procedure AddClassHelper(AIndex: longint);
+
+    procedure AddReciprocal(AIndex: longint);
   public
     procedure Build;
   end;
@@ -472,7 +476,7 @@ begin
     LeftComponent := '0';
     if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
     begin
-      LeftComponent := 'ALeft' + GetComp(List[i]);
+      LeftComponent := 'ALeft.' + GetComp(List[i]);
       if ClassList[ALeftIndex].ClassName = 'double' then
       begin
         LeftComponent := 'ALeft';
@@ -698,9 +702,24 @@ begin
       begin
         ReturnIndex := GetIndex(Base);
         if Pos('-', Base) = 1 then
-          Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]))
-        else
-          Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        begin
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('-ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end else
+        begin
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('+ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end;
       end;
     end;
 
@@ -753,12 +772,12 @@ begin
   begin
     if ALeftIndex = ARightIndex then
     begin
-      SectionA0.Add(Format('    class function %s(const ALeft, ARight: %s): %s;', [OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-      SectionB0.Add(Format('class function %s.%s(const ALeft, ARight: %s): %s;', [ClassList[BaseIndex].ClassName, OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+      SectionA0.Add(Format('    class function %s(const ALeft, ARight: %s): %s; static;', [OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+      SectionB0.Add(Format('class function %s.%s(const ALeft, ARight: %s): %s; static;', [ClassList[BaseIndex].ClassName, OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
     end else
     begin
-      SectionA0.Add(Format('    class function %s(const ALeft: %s; const ARight: %s): %s;', [OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-      SectionB0.Add(Format('class function %s.%s(const ALeft: %s; const ARight: %s): %s;', [ClassList[BaseIndex].ClassName, OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+      SectionA0.Add(Format('    class function %s(const ALeft: %s; const ARight: %s): %s; static;', [OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+      SectionB0.Add(Format('class function %s.%s(const ALeft: %s; const ARight: %s): %s; static;', [ClassList[BaseIndex].ClassName, OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
     end
   end;
 
@@ -768,7 +787,12 @@ begin
   begin
     if Return[i].Count > 0 then
     begin
-      SectionB0.Add(Format('  resultp.%s := ', [GetComp(i)]));
+
+      if ClassList[ReturnIndex].ClassName <> 'double' then
+        SectionB0.Add(Format('  result.%s := ', [GetComp(i)]))
+      else
+        SectionB0.Add('  result := ');
+
       for j := 0 to Return[i].Count -1 do
       begin
         if j = Return[i].Count -1 then
@@ -900,13 +924,26 @@ begin
   Return := nil;
 end;
 
+procedure TMainForm.AddPrivateSection(AIndex: longint);
+var
+  i: longint;
+begin
+  SectionA0.Add('  private');
+  for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
+  begin
+    SectionA0.Add(Format('    %s: double;', [GetComp(ClassList[AIndex].ClassComponents[i])]));
+  end;
+  SectionA0.Add('  public');
+end;
+
 procedure TMainForm.AddClass(AIndex: longint);
 var
   i: longint;
 begin
   SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
   SectionA0.Add(Format('  %s = record', [ClassList[AIndex].ClassName]));
-
+  // Adding private section
+  AddPrivateSection(AIndex);
   // Adding = operator
   AddOperatorEqual(AIndex, 0);
   AddOperatorEqual(0, AIndex);
@@ -996,10 +1033,27 @@ begin
     Inc(i);
   end;
 
-
-
   SectionA0.Add('  end;');
   SectionA0.Add('');
+end;
+
+procedure TMainForm.AddReciprocal(Aindex: longint);
+begin
+  SectionA0.Add(Format('    function Reciprocal: %s;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %.Reciprocal: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add('begin');
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddClassHelper(AIndex: longint);
+begin
+  SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
+  SectionA0.Add(Format('  %s = record helper for %s', [ClassList[AIndex].ClassName + 'Helper', ClassList[AIndex].ClassName]));
+
+  AddReciprocal(AIndex);
+
+  SectionA0.Add('  end;');
 end;
 
 procedure TMainForm.Build;
@@ -1106,10 +1160,8 @@ begin
     SectionA0.Add(Format('  TCLComponents = set of TCLComponent;', []));
     SectionA0.Add('');
 
-    for i := High(ClassList) downto Low(ClassList) + 1 do
-    begin
-      AddClass(i);
-    end;
+    for i := High(ClassList) downto Low(ClassList) + 1 do AddClass(i);
+    for i := High(ClassList) downto Low(ClassList) + 1 do AddClassHelper(i);
   end;
 
   SectionB0.Add('');
