@@ -8,6 +8,7 @@
         <SaveJumpHistory Value="False"/>
         <SaveFoldState Value="False"/>
       </Flags>
+      <SessionStorage Value="None"/>
       <Title Value="gatoolkit"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
@@ -17,7 +18,7 @@
       </XPManifest>
       <Icon Value="0"/>
     </General>
-    <BuildModes Active="Default">
+    <BuildModes>
       <Item Name="Default" Default="True"/>
     </BuildModes>
     <PublishOptions>
@@ -42,11 +43,6 @@
       <Unit>
         <Filename Value="gatoolkit.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <WindowIndex Value="-1"/>
-        <TopLine Value="-1"/>
-        <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="75"/>
       </Unit>
       <Unit>
         <Filename Value="mainfrm.pas"/>
@@ -54,12 +50,6 @@
         <ComponentName Value="MainForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="617"/>
-        <CursorPos X="14" Y="623"/>
-        <UsageCount Value="75"/>
-        <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit>
     </Units>
   </ProjectOptions>
@@ -72,6 +62,11 @@
       <IncludeFiles Value="$(ProjOutDir)"/>
       <UnitOutputDirectory Value="build/lib"/>
     </SearchPaths>
+    <CodeGeneration>
+      <Optimizations>
+        <OptimizationLevel Value="0"/>
+      </Optimizations>
+    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf3"/>

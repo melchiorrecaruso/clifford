@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 752
+  Left = 908
   Height = 779
-  Top = 308
+  Top = 314
   Width = 1194
   Caption = 'Geometric Algebra ToolKit'
   ClientHeight = 779
