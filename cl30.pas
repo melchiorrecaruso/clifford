@@ -1,4 +1,4 @@
-unit Cl3;
+unit Cl30;
 
 { Geometric Algebra Cl(3) for FreePascal.
 

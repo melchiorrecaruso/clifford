@@ -1,4 +1,4 @@
-unit Cl2;
+unit cl20;
 
 { Geometric Algebra Cl(2) for FreePascal.
 

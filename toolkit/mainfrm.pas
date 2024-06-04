@@ -66,9 +66,24 @@ type
     procedure AddPrivateSection(AIndex: longint);
 
     procedure AddClass(AIndex: longint);
-    procedure AddClassHelper(AIndex: longint);
 
-    procedure AddReciprocal(AIndex: longint);
+    procedure AddHelperDual(AIndex: longint);
+    procedure AddHelperInverse(AIndex: longint);
+    procedure AddHelperReverse(AIndex: longint);
+    procedure AddHelperConjugate(AIndex: longint);
+    procedure AddHelperReciprocal(AIndex: longint);
+    procedure AddHelperLeftReciprocal(AIndex: longint);
+    procedure AddHelperNormalized(AIndex: longint);
+    procedure AddHelperNorm(AIndex: longint);
+    procedure AddHelperSquareNorm(AIndex: longint);
+    procedure AddHelperProjection(AIndex: longint);
+    procedure AddHelperRejection(AIndex: longint);
+    procedure AddHelperRotation(AIndex: longint);
+    procedure AddHelperSameValue(AIndex: longint);
+    procedure AddHelperExtract(AIndex: longint);
+    procedure AddHelperToMultivector(AIndex: longint);
+
+    procedure AddClassHelper(AIndex: longint);
   public
     procedure Build;
   end;
@@ -395,9 +410,9 @@ begin
   for i := 0 to List.Count -1 do
   begin
     if i <> List.Count -1 then
-      Line := '    SameValue(%s, %s) and'
+      Line := '    (%s = %s) and'
     else
-      Line := '    SameValue(%s, %s);';
+      Line := '    (%s = %s);';
 
     LeftComponent := '0';
     if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
@@ -469,9 +484,9 @@ begin
   for i := 0 to List.Count -1 do
   begin
     if i <> List.Count -1 then
-      Line := '    (not SameValue(%s, %s)) and'
+      Line := '    (%s <> %s) and'
     else
-      Line := '    (not SameValue(%s, %s));';
+      Line := '    (%s <> %s);';
 
     LeftComponent := '0';
     if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
@@ -1037,13 +1052,422 @@ begin
   SectionA0.Add('');
 end;
 
-procedure TMainForm.AddReciprocal(Aindex: longint);
+procedure TMainForm.AddHelperDual(AIndex: longint);
+type
+  TReturnComponent = (rtScalar, rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
+  TReturnComponents = set of TReturnComponent;
+var
+  i, j, k: longint;
+  Base: string;
+  LeftIndex: longint;
+  RightIndex: longint;
+  Return: array of TStringList = nil;
+  ReturnIndex: longint;
+  ReturnComponents: TReturnComponents;
 begin
-  SectionA0.Add(Format('    function Reciprocal: %s;', [ClassList[AIndex].ClassName]));
-  SectionB0.Add(Format('function %.Reciprocal: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  LeftIndex  := AIndex;
+  RightIndex := High(ClassList) -1;
+
+  SetLength(Return, 1 shl SpaceDimension);
+  for i := Low(Return) to High(Return) do
+    Return[i] := TStringList.Create;
+
+  for i := 0 to ClassList[LeftIndex].ClassComponents.Count -1 do
+    for j := 0 to ClassList[RightIndex].ClassComponents.Count -1 do
+    begin
+      Base := GeometricProduct.Cells[ClassList[RightIndex].ClassComponents[j], ClassList[LeftIndex ].ClassComponents[i]];
+
+      if Base <> '0' then
+      begin
+        ReturnIndex := GetIndex(Base);
+        if Pos('-', Base) = 1 then
+        begin
+          if LeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('-ALeft * ARight.%s', [GetComp(ClassList[RightIndex].ClassComponents[j])]))
+          else
+            if RightIndex = 0 then
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight', [GetComp(ClassList[LeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[LeftIndex].ClassComponents[i]), GetComp(ClassList[RightIndex].ClassComponents[j])]));
+        end else
+        begin
+          if LeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('+ALeft * ARight.%s', [GetComp(ClassList[RightIndex].ClassComponents[j])]))
+          else
+            if RightIndex = 0 then
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight', [GetComp(ClassList[LeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[LeftIndex].ClassComponents[i]), GetComp(ClassList[RightIndex].ClassComponents[j])]));
+        end;
+      end;
+    end;
+
+  ReturnIndex := 0;
+  ReturnComponents := [];
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+      case Length(DotProduct.Cells[i, 0]) -1 of
+        0: Include(ReturnComponents, rtScalar);
+        1: Include(ReturnComponents, rtVector);
+        2: Include(ReturnComponents, rtBivector);
+        3: Include(ReturnComponents, rtTrivector);
+        4: Include(ReturnComponents, rtQuadrivector);
+        5: Include(ReturnComponents, rtPentavector);
+        6: Include(ReturnComponents, rtHexavector);
+      end;
+    end;
+  end;
+
+  if ReturnComponents = [              ] then ReturnIndex := 0 else
+  if ReturnComponents = [rtScalar      ] then ReturnIndex := 0 else
+  if ReturnComponents = [rtVector      ] then ReturnIndex := 1 else
+  if ReturnComponents = [rtBivector    ] then ReturnIndex := 2 else
+  if ReturnComponents = [rtTrivector   ] then ReturnIndex := 3 else
+  if ReturnComponents = [rtQuadrivector] then ReturnIndex := 4 else
+  if ReturnComponents = [rtPentavector ] then ReturnIndex := 5 else
+  if ReturnComponents = [rtHexavector  ] then ReturnIndex := 6 else ReturnIndex := High(ClassList);
+
+  SectionA0.Add(Format('    function Dual: %s;', [ClassList[ReturnIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Dual: %s;', [ClassList[LeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
   SectionB0.Add('begin');
+
+  k := 0;
+  SectionB0.Add('begin');
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+      if ClassList[ReturnIndex].ClassName <> 'double' then
+        SectionB0.Add(Format('  result.%s := ', [GetComp(i)]))
+      else
+        SectionB0.Add('  result := ');
+
+      for j := 0 to Return[i].Count -1 do
+      begin
+        if j = Return[i].Count -1 then
+          SectionB0.Add('    ' + Return[i][j] + ';')
+        else
+          SectionB0.Add('    ' + Return[i][j]);
+        Inc(k);
+      end;
+      SectionB0.Add('');
+    end else
+      if ClassList[ReturnIndex].ClassName = 'TMultivector' then
+      begin
+        SectionB0.Add(Format('  result.%s := 0;', [GetComp(i)]));
+        Inc(k);
+      end;
+  end;
+
+  if k = 0 then
+    SectionB0.Add('  result := 0;');
   SectionB0.Add('end;');
   SectionB0.Add('');
+
+  for i := Low(Return) to High(Return) do
+    Return[i].Destroy;
+  Return := nil;
+end;
+
+procedure TMainForm.AddHelperInverse(AIndex: longint);
+var
+  i: longint;
+begin
+  SectionA0.Add(Format('    function Inverse: %s;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Inverse: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add('begin');
+
+  if AIndex = High(ClassList) then
+  begin
+    for AIndex := Low(ClassList) to High(ClassList) -1 do
+      for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
+      begin
+        if IntPower(-1, AIndex) < 0 then
+          SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+        else
+          SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+      end;
+  end else
+  begin
+    for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
+    begin
+      if IntPower(-1, AIndex) < 0 then
+        SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+      else
+        SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+    end;
+  end;
+
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddHelperReverse(AIndex: longint);
+var
+  i: longint;
+begin
+  SectionA0.Add(Format('    function Reverse: %s;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Reverse: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add('begin');
+
+  if AIndex = High(ClassList) then
+  begin
+    for AIndex := Low(ClassList) to High(ClassList) -1 do
+      for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
+      begin
+        if IntPower(-1, AIndex div 2) < 0 then
+          SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+        else
+          SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+      end;
+  end else
+  begin
+    for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
+    begin
+      if IntPower(-1, AIndex div 2) < 0 then
+        SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+      else
+        SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+    end;
+  end;
+
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddHelperConjugate(AIndex: longint);
+var
+  i: longint;
+begin
+  SectionA0.Add(Format('    function Conjugate: %s;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Conjugate: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add('begin');
+
+  if AIndex = High(ClassList) then
+  begin
+    for AIndex := Low(ClassList) to High(ClassList) -1 do
+      for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
+      begin
+        if IntPower(-1, AIndex + AIndex div 2) < 0 then
+          SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+        else
+          SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+      end;
+  end else
+  begin
+    for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
+    begin
+      if IntPower(-1, AIndex + AIndex div 2) < 0 then
+        SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+      else
+        SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+    end;
+  end;
+
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddHelperReciprocal(AIndex: longint);
+begin
+  SectionA0.Add(Format('    function Reciprocal: %s;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Reciprocal: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add('begin');
+
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddHelperLeftReciprocal(AIndex: longint);
+begin
+  SectionA0.Add(Format('    function LeftReciprocal: %s;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.LeftReciprocal: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add('begin');
+
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddHelperNormalized(AIndex: longint);
+begin
+  SectionA0.Add(Format('    function Normalized: %s;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Normalized: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add('begin');
+  SectionB0.Add('  result := Self / Norm;');
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddHelperNorm(AIndex: longint);
+begin
+  SectionA0.Add(Format('    function Norm: double;', []));
+  SectionB0.Add(Format('function %sHelper.Norm: double;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add('begin');
+  SectionB0.Add('  result := sqrt(SquareNorm);');
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddHelperSquareNorm(AIndex: longint);
+var
+  i: longint;
+begin
+  SectionA0.Add(Format('    function SquareNorm: double;', []));
+  SectionB0.Add(Format('function %sHelper.SquareNorm: double;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add('begin');
+  SectionB0.Add('  result := ');
+
+  for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
+  begin
+    SectionB0.Add(Format('    +%s * %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+  end;
+  SectionB0[SectionB0.Count -1] := SectionB0[SectionB0.Count -1] + ';';
+
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddHelperProjection(AIndex: longint);
+var
+  i: longint;
+begin
+  for i := Low(CLassList) + 1 to High(ClassList) do
+  begin
+    SectionA0.Add(Format('    function Projection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Projection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add('begin');
+    SectionB0.Add('  result := Dot(AVector) * AVector.Reciprocal;');
+    SectionB0.Add('end;');
+    SectionB0.Add('');
+  end;
+end;
+
+procedure TMainForm.AddHelperRejection(AIndex: longint);
+var
+  i: longint;
+begin
+  for i := Low(CLassList) + 1 to High(ClassList) do
+  begin
+    SectionA0.Add(Format('    function Rejection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Rejection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add('begin');
+    SectionB0.Add('  result := Wedge(AVector) * AVector.Reciprocal;');
+    SectionB0.Add('end;');
+    SectionB0.Add('');
+  end;
+end;
+
+procedure TMainForm.AddHelperRotation(AIndex: longint);
+var
+  i: longint;
+begin
+  for i := Low(CLassList) + 1 to High(ClassList) do
+  begin
+    SectionA0.Add(Format('    function Rotation(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Rotation(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add('begin');
+    SectionB0.Add('  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;');
+    SectionB0.Add('end;');
+    SectionB0.Add('');
+  end;
+end;
+
+procedure TMainForm.AddHelperSameValue(AIndex: longint);
+var
+  i: longint;
+  Line: string;
+  List: TIntegerList;
+  LeftComponent: string;
+  RightComponent: string;
+begin
+  SectionA0.Add(Format('    function SameValue(const AVector: %s): boolean;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.SameValue(const AVector: %s): boolean;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+
+  SectionB0.Add('begin');
+  SectionB0.Add('  result := ');
+  List := ClassList[AIndex].ClassComponents;
+  for i := 0 to List.Count -1 do
+  begin
+    if i <> List.Count -1 then
+      Line := '    SameValue(%s, %s) and'
+    else
+      Line := '    SameValue(%s, %s);';
+
+    LeftComponent := '0';
+    if ClassList[AIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      LeftComponent := 'Self.' + GetComp(List[i]);
+      if ClassList[AIndex].ClassName = 'double' then
+      begin
+        LeftComponent := 'Self';
+      end;
+    end;
+
+    RightComponent := '0';
+    if ClassList[AIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      RightComponent := 'AVector.' + GetComp(List[i]);
+      if ClassList[AIndex].ClassName = 'double' then
+      begin
+        RightComponent := 'AVector'
+      end;
+    end;
+
+    if (LeftComponent <> '0') or (RightComponent <> '0') then
+    begin
+      SectionB0.Add(Format(Line, [LeftComponent, RightComponent]));
+    end;
+  end;
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+end;
+
+procedure TMainForm.AddHelperExtract(AIndex: longint);
+var
+  i, j: longint;
+begin
+  if AIndex <> High(ClassList) then
+  begin
+    for i := Low(ClassList) to High(ClassList) -1 do
+    begin
+      SectionA0.Add(Format('    function Extract: %s;', [ClassList[i].ClassName]));
+      SectionB0.Add(Format('function TMultivectorHelper.Extract: %s;', [ClassList[i].ClassName]));
+      SectionB0.Add('begin');
+
+      for j := 0 to ClassList[i].ClassComponents.Count -1 do
+      begin
+        SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[i].ClassComponents[j]), GetComp(ClassList[i].ClassComponents[j])]));
+      end;
+
+      SectionB0.Add('end;');
+      SectionB0.Add('');
+    end;
+  end;
+end;
+
+procedure TMainForm.AddHelperToMultivector(AIndex: longint);
+var
+  i: longint;
+begin
+  if AIndex <> High(ClassList) then
+  begin
+    SectionA0.Add(Format('    function ToMultivector: TMultivector;', []));
+    SectionB0.Add(Format('function %sHelper.ToMultivector: TMultivector;', [ClassList[AIndex].ClassName]));
+    SectionB0.Add('begin');
+
+    for i := 0 to ClassList[High(ClassList)].ClassComponents.Count -1 do
+    begin
+      if ClassList[AIndex].ClassComponents.IndexOf(ClassList[High(ClassList)].ClassComponents[i]) <> -1 then
+        SectionB0.Add(Format('  result.%s := %s;', [Getcomp(ClassList[High(ClassList)].ClassComponents[i]), GetComp(ClassList[High(ClassList)].ClassComponents[i])]))
+      else
+        SectionB0.Add(Format('  result.%s := 0;',  [GetComp(ClassList[High(ClassList)].ClassComponents[i])]));
+    end;
+
+    SectionB0.Add('end;');
+    SectionB0.Add('');
+  end;
 end;
 
 procedure TMainForm.AddClassHelper(AIndex: longint);
@@ -1051,7 +1475,21 @@ begin
   SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
   SectionA0.Add(Format('  %s = record helper for %s', [ClassList[AIndex].ClassName + 'Helper', ClassList[AIndex].ClassName]));
 
-  AddReciprocal(AIndex);
+  AddHelperDual          (AIndex);
+  AddHelperInverse       (AIndex);
+  AddHelperReverse       (AIndex);
+  AddHelperConjugate     (AIndex);
+  AddHelperReciprocal    (AIndex);
+  AddHelperLeftReciprocal(AIndex);
+  AddHelperNormalized    (AIndex);
+  AddHelperNorm          (AIndex);
+  AddHelperSquareNorm    (AIndex);
+  AddHelperProjection    (AIndex);
+  AddHelperRejection     (AIndex);
+  AddHelperRotation      (AIndex);
+  AddHelperSameValue     (AIndex);
+  AddHelperExtract       (AIndex);
+  AddHelperToMultivector (AIndex);
 
   SectionA0.Add('  end;');
 end;
