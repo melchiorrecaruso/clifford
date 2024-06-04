@@ -67,20 +67,20 @@ type
 
     procedure AddClass(AIndex: longint);
 
-    procedure AddDual(AIndex: longint);
-    procedure AddInverse(AIndex: longint);
-    procedure AddReverse(AIndex: longint);
-    procedure AddConjugate(AIndex: longint);
-    procedure AddReciprocal(AIndex: longint);
-    procedure AddLeftReciprocal(AIndex: longint);
-    procedure AddNormalized(AIndex: longint);
-    procedure AddNorm(AIndex: longint);
-    procedure AddSquareNorm(AIndex: longint);
-    procedure AddProjection(AIndex: longint);
-    procedure AddRejection(AIndex: longint);
-    procedure AddRotation(AIndex: longint);
-    procedure AddSameValue(AIndex: longint);
-    procedure AddExtract(AIndex: longint);
+    procedure AddHelperDual(AIndex: longint);
+    procedure AddHelperInverse(AIndex: longint);
+    procedure AddHelperReverse(AIndex: longint);
+    procedure AddHelperConjugate(AIndex: longint);
+    procedure AddHelperReciprocal(AIndex: longint);
+    procedure AddHelperLeftReciprocal(AIndex: longint);
+    procedure AddHelperNormalized(AIndex: longint);
+    procedure AddHelperNorm(AIndex: longint);
+    procedure AddHelperSquareNorm(AIndex: longint);
+    procedure AddHelperProjection(AIndex: longint);
+    procedure AddHelperRejection(AIndex: longint);
+    procedure AddHelperRotation(AIndex: longint);
+    procedure AddHelperSameValue(AIndex: longint);
+    procedure AddHelperExtract(AIndex: longint);
 
     procedure AddClassHelper(AIndex: longint);
   public
@@ -1051,7 +1051,7 @@ begin
   SectionA0.Add('');
 end;
 
-procedure TMainForm.AddDual(AIndex: longint);
+procedure TMainForm.AddHelperDual(AIndex: longint);
 type
   TReturnComponent = (rtScalar, rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
   TReturnComponents = set of TReturnComponent;
@@ -1129,7 +1129,7 @@ begin
   if ReturnComponents = [rtHexavector  ] then ReturnIndex := 6 else ReturnIndex := High(ClassList);
 
   SectionA0.Add(Format('    function Dual: %s;', [ClassList[ReturnIndex].ClassName]));
-  SectionB0.Add(Format('function %s.Dual: %s;', [ClassList[LeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Dual: %s;', [ClassList[LeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
   SectionB0.Add('begin');
 
   k := 0;
@@ -1170,12 +1170,12 @@ begin
   Return := nil;
 end;
 
-procedure TMainForm.AddInverse(AIndex: longint);
+procedure TMainForm.AddHelperInverse(AIndex: longint);
 var
   i: longint;
 begin
   SectionA0.Add(Format('    function Inverse: %s;', [ClassList[AIndex].ClassName]));
-  SectionB0.Add(Format('function %s.Inverse: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Inverse: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
 
   if AIndex = High(ClassList) then
@@ -1203,12 +1203,12 @@ begin
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddReverse(AIndex: longint);
+procedure TMainForm.AddHelperReverse(AIndex: longint);
 var
   i: longint;
 begin
   SectionA0.Add(Format('    function Reverse: %s;', [ClassList[AIndex].ClassName]));
-  SectionB0.Add(Format('function %s.Reverse: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Reverse: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
 
   if AIndex = High(ClassList) then
@@ -1236,12 +1236,12 @@ begin
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddConjugate(AIndex: longint);
+procedure TMainForm.AddHelperConjugate(AIndex: longint);
 var
   i: longint;
 begin
   SectionA0.Add(Format('    function Conjugate: %s;', [ClassList[AIndex].ClassName]));
-  SectionB0.Add(Format('function %s.Conjugate: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Conjugate: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
 
   if AIndex = High(ClassList) then
@@ -1269,52 +1269,52 @@ begin
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddReciprocal(AIndex: longint);
+procedure TMainForm.AddHelperReciprocal(AIndex: longint);
 begin
   SectionA0.Add(Format('    function Reciprocal: %s;', [ClassList[AIndex].ClassName]));
-  SectionB0.Add(Format('function %s.Reciprocal: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Reciprocal: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
 
   SectionB0.Add('end;');
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddLeftReciprocal(AIndex: longint);
+procedure TMainForm.AddHelperLeftReciprocal(AIndex: longint);
 begin
   SectionA0.Add(Format('    function LeftReciprocal: %s;', [ClassList[AIndex].ClassName]));
-  SectionB0.Add(Format('function %s.LeftReciprocal: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.LeftReciprocal: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
 
   SectionB0.Add('end;');
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddNormalized(AIndex: longint);
+procedure TMainForm.AddHelperNormalized(AIndex: longint);
 begin
   SectionA0.Add(Format('    function Normalized: %s;', [ClassList[AIndex].ClassName]));
-  SectionB0.Add(Format('function %s.Normalized: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Normalized: %s;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
   SectionB0.Add('  result := Self / Norm;');
   SectionB0.Add('end;');
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddNorm(AIndex: longint);
+procedure TMainForm.AddHelperNorm(AIndex: longint);
 begin
   SectionA0.Add(Format('    function Norm: double;', []));
-  SectionB0.Add(Format('function %s.Norm: double;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Norm: double;', [ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
   SectionB0.Add('  result := sqrt(SquareNorm);');
   SectionB0.Add('end;');
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddSquareNorm(AIndex: longint);
+procedure TMainForm.AddHelperSquareNorm(AIndex: longint);
 var
   i: longint;
 begin
   SectionA0.Add(Format('    function SquareNorm: double;', []));
-  SectionB0.Add(Format('function %s.SquareNorm: double;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.SquareNorm: double;', [ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
   SectionB0.Add('  result := ');
 
@@ -1328,14 +1328,14 @@ begin
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddProjection(AIndex: longint);
+procedure TMainForm.AddHelperProjection(AIndex: longint);
 var
   i: longint;
 begin
   for i := Low(CLassList) + 1 to High(ClassList) do
   begin
     SectionA0.Add(Format('    function Projection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
-    SectionB0.Add(Format('function %s.Projection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Projection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
     SectionB0.Add('begin');
     SectionB0.Add('  result := Dot(AVector) * AVector.Reciprocal;');
     SectionB0.Add('end;');
@@ -1343,14 +1343,14 @@ begin
   end;
 end;
 
-procedure TMainForm.AddRejection(AIndex: longint);
+procedure TMainForm.AddHelperRejection(AIndex: longint);
 var
   i: longint;
 begin
   for i := Low(CLassList) + 1 to High(ClassList) do
   begin
     SectionA0.Add(Format('    function Rejection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
-    SectionB0.Add(Format('function %s.Rejection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Rejection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
     SectionB0.Add('begin');
     SectionB0.Add('  result := Wedge(AVector) * AVector.Reciprocal;');
     SectionB0.Add('end;');
@@ -1358,14 +1358,14 @@ begin
   end;
 end;
 
-procedure TMainForm.AddRotation(AIndex: longint);
+procedure TMainForm.AddHelperRotation(AIndex: longint);
 var
   i: longint;
 begin
   for i := Low(CLassList) + 1 to High(ClassList) do
   begin
     SectionA0.Add(Format('    function Rotation(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
-    SectionB0.Add(Format('function %s.Rotation(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Rotation(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
     SectionB0.Add('begin');
     SectionB0.Add('  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;');
     SectionB0.Add('end;');
@@ -1373,7 +1373,7 @@ begin
   end;
 end;
 
-procedure TMainForm.AddSameValue(AIndex: longint);
+procedure TMainForm.AddHelperSameValue(AIndex: longint);
 var
   i: longint;
   Line: string;
@@ -1382,7 +1382,7 @@ var
   RightComponent: string;
 begin
   SectionA0.Add(Format('    function SameValue(const AVector: %s): boolean;', [ClassList[AIndex].ClassName]));
-  SectionB0.Add(Format('function %s.SameValue(const AVector: %s): boolean;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.SameValue(const AVector: %s): boolean;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
 
   SectionB0.Add('begin');
   SectionB0.Add('  result := ');
@@ -1423,7 +1423,7 @@ begin
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddExtract(AIndex: longint);
+procedure TMainForm.AddHelperExtract(AIndex: longint);
 var
   i, j: longint;
 begin
@@ -1432,7 +1432,7 @@ begin
     for i := Low(ClassList) to High(ClassList) -1 do
     begin
       SectionA0.Add(Format('    function Extract: %s;', [ClassList[i].ClassName]));
-      SectionB0.Add(Format('function TMultivector.Extract: %s;', [ClassList[i].ClassName]));
+      SectionB0.Add(Format('function TMultivectorHelper.Extract: %s;', [ClassList[i].ClassName]));
       SectionB0.Add('begin');
 
       for j := 0 to ClassList[i].ClassComponents.Count -1 do
@@ -1451,20 +1451,20 @@ begin
   SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
   SectionA0.Add(Format('  %s = record helper for %s', [ClassList[AIndex].ClassName + 'Helper', ClassList[AIndex].ClassName]));
 
-  AddDual          (AIndex);
-  AddInverse       (AIndex);
-  AddReverse       (AIndex);
-  AddConjugate     (AIndex);
-  AddReciprocal    (AIndex);
-  AddLeftReciprocal(AIndex);
-  AddNormalized    (AIndex);
-  AddNorm          (AIndex);
-  AddSquareNorm    (AIndex);
-  AddProjection    (AIndex);
-  AddRejection     (AIndex);
-  AddRotation      (AIndex);
-  AddSameValue     (AIndex);
-  AddExtract       (AIndex);
+  AddHelperDual          (AIndex);
+  AddHelperInverse       (AIndex);
+  AddHelperReverse       (AIndex);
+  AddHelperConjugate     (AIndex);
+  AddHelperReciprocal    (AIndex);
+  AddHelperLeftReciprocal(AIndex);
+  AddHelperNormalized    (AIndex);
+  AddHelperNorm          (AIndex);
+  AddHelperSquareNorm    (AIndex);
+  AddHelperProjection    (AIndex);
+  AddHelperRejection     (AIndex);
+  AddHelperRotation      (AIndex);
+  AddHelperSameValue     (AIndex);
+  AddHelperExtract       (AIndex);
 
   SectionA0.Add('  end;');
 end;
