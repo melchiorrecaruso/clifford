@@ -1,4 +1,4 @@
-unit Cl4;
+unit cl40;
 
 { Geometric Algebra Cl(4) for FreePascal.
 
