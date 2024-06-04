@@ -64,6 +64,7 @@ type
     procedure AddOperatorMul(ALeftIndex, ARightIndex: longint; AProductType: TCLProductType);
     procedure AddOperatorDiv(ALeftIndex, ARightIndex: longint);
     procedure AddPrivateSection(AIndex: longint);
+
     procedure AddClass(AIndex: longint);
 
     procedure AddDual(AIndex: longint);
@@ -77,6 +78,8 @@ type
     procedure AddSquareNorm(AIndex: longint);
     procedure AddProjection(AIndex: longint);
     procedure AddRejection(AIndex: longint);
+    procedure AddRotation(AIndex: longint);
+    procedure AddSameValue(AIndex: longint);
 
     procedure AddClassHelper(AIndex: longint);
   public
@@ -405,9 +408,9 @@ begin
   for i := 0 to List.Count -1 do
   begin
     if i <> List.Count -1 then
-      Line := '    SameValue(%s, %s) and'
+      Line := '    (%s = %s) and'
     else
-      Line := '    SameValue(%s, %s);';
+      Line := '    (%s = %s);';
 
     LeftComponent := '0';
     if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
@@ -479,9 +482,9 @@ begin
   for i := 0 to List.Count -1 do
   begin
     if i <> List.Count -1 then
-      Line := '    (not SameValue(%s, %s)) and'
+      Line := '    (%s <> %s) and'
     else
-      Line := '    (not SameValue(%s, %s));';
+      Line := '    (%s <> %s);';
 
     LeftComponent := '0';
     if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
@@ -1333,7 +1336,7 @@ begin
     SectionA0.Add(Format('    function Projection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
     SectionB0.Add(Format('function %s.Projection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
     SectionB0.Add('begin');
-    SectionB0.Add('  result := Dot(AVector) * AVector.Reciprocal');
+    SectionB0.Add('  result := Dot(AVector) * AVector.Reciprocal;');
     SectionB0.Add('end;');
     SectionB0.Add('');
   end;
@@ -1348,10 +1351,75 @@ begin
     SectionA0.Add(Format('    function Rejection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
     SectionB0.Add(Format('function %s.Rejection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
     SectionB0.Add('begin');
-    SectionB0.Add('  result := Wedge(AVector) * AVector.Reciprocal');
+    SectionB0.Add('  result := Wedge(AVector) * AVector.Reciprocal;');
     SectionB0.Add('end;');
     SectionB0.Add('');
   end;
+end;
+
+procedure TMainForm.AddRotation(AIndex: longint);
+var
+  i: longint;
+begin
+  for i := Low(CLassList) + 1 to High(ClassList) do
+  begin
+    SectionA0.Add(Format('    function Rotation(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add(Format('function %s.Rotation(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add('begin');
+    SectionB0.Add('  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;');
+    SectionB0.Add('end;');
+    SectionB0.Add('');
+  end;
+end;
+
+procedure TMainForm.AddSameValue(AIndex: longint);
+var
+  i: longint;
+  Line: string;
+  List: TIntegerList;
+  LeftComponent: string;
+  RightComponent: string;
+begin
+  SectionA0.Add(Format('    function SameValue(const AVector: %s): boolean;', [ClassList[AIndex].ClassName]));
+  SectionB0.Add(Format('function %s.SameValue(const AVector: %s): boolean;', [ClassList[AIndex].ClassName, ClassList[AIndex].ClassName]));
+
+  SectionB0.Add('begin');
+  SectionB0.Add('  result := ');
+  List := ClassList[AIndex].ClassComponents;
+  for i := 0 to List.Count -1 do
+  begin
+    if i <> List.Count -1 then
+      Line := '    SameValue(%s, %s) and'
+    else
+      Line := '    SameValue(%s, %s);';
+
+    LeftComponent := '0';
+    if ClassList[AIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      LeftComponent := 'Self.' + GetComp(List[i]);
+      if ClassList[AIndex].ClassName = 'double' then
+      begin
+        LeftComponent := 'Self';
+      end;
+    end;
+
+    RightComponent := '0';
+    if ClassList[AIndex].ClassComponents.IndexOf(List[i]) <> -1 then
+    begin
+      RightComponent := 'AVector.' + GetComp(List[i]);
+      if ClassList[AIndex].ClassName = 'double' then
+      begin
+        RightComponent := 'AVector'
+      end;
+    end;
+
+    if (LeftComponent <> '0') or (RightComponent <> '0') then
+    begin
+      SectionB0.Add(Format(Line, [LeftComponent, RightComponent]));
+    end;
+  end;
+  SectionB0.Add('end;');
+  SectionB0.Add('');
 end;
 
 procedure TMainForm.AddClassHelper(AIndex: longint);
@@ -1370,6 +1438,8 @@ begin
   AddSquareNorm    (AIndex);
   AddProjection    (AIndex);
   AddRejection     (AIndex);
+  AddRotation      (AIndex);
+  AddSameValue     (AIndex);
 
   SectionA0.Add('  end;');
 end;
