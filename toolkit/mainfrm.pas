@@ -80,6 +80,7 @@ type
     procedure AddRejection(AIndex: longint);
     procedure AddRotation(AIndex: longint);
     procedure AddSameValue(AIndex: longint);
+    procedure AddExtract(AIndex: longint);
 
     procedure AddClassHelper(AIndex: longint);
   public
@@ -1422,6 +1423,29 @@ begin
   SectionB0.Add('');
 end;
 
+procedure TMainForm.AddExtract(AIndex: longint);
+var
+  i, j: longint;
+begin
+  if AIndex <> High(ClassList) then
+  begin
+    for i := Low(ClassList) to High(ClassList) -1 do
+    begin
+      SectionA0.Add(Format('    function Extract: %s;', [ClassList[i].ClassName]));
+      SectionB0.Add(Format('function TMultivector.Extract: %s;', [ClassList[i].ClassName]));
+      SectionB0.Add('begin');
+
+      for j := 0 to ClassList[i].ClassComponents.Count -1 do
+      begin
+        SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[i].ClassComponents[j]), GetComp(ClassList[i].ClassComponents[j])]));
+      end;
+
+      SectionB0.Add('end;');
+      SectionB0.Add('');
+    end;
+  end;
+end;
+
 procedure TMainForm.AddClassHelper(AIndex: longint);
 begin
   SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
@@ -1440,6 +1464,7 @@ begin
   AddRejection     (AIndex);
   AddRotation      (AIndex);
   AddSameValue     (AIndex);
+  AddExtract       (AIndex);
 
   SectionA0.Add('  end;');
 end;
