@@ -270,9 +270,9 @@ end;
 function TMainform.GetCompSet(AIndex: longint): string;
 begin
   if AIndex > 0 then
-    result := StringReplace(DotProduct.Cells[AIndex, 0], 'e', 'cl', [rfReplaceAll, rfIgnoreCase])
+    result := StringReplace(DotProduct.Cells[AIndex, 0], 'e', 'mc', [rfReplaceAll, rfIgnoreCase])
   else
-    result := 'cl0';
+    result := 'mc0';
 end;
 
 { TMainForm }
@@ -1532,7 +1532,7 @@ begin
   end;
 
   SectionA0 := TStringList.Create;
-  SectionA0.Add(Format('unit CL%d%d%d;', [PositiveBox.ItemIndex, NegativeBox.ItemIndex, 0]));
+  SectionA0.Add(Format('unit CL%d%d;', [PositiveBox.ItemIndex, NegativeBox.ItemIndex]));
   SectionA0.Add('');
   SectionA0.Add(Format('{ Geometric Algebra Cl%d%d%d for FreePascal.', [PositiveBox.ItemIndex, NegativeBox.ItemIndex, 0]));
   SectionA0.Add('');
