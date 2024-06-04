@@ -81,6 +81,7 @@ type
     procedure AddHelperRotation(AIndex: longint);
     procedure AddHelperSameValue(AIndex: longint);
     procedure AddHelperExtract(AIndex: longint);
+    procedure AddHelperToMultivector(AIndex: longint);
 
     procedure AddClassHelper(AIndex: longint);
   public
@@ -1446,6 +1447,29 @@ begin
   end;
 end;
 
+procedure TMainForm.AddHelperToMultivector(AIndex: longint);
+var
+  i: longint;
+begin
+  if AIndex <> High(ClassList) then
+  begin
+    SectionA0.Add(Format('    function ToMultivector: TMultivector;', []));
+    SectionB0.Add(Format('function %sHelper.ToMultivector: TMultivector;', [ClassList[AIndex].ClassName]));
+    SectionB0.Add('begin');
+
+    for i := 0 to ClassList[High(ClassList)].ClassComponents.Count -1 do
+    begin
+      if ClassList[AIndex].ClassComponents.IndexOf(ClassList[High(ClassList)].ClassComponents[i]) <> -1 then
+        SectionB0.Add(Format('  result.%s := %s;', [Getcomp(ClassList[High(ClassList)].ClassComponents[i]), GetComp(ClassList[High(ClassList)].ClassComponents[i])]))
+      else
+        SectionB0.Add(Format('  result.%s := 0;',  [GetComp(ClassList[High(ClassList)].ClassComponents[i])]));
+    end;
+
+    SectionB0.Add('end;');
+    SectionB0.Add('');
+  end;
+end;
+
 procedure TMainForm.AddClassHelper(AIndex: longint);
 begin
   SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
@@ -1465,6 +1489,7 @@ begin
   AddHelperRotation      (AIndex);
   AddHelperSameValue     (AIndex);
   AddHelperExtract       (AIndex);
+  AddHelperToMultivector (AIndex);
 
   SectionA0.Add('  end;');
 end;
