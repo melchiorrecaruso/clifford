@@ -75,6 +75,9 @@ type
     procedure AddNormalized(AIndex: longint);
     procedure AddNorm(AIndex: longint);
     procedure AddSquareNorm(AIndex: longint);
+    procedure AddProjection(AIndex: longint);
+    procedure AddRejection(AIndex: longint);
+
     procedure AddClassHelper(AIndex: longint);
   public
     procedure Build;
@@ -1321,6 +1324,36 @@ begin
   SectionB0.Add('');
 end;
 
+procedure TMainForm.AddProjection(AIndex: longint);
+var
+  i: longint;
+begin
+  for i := Low(CLassList) + 1 to High(ClassList) do
+  begin
+    SectionA0.Add(Format('    function Projection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add(Format('function %s.Projection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add('begin');
+    SectionB0.Add('  result := Dot(AVector) * AVector.Reciprocal');
+    SectionB0.Add('end;');
+    SectionB0.Add('');
+  end;
+end;
+
+procedure TMainForm.AddRejection(AIndex: longint);
+var
+  i: longint;
+begin
+  for i := Low(CLassList) + 1 to High(ClassList) do
+  begin
+    SectionA0.Add(Format('    function Rejection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add(Format('function %s.Rejection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionB0.Add('begin');
+    SectionB0.Add('  result := Wedge(AVector) * AVector.Reciprocal');
+    SectionB0.Add('end;');
+    SectionB0.Add('');
+  end;
+end;
+
 procedure TMainForm.AddClassHelper(AIndex: longint);
 begin
   SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
@@ -1335,6 +1368,8 @@ begin
   AddNormalized    (AIndex);
   AddNorm          (AIndex);
   AddSquareNorm    (AIndex);
+  AddProjection    (AIndex);
+  AddRejection     (AIndex);
 
   SectionA0.Add('  end;');
 end;
