@@ -82,6 +82,7 @@ type
     procedure AddHelperSameValue(AIndex: longint);
     procedure AddHelperExtract(AIndex: longint);
     procedure AddHelperToMultivector(AIndex: longint);
+    procedure AddVersors;
 
     procedure AddClassHelper(AIndex: longint);
   public
@@ -1470,6 +1471,64 @@ begin
   end;
 end;
 
+procedure TMainForm.AddVersors;
+var
+  i, j, k: longint;
+  Str, StrIndex: string;
+begin
+
+  for i := 1 to High(ClassList) -1 do
+    for j := 0 to ClassList[i].ClassComponents.Count -1 do
+    begin
+      StrIndex := StringReplace(GetComp(ClassList[i].ClassComponents[j]), 'fm', '', []);
+      SectionA0.Add(Format('  TVersor%StrIndex = record class operator *(const AValue: double; const ASelf: TVersor%StrIndex): %StrIndex; end;', [StrIndex, StrIndex, ClassList[i].ClassName]));
+    end;
+  SectionA0.Add('');
+
+  SectionA0.Add('const');
+  for i := 1 to High(ClassList) -1 do
+    for j := 0 to ClassList[i].ClassComponents.Count -1 do
+    begin
+      StrIndex := StringReplace(GetComp(ClassList[i].ClassComponents[j]), 'fm', '', []);
+      SectionA0.Add(Format('  e%s: TVersor%s = ();', [StrIndex, StrIndex]));
+    end;
+  SectionA0.Add('');
+
+  for i := 1 to High(ClassList) -1 do
+    for j := 0 to ClassList[i].ClassComponents.Count -1 do
+    begin
+
+      Str := '';
+      for k := 0 to ClassList[i].ClassComponents.Count -1 do
+      begin
+        if k <> 0 then
+          Str := Str + '; ';
+
+        if k <> j then
+          Str := Str + GetComp(ClassList[i].ClassComponents[k]) + ':0.0'
+        else
+          Str := Str + GetComp(ClassList[i].ClassComponents[k]) + ':1.0';
+      end;
+
+
+      StrIndex := StringReplace(GetComp(ClassList[i].ClassComponents[j]), 'fm', '', []);
+      SectionA0.Add(Format('  u%s: %s = (%s);', [StrIndex, ClassList[i].ClassName, Str]));
+    end;
+  SectionA0.Add('');
+
+
+
+
+
+
+
+
+
+
+
+
+end;
+
 procedure TMainForm.AddClassHelper(AIndex: longint);
 begin
   SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
@@ -1492,6 +1551,7 @@ begin
   AddHelperToMultivector (AIndex);
 
   SectionA0.Add('  end;');
+  SectionA0.Add('');
 end;
 
 procedure TMainForm.Build;
@@ -1601,6 +1661,7 @@ begin
     for i := High(ClassList) downto Low(ClassList) + 1 do AddClass(i);
     for i := High(ClassList) downto Low(ClassList) + 1 do AddClassHelper(i);
   end;
+  AddVersors;
 
   SectionB0.Add('');
   SectionB0.Add('end.');
