@@ -1481,7 +1481,7 @@ begin
     for j := 0 to ClassList[i].ClassComponents.Count -1 do
     begin
       StrIndex := StringReplace(GetComp(ClassList[i].ClassComponents[j]), 'fm', '', []);
-      SectionA0.Add(Format('  TVersor%StrIndex = record class operator *(const AValue: double; const ASelf: TVersor%StrIndex): %StrIndex; end;', [StrIndex, StrIndex, ClassList[i].ClassName]));
+      SectionA0.Add(Format('  TVersor%s = record class operator *(const AValue: double; const ASelf: TVersor%s): %s; end;', [StrIndex, StrIndex, ClassList[i].ClassName]));
     end;
   SectionA0.Add('');
 
@@ -1497,7 +1497,6 @@ begin
   for i := 1 to High(ClassList) -1 do
     for j := 0 to ClassList[i].ClassComponents.Count -1 do
     begin
-
       Str := '';
       for k := 0 to ClassList[i].ClassComponents.Count -1 do
       begin
@@ -1510,23 +1509,10 @@ begin
           Str := Str + GetComp(ClassList[i].ClassComponents[k]) + ':1.0';
       end;
 
-
       StrIndex := StringReplace(GetComp(ClassList[i].ClassComponents[j]), 'fm', '', []);
       SectionA0.Add(Format('  u%s: %s = (%s);', [StrIndex, ClassList[i].ClassName, Str]));
     end;
   SectionA0.Add('');
-
-
-
-
-
-
-
-
-
-
-
-
 end;
 
 procedure TMainForm.AddClassHelper(AIndex: longint);
@@ -1594,7 +1580,7 @@ begin
   SectionA0 := TStringList.Create;
   SectionA0.Add(Format('unit CL%d%d;', [PositiveBox.ItemIndex, NegativeBox.ItemIndex]));
   SectionA0.Add('');
-  SectionA0.Add(Format('{ Geometric Algebra Cl%d%d%d for FreePascal.', [PositiveBox.ItemIndex, NegativeBox.ItemIndex, 0]));
+  SectionA0.Add(Format('{ Geometric Algebra Cl%d%d for FreePascal.', [PositiveBox.ItemIndex, NegativeBox.ItemIndex]));
   SectionA0.Add('');
   SectionA0.Add('  Copyright (c) 2024 Melchiorre Caruso');
   SectionA0.Add('  Permission is hereby granted, free of charge, to any person obtaining a copy');
