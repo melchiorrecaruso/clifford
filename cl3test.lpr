@@ -1,9 +1,9 @@
-program cl30test;
+program cl3test;
 
 {$mode objfpc}{$h+}
 
 uses
-  Cl30, DateUtils, Math, SysUtils;
+  Cl3, DateUtils, Math, SysUtils;
 
 var
   k : longint;

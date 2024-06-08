@@ -13,7 +13,7 @@
         <SaveFoldState Value="False"/>
       </Flags>
       <SessionStorage Value="None"/>
-      <Title Value="cl30test"/>
+      <Title Value="cl3test"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
@@ -29,13 +29,12 @@
     </RunParams>
     <Units>
       <Unit>
-        <Filename Value="cl30test.lpr"/>
+        <Filename Value="cl3test.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="cl30.pas"/>
+        <Filename Value="cl3.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Cl30"/>
       </Unit>
     </Units>
   </ProjectOptions>
@@ -43,7 +42,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="build\cl30test"/>
+      <Filename Value="build\cl3test"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
