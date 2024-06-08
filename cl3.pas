@@ -2389,7 +2389,7 @@ begin
             Math.SameValue(fm3,            0.0) and
             Math.SameValue(fm12,           0.0) and
             Math.SameValue(fm23,           0.0) and
-            Math.SameValue(-fm13,           0.0) and
+            Math.SameValue(fm13,           0.0) and
             Math.SameValue(fm123, AValue.fm123);
 end;
 
@@ -2413,7 +2413,7 @@ begin
             Math.SameValue(fm3,   AValue.fm3) and
             Math.SameValue(fm12,         0.0) and
             Math.SameValue(fm23,         0.0) and
-            Math.SameValue(-fm13,         0.0) and
+            Math.SameValue(fm13,         0.0) and
             Math.SameValue(fm123,        0.0);
 end;
 
@@ -2425,7 +2425,7 @@ begin
             Math.SameValue(fm3,      0.0) and
             Math.SameValue(fm12,     0.0) and
             Math.SameValue(fm23,     0.0) and
-            Math.SameValue(-fm13,     0.0) and
+            Math.SameValue(fm13,     0.0) and
             Math.SameValue(fm123,    0.0);
 end;
 
@@ -2440,7 +2440,7 @@ begin
   if not Math.SameValue(fm3,   0.0) then result := result + Fmt(fm3,   APrecision, ADigits) + 'e3 ';
   if not Math.SameValue(fm12,  0.0) then result := result + Fmt(fm12,  APrecision, ADigits) + 'e12 ';
   if not Math.SameValue(fm23,  0.0) then result := result + Fmt(fm23,  APrecision, ADigits) + 'e23 ';
-  if not Math.SameValue(-fm13,  0.0) then result := result + Fmt(-fm13,  APrecision, ADigits) + 'e31 ';
+  if not Math.SameValue(fm13,  0.0) then result := result + Fmt(fm13,  APrecision, ADigits) + 'e31 ';
   if not Math.SameValue(fm123, 0.0) then result := result + Fmt(fm123, APrecision, ADigits) + 'e123 ';
 
   i := Length(result);
@@ -2461,7 +2461,7 @@ begin
   if not Math.SameValue(fm3,   0.0) then result := result + Fmt(fm3  ) + 'e3 ';
   if not Math.SameValue(fm12,  0.0) then result := result + Fmt(fm12 ) + 'e12 ';
   if not Math.SameValue(fm23,  0.0) then result := result + Fmt(fm23 ) + 'e23 ';
-  if not Math.SameValue(-fm13,  0.0) then result := result + Fmt(-fm13 ) + 'e31 ';
+  if not Math.SameValue(fm13,  0.0) then result := result + Fmt(fm13 ) + 'e31 ';
   if not Math.SameValue(fm123, 0.0) then result := result + Fmt(fm123) + 'e123 ';
 
   i := Length(result);
@@ -2537,7 +2537,7 @@ begin
             (    Math.SameValue(fm3,   0.0)) and
             (    Math.SameValue(fm12,  0.0)) and
             (    Math.SameValue(fm23,  0.0)) and
-            (    Math.SameValue(-fm13,  0.0)) and
+            (    Math.SameValue(fm13,  0.0)) and
             (    Math.SameValue(fm123, 0.0));
 end;
 
@@ -2549,7 +2549,7 @@ begin
              (not Math.SameValue(fm3,   0.0))) and
              (    Math.SameValue(fm12,  0.0))  and
              (    Math.SameValue(fm23,  0.0))  and
-             (    Math.SameValue(-fm13,  0.0))  and
+             (    Math.SameValue(fm13,  0.0))  and
              (    Math.SameValue(fm123, 0.0));
 end;
 
@@ -2561,7 +2561,7 @@ begin
              (    Math.SameValue(fm3,   0.0))  and
             ((not Math.SameValue(fm12,  0.0))  or
              (not Math.SameValue(fm23,  0.0))  or
-             (not Math.SameValue(-fm13,  0.0))) and
+             (not Math.SameValue(fm13,  0.0))) and
              (    Math.SameValue(fm123, 0.0));
 end;
 
@@ -2573,7 +2573,7 @@ begin
             (    Math.SameValue(fm3,   0.0)) and
             (    Math.SameValue(fm12,  0.0)) and
             (    Math.SameValue(fm23,  0.0)) and
-            (    Math.SameValue(-fm13,  0.0)) and
+            (    Math.SameValue(fm13,  0.0)) and
             (not Math.SameValue(fm123, 0.0));
 end;
 
