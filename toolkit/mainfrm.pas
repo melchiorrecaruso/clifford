@@ -16,8 +16,6 @@ type
 
   TCLClassList = array of TCLClass;
 
-  TCLProductType = (ptMul, ptGeometric, ptWedge, ptDot);
-
   { TMainForm }
 
   TMainForm = class(TForm)
@@ -57,11 +55,15 @@ type
     function GetWedgeProduct(const A, B: string): string;
     function GetGeometricProduct(const A, B: string): string;
 
+    function GetDot(const ALeftIndex, ARightIndex: longint): longint;
+    function GetWedge(const ALeftIndex, ARightIndex: longint): longint;
+    function GetGeometric(const ALeftIndex, ARightIndex: longint): longint;
+
     procedure AddOperatorEqual(ALeftIndex, ARightIndex: longint);
     procedure AddOperatorNotEqual(ALeftIndex, ARightIndex: longint);
     procedure AddOperatorAdd(ALeftIndex, ARightIndex: longint);
     procedure AddOperatorSubtract(ALeftIndex, ARightIndex: longint);
-    procedure AddOperatorMul(ALeftIndex, ARightIndex: longint; AProductType: TCLProductType);
+    procedure AddOperatorMul(ALeftIndex, ARightIndex: longint);
     procedure AddOperatorDiv(ALeftIndex, ARightIndex: longint);
     procedure AddPrivateSection(AIndex: longint);
 
@@ -75,16 +77,20 @@ type
     procedure AddHelperLeftReciprocal(AIndex: longint);
     procedure AddHelperNormalized(AIndex: longint);
     procedure AddHelperNorm(AIndex: longint);
-    procedure AddHelperSquareNorm(AIndex: longint);
+    procedure AddHelperSquaredNorm(AIndex: longint);
     procedure AddHelperProjection(AIndex: longint);
     procedure AddHelperRejection(AIndex: longint);
+    procedure AddHelperReflection(AIndex: longint);
     procedure AddHelperRotation(AIndex: longint);
     procedure AddHelperSameValue(AIndex: longint);
     procedure AddHelperExtract(AIndex: longint);
     procedure AddHelperToMultivector(AIndex: longint);
-    procedure AddVersors;
+
+    procedure AddHelperWedge(ALeftIndex, ARightIndex: longint);
+    procedure AddHelperDot(ALeftIndex, ARightIndex: longint);
 
     procedure AddClassHelper(AIndex: longint);
+    procedure AddVersors;
   public
     procedure Build;
   end;
@@ -410,10 +416,7 @@ begin
   List := ClassList[High(ClassList)].ClassComponents;
   for i := 0 to List.Count -1 do
   begin
-    if i <> List.Count -1 then
-      Line := '    (%s = %s) and'
-    else
-      Line := '    (%s = %s);';
+    Line := '    (%s = %s) and';
 
     LeftComponent := '0';
     if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
@@ -440,6 +443,8 @@ begin
       SectionB0.Add(Format(Line, [LeftComponent, RightComponent]));
     end;
   end;
+  SectionB0[SectionB0.Count -1] := StringReplace(SectionB0[SectionB0.Count -1], ' and', ';', []);
+
   SectionB0.Add('end;');
   SectionB0.Add('');
 end;
@@ -484,10 +489,7 @@ begin
   List := ClassList[High(ClassList)].ClassComponents;
   for i := 0 to List.Count -1 do
   begin
-    if i <> List.Count -1 then
-      Line := '    (%s <> %s) and'
-    else
-      Line := '    (%s <> %s);';
+    Line := '    (%s <> %s) and';
 
     LeftComponent := '0';
     if ClassList[ALeftIndex].ClassComponents.IndexOf(List[i]) <> -1 then
@@ -514,6 +516,8 @@ begin
       SectionB0.Add(Format(Line, [LeftComponent, RightComponent]));
     end;
   end;
+  SectionB0[SectionB0.Count -1] := StringReplace(SectionB0[SectionB0.Count -1], ' and', ';', []);
+
   SectionB0.Add('end;');
   SectionB0.Add('');
 end;
@@ -681,7 +685,256 @@ begin
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddOperatorMul(ALeftIndex, ARightIndex: longint; AProductType: TCLProductType);
+function TMainForm.GetGeometric(const ALeftIndex, ARightIndex: longint): longint;
+type
+  TReturnComponent = (rtScalar, rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
+  TReturnComponents = set of TReturnComponent;
+var
+  i, j: longint;
+  Base: string;
+  Return: array of TStringList = nil;
+  ReturnIndex: longint;
+  ReturnComponents: TReturnComponents;
+begin
+  SetLength(Return, 1 shl SpaceDimension);
+  for i := Low(Return) to High(Return) do
+    Return[i] := TStringList.Create;
+
+  for i := 0 to ClassList[ALeftIndex].ClassComponents.Count -1 do
+    for j := 0 to ClassList[ARightIndex].ClassComponents.Count -1 do
+    begin
+      Base := GeometricProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex].ClassComponents[i]];
+
+      if Base <> '0' then
+      begin
+        ReturnIndex := GetIndex(Base);
+        if Pos('-', Base) = 1 then
+        begin
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('-ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end else
+        begin
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('+ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end;
+      end;
+    end;
+
+  Result := 0;
+  ReturnComponents := [];
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+      case Length(DotProduct.Cells[i, 0]) -1 of
+        0: Include(ReturnComponents, rtScalar);
+        1: Include(ReturnComponents, rtVector);
+        2: Include(ReturnComponents, rtBivector);
+        3: Include(ReturnComponents, rtTrivector);
+        4: Include(ReturnComponents, rtQuadrivector);
+        5: Include(ReturnComponents, rtPentavector);
+        6: Include(ReturnComponents, rtHexavector);
+      end;
+    end;
+  end;
+
+  if ReturnComponents = [              ] then Result := 0 else
+  if ReturnComponents = [rtScalar      ] then Result := 0 else
+  if ReturnComponents = [rtVector      ] then Result := 1 else
+  if ReturnComponents = [rtBivector    ] then Result := 2 else
+  if ReturnComponents = [rtTrivector   ] then Result := 3 else
+  if ReturnComponents = [rtQuadrivector] then Result := 4 else
+  if ReturnComponents = [rtPentavector ] then Result := 5 else
+  if ReturnComponents = [rtHexavector  ] then Result := 6 else Result := High(ClassList);
+
+  if Result > 0 then
+  begin
+    if (Result < ALeftIndex ) and
+       (Result < ARightIndex) then Result := High(ClassList);
+  end;
+
+  for i := Low(Return) to High(Return) do
+    Return[i].Destroy;
+  Return := nil;
+end;
+
+function TMainForm.GetWedge(const ALeftIndex, ARightIndex: longint): longint;
+type
+  TReturnComponent = (rtScalar, rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
+  TReturnComponents = set of TReturnComponent;
+var
+  i, j: longint;
+  Base: string;
+  Return: array of TStringList = nil;
+  ReturnIndex: longint;
+  ReturnComponents: TReturnComponents;
+begin
+  SetLength(Return, 1 shl SpaceDimension);
+  for i := Low(Return) to High(Return) do
+    Return[i] := TStringList.Create;
+
+  for i := 0 to ClassList[ALeftIndex].ClassComponents.Count -1 do
+    for j := 0 to ClassList[ARightIndex].ClassComponents.Count -1 do
+    begin
+      Base := WedgeProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex].ClassComponents[i]];
+
+      if Base <> '0' then
+      begin
+        ReturnIndex := GetIndex(Base);
+        if Pos('-', Base) = 1 then
+        begin
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('-ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end else
+        begin
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('+ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end;
+      end;
+    end;
+
+  Result := 0;
+  ReturnComponents := [];
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+      case Length(DotProduct.Cells[i, 0]) -1 of
+        0: Include(ReturnComponents, rtScalar);
+        1: Include(ReturnComponents, rtVector);
+        2: Include(ReturnComponents, rtBivector);
+        3: Include(ReturnComponents, rtTrivector);
+        4: Include(ReturnComponents, rtQuadrivector);
+        5: Include(ReturnComponents, rtPentavector);
+        6: Include(ReturnComponents, rtHexavector);
+      end;
+    end;
+  end;
+
+  if ReturnComponents = [              ] then Result := 0 else
+  if ReturnComponents = [rtScalar      ] then Result := 0 else
+  if ReturnComponents = [rtVector      ] then Result := 1 else
+  if ReturnComponents = [rtBivector    ] then Result := 2 else
+  if ReturnComponents = [rtTrivector   ] then Result := 3 else
+  if ReturnComponents = [rtQuadrivector] then Result := 4 else
+  if ReturnComponents = [rtPentavector ] then Result := 5 else
+  if ReturnComponents = [rtHexavector  ] then Result := 6 else Result := High(ClassList);
+
+  if Result > 0 then
+  begin
+    if (Result < ALeftIndex ) and
+       (Result < ARightIndex) then Result := High(ClassList);
+  end;
+
+  for i := Low(Return) to High(Return) do
+    Return[i].Destroy;
+  Return := nil;
+end;
+
+function TMainForm.GetDot(const ALeftIndex, ARightIndex: longint): longint;
+type
+  TReturnComponent = (rtScalar, rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
+  TReturnComponents = set of TReturnComponent;
+var
+  i, j: longint;
+  Base: string;
+  Return: array of TStringList = nil;
+  ReturnIndex: longint;
+  ReturnComponents: TReturnComponents;
+begin
+  SetLength(Return, 1 shl SpaceDimension);
+  for i := Low(Return) to High(Return) do
+    Return[i] := TStringList.Create;
+
+  for i := 0 to ClassList[ALeftIndex].ClassComponents.Count -1 do
+    for j := 0 to ClassList[ARightIndex].ClassComponents.Count -1 do
+    begin
+      Base := DotProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex].ClassComponents[i]];
+
+      if Base <> '0' then
+      begin
+        ReturnIndex := GetIndex(Base);
+        if Pos('-', Base) = 1 then
+        begin
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('-ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end else
+        begin
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('+ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+        end;
+      end;
+    end;
+
+  Result := 0;
+  ReturnComponents := [];
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+      case Length(DotProduct.Cells[i, 0]) -1 of
+        0: Include(ReturnComponents, rtScalar);
+        1: Include(ReturnComponents, rtVector);
+        2: Include(ReturnComponents, rtBivector);
+        3: Include(ReturnComponents, rtTrivector);
+        4: Include(ReturnComponents, rtQuadrivector);
+        5: Include(ReturnComponents, rtPentavector);
+        6: Include(ReturnComponents, rtHexavector);
+      end;
+    end;
+  end;
+
+  if ReturnComponents = [              ] then Result := 0 else
+  if ReturnComponents = [rtScalar      ] then Result := 0 else
+  if ReturnComponents = [rtVector      ] then Result := 1 else
+  if ReturnComponents = [rtBivector    ] then Result := 2 else
+  if ReturnComponents = [rtTrivector   ] then Result := 3 else
+  if ReturnComponents = [rtQuadrivector] then Result := 4 else
+  if ReturnComponents = [rtPentavector ] then Result := 5 else
+  if ReturnComponents = [rtHexavector  ] then Result := 6 else Result := High(ClassList);
+
+  if Result > 0 then
+  begin
+    if (Result < ALeftIndex ) and
+       (Result < ARightIndex) then Result := High(ClassList);
+  end;
+
+  for i := Low(Return) to High(Return) do
+    Return[i].Destroy;
+  Return := nil;
+end;
+
+procedure TMainForm.AddOperatorMul(ALeftIndex, ARightIndex: longint);
 type
   TReturnComponent = (rtScalar, rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
   TReturnComponents = set of TReturnComponent;
@@ -692,7 +945,6 @@ var
   Return: array of TStringList = nil;
   ReturnIndex: longint;
   ReturnComponents: TReturnComponents;
-  OperatorSymbol: string;
 begin
   BaseIndex := Min(ALeftIndex, ARightIndex);
   if BaseIndex = 0 then
@@ -707,12 +959,7 @@ begin
   for i := 0 to ClassList[ALeftIndex].ClassComponents.Count -1 do
     for j := 0 to ClassList[ARightIndex].ClassComponents.Count -1 do
     begin
-      case AProductType of
-        ptMul:       Base := GeometricProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex ].ClassComponents[i]];
-        ptGeometric: Base := GeometricProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex ].ClassComponents[i]];
-        ptWedge:     Base :=     WedgeProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex ].ClassComponents[i]];
-        ptDot:       Base :=       DotProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex ].ClassComponents[i]];
-      end;
+      Base := GeometricProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex].ClassComponents[i]];
 
       if Base <> '0' then
       begin
@@ -766,37 +1013,21 @@ begin
   if ReturnComponents = [rtPentavector ] then ReturnIndex := 5 else
   if ReturnComponents = [rtHexavector  ] then ReturnIndex := 6 else ReturnIndex := High(ClassList);
 
-  case AProductType of
-    ptMul:       OperatorSymbol  := '*';
-    ptGeometric: OperatorSymbol  := 'Geometric';
-    ptWedge:     OperatorSymbol  := 'Wedge';
-    ptDot:       OperatorSymbol  := 'Dot';
+  if ReturnIndex > 0 then
+  begin
+    if (ReturnIndex < ALeftIndex ) and
+       (ReturnIndex < ARightIndex) then ReturnIndex := High(ClassList);
   end;
 
-  if AProductType = ptMul then
+  if ALeftIndex = ARightIndex then
   begin
-    if ALeftIndex = ARightIndex then
-    begin
-      SectionA0.Add(Format('    class operator * (const ALeft, ARight: %s): %s;', [ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-      SectionB0.Add(Format('class operator %s.*(const ALeft, ARight: %s): %s;', [ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-    end else
-    begin
-      SectionA0.Add(Format('    class operator * (const ALeft: %s; const ARight: %s): %s;', [ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-      SectionB0.Add(Format('class operator %s.*(const ALeft: %s; const ARight: %s): %s;', [ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-    end
+    SectionA0.Add(Format('    class operator * (const ALeft, ARight: %s): %s;', [ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.*(const ALeft, ARight: %s): %s;', [ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
   end else
   begin
-    if ALeftIndex = ARightIndex then
-    begin
-      SectionA0.Add(Format('    class function %s(const ALeft, ARight: %s): %s; static;', [OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-      SectionB0.Add(Format('class function %s.%s(const ALeft, ARight: %s): %s; static;', [ClassList[BaseIndex].ClassName, OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-    end else
-    begin
-      SectionA0.Add(Format('    class function %s(const ALeft: %s; const ARight: %s): %s; static;', [OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-      SectionB0.Add(Format('class function %s.%s(const ALeft: %s; const ARight: %s): %s; static;', [ClassList[BaseIndex].ClassName, OperatorSymbol, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-    end
+    SectionA0.Add(Format('    class operator * (const ALeft: %s; const ARight: %s): %s;', [ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+    SectionB0.Add(Format('class operator %s.*(const ALeft: %s; const ARight: %s): %s;', [ClassList[BaseIndex].ClassName, ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
   end;
-
   k := 0;
   SectionB0.Add('begin');
   for i := Low(Return) to High(Return) do
@@ -865,45 +1096,50 @@ begin
         ClassList[ARightIndex].ClassComponents[j],
         ClassList[ALeftIndex ].ClassComponents[i]];
 
-      if Base = '0' then
-      begin
-        // nothing to do
-      end else
-      if Base = '1' then
-      begin
-        Return[0].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
-      end else
-      if Base = '-1' then
-      begin
-        Return[0].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
-      end else
+      if Base <> '0' then
       begin
         ReturnIndex := GetIndex(Base);
-        if Pos('-', Base) = 0 then
+        if Pos('-', Base) = 1 then
         begin
-          Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('-ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
         end else
         begin
-          Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+          if ALeftIndex = 0 then
+            Return[ReturnIndex].Add(Format('+ALeft * ARight.%s', [GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+          else
+            if ARightIndex = 0 then
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight', [GetComp(ClassList[ALeftIndex].ClassComponents[i])]))
+            else
+              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
         end;
       end;
     end;
 
-  ReturnIndex := -1;
+  ReturnIndex := 0;
   ReturnComponents := [];
   for i := Low(Return) to High(Return) do
   begin
-    case i of
-      0: if Return[0].Count > 0 then Include(ReturnComponents, rtScalar);
-      1: if Return[1].Count > 0 then Include(ReturnComponents, rtVector);
-      2: if Return[2].Count > 0 then Include(ReturnComponents, rtBivector);
-      3: if Return[3].Count > 0 then Include(ReturnComponents, rtTrivector);
-      4: if Return[4].Count > 0 then Include(ReturnComponents, rtQuadrivector);
-      5: if Return[5].Count > 0 then Include(ReturnComponents, rtPentavector);
-      6: if Return[6].Count > 0 then Include(ReturnComponents, rtHexavector);
+    if Return[i].Count > 0 then
+    begin
+      case Length(DotProduct.Cells[i, 0]) -1 of
+        0: Include(ReturnComponents, rtScalar);
+        1: Include(ReturnComponents, rtVector);
+        2: Include(ReturnComponents, rtBivector);
+        3: Include(ReturnComponents, rtTrivector);
+        4: Include(ReturnComponents, rtQuadrivector);
+        5: Include(ReturnComponents, rtPentavector);
+        6: Include(ReturnComponents, rtHexavector);
+      end;
     end;
   end;
 
+//if ReturnComponents = [              ] then ReturnIndex := 0 else
   if ReturnComponents = [rtScalar      ] then ReturnIndex := 0 else
   if ReturnComponents = [rtVector      ] then ReturnIndex := 1 else
   if ReturnComponents = [rtBivector    ] then ReturnIndex := 2 else
@@ -912,6 +1148,11 @@ begin
   if ReturnComponents = [rtPentavector ] then ReturnIndex := 5 else
   if ReturnComponents = [rtHexavector  ] then ReturnIndex := 6 else ReturnIndex := High(ClassList);
 
+  if ReturnIndex > 0 then
+  begin
+    if (ReturnIndex < ALeftIndex ) and
+       (ReturnIndex < ARightIndex) then ReturnIndex := High(ClassList);
+  end;
 
   if ALeftIndex = ARightIndex then
   begin
@@ -1005,14 +1246,14 @@ begin
     Inc(i);
   end;
   // Adding product (geometric)
-  AddOperatorMul(AIndex, 0, ptMul);
-  AddOperatorMul(0, AIndex, ptMul);
+  AddOperatorMul(AIndex, 0);
+  AddOperatorMul(0, AIndex);
   i := AIndex;
   while i < Length(ClassList) do
   begin
-    AddOperatorMul(AIndex, i, ptMul);
+    AddOperatorMul(AIndex, i);
     if AIndex <> i then
-      AddOperatorMul(i, AIndex, ptMul);
+      AddOperatorMul(i, AIndex);
     Inc(i);
   end;
   // Adding / operator
@@ -1024,28 +1265,6 @@ begin
     AddOperatorDiv(AIndex, i);
     if AIndex <> i then
       AddOperatorDiv(i, AIndex);
-    Inc(i);
-  end;
-  // Adding Wedge product
-  AddOperatorMul(AIndex, 0, ptWedge);
-  AddOperatorMul(0, AIndex, ptWedge);
-  i := AIndex;
-  while i < Length(ClassList) do
-  begin
-    AddOperatorMul(AIndex, i, ptWedge);
-    if AIndex <> i then
-      AddOperatorMul(i, AIndex, ptWedge);
-    Inc(i);
-  end;
-  // Adding Dot product
-  AddOperatorMul(AIndex, 0, ptDot);
-  AddOperatorMul(0, AIndex, ptDot);
-  i := AIndex;
-  while i < Length(ClassList) do
-  begin
-    AddOperatorMul(AIndex, i, ptDot);
-    if AIndex <> i then
-      AddOperatorMul(i, AIndex, ptDot);
     Inc(i);
   end;
 
@@ -1084,21 +1303,21 @@ begin
         if Pos('-', Base) = 1 then
         begin
           if LeftIndex = 0 then
-            Return[ReturnIndex].Add(Format('-ALeft * ARight.%s', [GetComp(ClassList[RightIndex].ClassComponents[j])]))
+            Return[ReturnIndex].Add(Format('-fm0', []))
           else
             if RightIndex = 0 then
-              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight', [GetComp(ClassList[LeftIndex].ClassComponents[i])]))
+              Return[ReturnIndex].Add(Format('-%s', [GetComp(ClassList[LeftIndex].ClassComponents[i])]))
             else
-              Return[ReturnIndex].Add(Format('-ALeft.%s * ARight.%s', [GetComp(ClassList[LeftIndex].ClassComponents[i]), GetComp(ClassList[RightIndex].ClassComponents[j])]));
+              Return[ReturnIndex].Add(Format('-%s', [GetComp(ClassList[LeftIndex].ClassComponents[i])]));
         end else
         begin
           if LeftIndex = 0 then
-            Return[ReturnIndex].Add(Format('+ALeft * ARight.%s', [GetComp(ClassList[RightIndex].ClassComponents[j])]))
+            Return[ReturnIndex].Add(Format('+fm0', []))
           else
             if RightIndex = 0 then
-              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight', [GetComp(ClassList[LeftIndex].ClassComponents[i])]))
+              Return[ReturnIndex].Add(Format('+%s', [GetComp(ClassList[LeftIndex].ClassComponents[i])]))
             else
-              Return[ReturnIndex].Add(Format('+ALeft.%s * ARight.%s', [GetComp(ClassList[LeftIndex].ClassComponents[i]), GetComp(ClassList[RightIndex].ClassComponents[j])]));
+              Return[ReturnIndex].Add(Format('+%s', [GetComp(ClassList[LeftIndex].ClassComponents[i])]));
         end;
       end;
     end;
@@ -1132,7 +1351,6 @@ begin
 
   SectionA0.Add(Format('    function Dual: %s;', [ClassList[ReturnIndex].ClassName]));
   SectionB0.Add(Format('function %sHelper.Dual: %s;', [ClassList[LeftIndex].ClassName, ClassList[ReturnIndex].ClassName]));
-  SectionB0.Add('begin');
 
   k := 0;
   SectionB0.Add('begin');
@@ -1186,18 +1404,18 @@ begin
       for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
       begin
         if IntPower(-1, AIndex) < 0 then
-          SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+          SectionB0.Add(Format('  result.%s := -%s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
         else
-          SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+          SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
       end;
   end else
   begin
     for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
     begin
       if IntPower(-1, AIndex) < 0 then
-        SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+        SectionB0.Add(Format('  result.%s := -%s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
       else
-        SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+        SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
     end;
   end;
 
@@ -1219,18 +1437,18 @@ begin
       for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
       begin
         if IntPower(-1, AIndex div 2) < 0 then
-          SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+          SectionB0.Add(Format('  result.%s := -%s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
         else
-          SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+          SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
       end;
   end else
   begin
     for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
     begin
       if IntPower(-1, AIndex div 2) < 0 then
-        SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+        SectionB0.Add(Format('  result.%s := -%s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
       else
-        SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+        SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
     end;
   end;
 
@@ -1252,18 +1470,18 @@ begin
       for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
       begin
         if IntPower(-1, AIndex + AIndex div 2) < 0 then
-          SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+          SectionB0.Add(Format('  result.%s := -%s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
         else
-          SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+          SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
       end;
   end else
   begin
     for i := 0 to ClassList[AIndex].ClassComponents.Count -1 do
     begin
       if IntPower(-1, AIndex + AIndex div 2) < 0 then
-        SectionB0.Add(Format('  result.%s := -%s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
+        SectionB0.Add(Format('  result.%s := -%s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]))
       else
-        SectionB0.Add(Format('  result.%s := %s', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
+        SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[AIndex].ClassComponents[i]), GetComp(ClassList[AIndex].ClassComponents[i])]));
     end;
   end;
 
@@ -1306,17 +1524,17 @@ begin
   SectionA0.Add(Format('    function Norm: double;', []));
   SectionB0.Add(Format('function %sHelper.Norm: double;', [ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
-  SectionB0.Add('  result := sqrt(SquareNorm);');
+  SectionB0.Add('  result := sqrt(SquaredNorm);');
   SectionB0.Add('end;');
   SectionB0.Add('');
 end;
 
-procedure TMainForm.AddHelperSquareNorm(AIndex: longint);
+procedure TMainForm.AddHelperSquaredNorm(AIndex: longint);
 var
   i: longint;
 begin
-  SectionA0.Add(Format('    function SquareNorm: double;', []));
-  SectionB0.Add(Format('function %sHelper.SquareNorm: double;', [ClassList[AIndex].ClassName]));
+  SectionA0.Add(Format('    function SquaredNorm: double;', []));
+  SectionB0.Add(Format('function %sHelper.SquaredNorm: double;', [ClassList[AIndex].ClassName]));
   SectionB0.Add('begin');
   SectionB0.Add('  result := ');
 
@@ -1336,8 +1554,8 @@ var
 begin
   for i := Low(CLassList) + 1 to High(ClassList) do
   begin
-    SectionA0.Add(Format('    function Projection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
-    SectionB0.Add(Format('function %sHelper.Projection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionA0.Add(Format('    function Projection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[GetGeometric(GetDot(AIndex, i), i)].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Projection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[GetGeometric(GetDot(AIndex, i), i)].ClassName]));
     SectionB0.Add('begin');
     SectionB0.Add('  result := Dot(AVector) * AVector.Reciprocal;');
     SectionB0.Add('end;');
@@ -1351,10 +1569,28 @@ var
 begin
   for i := Low(CLassList) + 1 to High(ClassList) do
   begin
-    SectionA0.Add(Format('    function Rejection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
-    SectionB0.Add(Format('function %sHelper.Rejection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    SectionA0.Add(Format('    function Rejection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[GetGeometric(GetWedge(AIndex, i), i)].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Rejection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[GetGeometric(GetWedge(AIndex, i), i)].ClassName]));
     SectionB0.Add('begin');
     SectionB0.Add('  result := Wedge(AVector) * AVector.Reciprocal;');
+    SectionB0.Add('end;');
+    SectionB0.Add('');
+  end;
+end;
+
+procedure TMainForm.AddHelperReflection(AIndex: longint);
+var
+  i: longint;
+  ReturnIndex: longint;
+begin
+  for i := Low(CLassList) + 1 to High(ClassList) do
+  begin
+    ReturnIndex := GetGeometric(GetGeometric(i, AIndex), i);
+
+    SectionA0.Add(Format('    function Reflection(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[ReturnIndex].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Reflection(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[ReturnIndex].ClassName]));
+    SectionB0.Add('begin');
+    SectionB0.Add('  result := AVector * Self * AVector.Reciprocal;');
     SectionB0.Add('end;');
     SectionB0.Add('');
   end;
@@ -1363,11 +1599,14 @@ end;
 procedure TMainForm.AddHelperRotation(AIndex: longint);
 var
   i: longint;
+  ReturnIndex: longint;
 begin
   for i := Low(CLassList) + 1 to High(ClassList) do
   begin
-    SectionA0.Add(Format('    function Rotation(const AVector: %s): %s;', [ClassList[i].ClassName, ClassList[AIndex].ClassName]));
-    SectionB0.Add(Format('function %sHelper.Rotation(const AVector: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[AIndex].ClassName]));
+    ReturnIndex := GetGeometric(GetGeometric(GetGeometric(GetGeometric(i, i), AIndex), i), i);
+
+    SectionA0.Add(Format('    function Rotation(const AVector1, AVector2: %s): %s;', [ClassList[i].ClassName, ClassList[ReturnIndex].ClassName]));
+    SectionB0.Add(Format('function %sHelper.Rotation(const AVector1, AVector2: %s): %s;', [ClassList[AIndex].ClassName, ClassList[i].ClassName, ClassList[ReturnIndex].ClassName]));
     SectionB0.Add('begin');
     SectionB0.Add('  result := AVector2 * AVector1 * Self * AVector1.Reciprocal * AVector2.Reciprocal;');
     SectionB0.Add('end;');
@@ -1392,9 +1631,9 @@ begin
   for i := 0 to List.Count -1 do
   begin
     if i <> List.Count -1 then
-      Line := '    SameValue(%s, %s) and'
+      Line := '    Math.SameValue(%s, %s) and'
     else
-      Line := '    SameValue(%s, %s);';
+      Line := '    Math.SameValue(%s, %s);';
 
     LeftComponent := '0';
     if ClassList[AIndex].ClassComponents.IndexOf(List[i]) <> -1 then
@@ -1428,19 +1667,36 @@ end;
 procedure TMainForm.AddHelperExtract(AIndex: longint);
 var
   i, j: longint;
+  Base: string;
 begin
-  if AIndex <> High(ClassList) then
+  if AIndex = High(ClassList) then
   begin
     for i := Low(ClassList) to High(ClassList) -1 do
     begin
-      SectionA0.Add(Format('    function Extract: %s;', [ClassList[i].ClassName]));
-      SectionB0.Add(Format('function TMultivectorHelper.Extract: %s;', [ClassList[i].ClassName]));
+
+      case i of
+        0: Base := 'Scalar';
+        1: Base := 'Vector';
+        2: Base := 'Bivector';
+        3: Base := 'Trivector';
+        4: Base := 'Quadrivector';
+        5: Base := 'Pentavector';
+        6: Base := 'Hexavector';
+      else Base := '';
+      end;
+
+      SectionA0.Add(Format('    function Extract%s: %s;', [Base, ClassList[i].ClassName]));
+      SectionB0.Add(Format('function TMultivectorHelper.Extract%s: %s;', [Base, ClassList[i].ClassName]));
       SectionB0.Add('begin');
 
-      for j := 0 to ClassList[i].ClassComponents.Count -1 do
+      if i = 0 then
       begin
-        SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[i].ClassComponents[j]), GetComp(ClassList[i].ClassComponents[j])]));
-      end;
+        SectionB0.Add('  result := fm0;');
+      end else
+        for j := 0 to ClassList[i].ClassComponents.Count -1 do
+        begin
+          SectionB0.Add(Format('  result.%s := %s;', [GetComp(ClassList[i].ClassComponents[j]), GetComp(ClassList[i].ClassComponents[j])]));
+        end;
 
       SectionB0.Add('end;');
       SectionB0.Add('');
@@ -1471,17 +1727,270 @@ begin
   end;
 end;
 
+procedure TMainForm.AddHelperWedge(ALeftIndex, ARightIndex: longint);
+type
+  TReturnComponent = (rtScalar, rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
+  TReturnComponents = set of TReturnComponent;
+var
+  i, j, k: longint;
+  Base: string;
+  Return: array of TStringList = nil;
+  ReturnIndex: longint;
+  ReturnComponents: TReturnComponents;
+begin
+  SetLength(Return, 1 shl SpaceDimension);
+  for i := Low(Return) to High(Return) do
+    Return[i] := TStringList.Create;
+
+  for i := 0 to ClassList[ALeftIndex].ClassComponents.Count -1 do
+    for j := 0 to ClassList[ARightIndex].ClassComponents.Count -1 do
+    begin
+      Base := WedgeProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex].ClassComponents[i]];
+
+      if Base <> '0' then
+      begin
+        ReturnIndex := GetIndex(Base);
+        if Pos('-', Base) = 1 then
+          Return[ReturnIndex].Add(Format('-%s * AVector.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+        else
+          Return[ReturnIndex].Add(Format('+%s * AVector.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+      end;
+    end;
+
+  ReturnIndex := 0;
+  ReturnComponents := [];
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+      case Length(WedgeProduct.Cells[i, 0]) -1 of
+        0: Include(ReturnComponents, rtScalar);
+        1: Include(ReturnComponents, rtVector);
+        2: Include(ReturnComponents, rtBivector);
+        3: Include(ReturnComponents, rtTrivector);
+        4: Include(ReturnComponents, rtQuadrivector);
+        5: Include(ReturnComponents, rtPentavector);
+        6: Include(ReturnComponents, rtHexavector);
+      end;
+    end;
+  end;
+
+  if ReturnComponents = [              ] then ReturnIndex := 0 else
+  if ReturnComponents = [rtScalar      ] then ReturnIndex := 0 else
+  if ReturnComponents = [rtVector      ] then ReturnIndex := 1 else
+  if ReturnComponents = [rtBivector    ] then ReturnIndex := 2 else
+  if ReturnComponents = [rtTrivector   ] then ReturnIndex := 3 else
+  if ReturnComponents = [rtQuadrivector] then ReturnIndex := 4 else
+  if ReturnComponents = [rtPentavector ] then ReturnIndex := 5 else
+  if ReturnComponents = [rtHexavector  ] then ReturnIndex := 6 else ReturnIndex := High(ClassList);
+
+  if ReturnIndex > 0 then
+  begin
+    if (ReturnIndex < ALeftIndex ) and
+       (ReturnIndex < ARightIndex) then ReturnIndex := High(ClassList);
+  end;
+
+  SectionA0.Add(Format('    function Wedge(const AVector: %s): %s;', [ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Wedge(const AVector: %s): %s;', [ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+
+  k := 0;
+  SectionB0.Add('begin');
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+
+      if ClassList[ReturnIndex].ClassName <> 'double' then
+        SectionB0.Add(Format('  result.%s := ', [GetComp(i)]))
+      else
+        SectionB0.Add('  result := ');
+
+      for j := 0 to Return[i].Count -1 do
+      begin
+        if j = Return[i].Count -1 then
+          SectionB0.Add('    ' + Return[i][j] + ';')
+        else
+          SectionB0.Add('    ' + Return[i][j]);
+        Inc(k);
+      end;
+      SectionB0.Add('');
+    end else
+      if ClassList[ReturnIndex].ClassName = 'TMultivector' then
+      begin
+        SectionB0.Add(Format('  result.%s := 0;', [GetComp(i)]));
+        Inc(k);
+      end;
+  end;
+
+  if k = 0 then
+    SectionB0.Add('  result := 0;');
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+
+  for i := Low(Return) to High(Return) do
+    Return[i].Destroy;
+  Return := nil;
+end;
+
+procedure TMainForm.AddHelperDot(ALeftIndex, ARightIndex: longint);
+type
+  TReturnComponent = (rtScalar, rtVector, rtBivector, rtTrivector, rtQuadrivector, rtPentavector, rtHexavector);
+  TReturnComponents = set of TReturnComponent;
+var
+  i, j, k: longint;
+  Base: string;
+  Return: array of TStringList = nil;
+  ReturnIndex: longint;
+  ReturnComponents: TReturnComponents;
+begin
+  SetLength(Return, 1 shl SpaceDimension);
+  for i := Low(Return) to High(Return) do
+    Return[i] := TStringList.Create;
+
+  for i := 0 to ClassList[ALeftIndex].ClassComponents.Count -1 do
+    for j := 0 to ClassList[ARightIndex].ClassComponents.Count -1 do
+    begin
+      Base := DotProduct.Cells[ClassList[ARightIndex].ClassComponents[j], ClassList[ALeftIndex].ClassComponents[i]];
+
+      if Base <> '0' then
+      begin
+        ReturnIndex := GetIndex(Base);
+        if Pos('-', Base) = 1 then
+          Return[ReturnIndex].Add(Format('-%s * AVector.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]))
+        else
+          Return[ReturnIndex].Add(Format('+%s * AVector.%s', [GetComp(ClassList[ALeftIndex].ClassComponents[i]), GetComp(ClassList[ARightIndex].ClassComponents[j])]));
+      end;
+    end;
+
+  ReturnIndex := 0;
+  ReturnComponents := [];
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+      case Length(DotProduct.Cells[i, 0]) -1 of
+        0: Include(ReturnComponents, rtScalar);
+        1: Include(ReturnComponents, rtVector);
+        2: Include(ReturnComponents, rtBivector);
+        3: Include(ReturnComponents, rtTrivector);
+        4: Include(ReturnComponents, rtQuadrivector);
+        5: Include(ReturnComponents, rtPentavector);
+        6: Include(ReturnComponents, rtHexavector);
+      end;
+    end;
+  end;
+
+  if ReturnComponents = [              ] then ReturnIndex := 0 else
+  if ReturnComponents = [rtScalar      ] then ReturnIndex := 0 else
+  if ReturnComponents = [rtVector      ] then ReturnIndex := 1 else
+  if ReturnComponents = [rtBivector    ] then ReturnIndex := 2 else
+  if ReturnComponents = [rtTrivector   ] then ReturnIndex := 3 else
+  if ReturnComponents = [rtQuadrivector] then ReturnIndex := 4 else
+  if ReturnComponents = [rtPentavector ] then ReturnIndex := 5 else
+  if ReturnComponents = [rtHexavector  ] then ReturnIndex := 6 else ReturnIndex := High(ClassList);
+
+  if ReturnIndex > 0 then
+  begin
+    if (ReturnIndex < ALeftIndex ) and
+       (ReturnIndex < ARightIndex) then ReturnIndex := High(ClassList);
+  end;
+
+  SectionA0.Add(Format('    function Dot(const AVector: %s): %s;', [ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+  SectionB0.Add(Format('function %sHelper.Dot(const AVector: %s): %s;', [ClassList[ALeftIndex].ClassName, ClassList[ARightIndex].ClassName, ClassList[ReturnIndex].ClassName]));
+
+  k := 0;
+  SectionB0.Add('begin');
+  for i := Low(Return) to High(Return) do
+  begin
+    if Return[i].Count > 0 then
+    begin
+
+      if ClassList[ReturnIndex].ClassName <> 'double' then
+        SectionB0.Add(Format('  result.%s := ', [GetComp(i)]))
+      else
+        SectionB0.Add('  result := ');
+
+      for j := 0 to Return[i].Count -1 do
+      begin
+        if j = Return[i].Count -1 then
+          SectionB0.Add('    ' + Return[i][j] + ';')
+        else
+          SectionB0.Add('    ' + Return[i][j]);
+        Inc(k);
+      end;
+      SectionB0.Add('');
+    end else
+      if ClassList[ReturnIndex].ClassName = 'TMultivector' then
+      begin
+        SectionB0.Add(Format('  result.%s := 0;', [GetComp(i)]));
+        Inc(k);
+      end;
+  end;
+
+  if k = 0 then
+    SectionB0.Add('  result := 0;');
+  SectionB0.Add('end;');
+  SectionB0.Add('');
+
+  for i := Low(Return) to High(Return) do
+    Return[i].Destroy;
+  Return := nil;
+end;
+
+procedure TMainForm.AddClassHelper(AIndex: longint);
+var
+  i: longint;
+begin
+  SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
+  SectionA0.Add(Format('  %s = record helper for %s', [ClassList[AIndex].ClassName + 'Helper', ClassList[AIndex].ClassName]));
+
+  AddHelperDual          (AIndex);
+  AddHelperInverse       (AIndex);
+  AddHelperReverse       (AIndex);
+  AddHelperConjugate     (AIndex);
+  AddHelperReciprocal    (AIndex);
+  AddHelperLeftReciprocal(AIndex);
+  AddHelperNormalized    (AIndex);
+  AddHelperNorm          (AIndex);
+  AddHelperSquaredNorm   (AIndex);
+  AddHelperProjection    (AIndex);
+  AddHelperRejection     (AIndex);
+  AddHelperReflection    (AIndex);
+  AddHelperRotation      (AIndex);
+
+  for i := 1 to High(ClassList) do AddHelperWedge(AIndex, i);
+  for i := 1 to High(ClassList) do AddHelperDot  (AIndex, i);
+
+  AddHelperSameValue     (AIndex);
+  AddHelperExtract       (AIndex);
+  AddHelperToMultivector (AIndex);
+
+  SectionA0.Add('  end;');
+  SectionA0.Add('');
+end;
+
 procedure TMainForm.AddVersors;
 var
   i, j, k: longint;
   Str, StrIndex: string;
 begin
-
   for i := 1 to High(ClassList) -1 do
     for j := 0 to ClassList[i].ClassComponents.Count -1 do
     begin
       StrIndex := StringReplace(GetComp(ClassList[i].ClassComponents[j]), 'fm', '', []);
       SectionA0.Add(Format('  TVersor%s = record class operator *(const AValue: double; const ASelf: TVersor%s): %s; end;', [StrIndex, StrIndex, ClassList[i].ClassName]));
+
+      SectionB0.Add(Format('class operator TVersor%s.*(const AValue: double; const ASelf: TVersor%s): %s;', [StrIndex, StrIndex, ClassList[i].ClassName]));
+      SectionB0.Add('begin');
+      for k := 0 to ClassList[i].ClassComponents.Count -1 do
+      begin
+        if k = j then
+          SectionB0.Add(Format('  result.%s := AValue;', [GetComp(ClassList[i].ClassComponents[k])]))
+        else
+          SectionB0.Add(Format('  result.%s := 0;', [GetComp(ClassList[i].ClassComponents[k])]));
+      end;
+      SectionB0.Add('end;');
+      SectionB0.Add('');
     end;
   SectionA0.Add('');
 
@@ -1512,31 +2021,6 @@ begin
       StrIndex := StringReplace(GetComp(ClassList[i].ClassComponents[j]), 'fm', '', []);
       SectionA0.Add(Format('  u%s: %s = (%s);', [StrIndex, ClassList[i].ClassName, Str]));
     end;
-  SectionA0.Add('');
-end;
-
-procedure TMainForm.AddClassHelper(AIndex: longint);
-begin
-  SectionA0.Add(Format('  // %s', [ClassList[AIndex].ClassName]));
-  SectionA0.Add(Format('  %s = record helper for %s', [ClassList[AIndex].ClassName + 'Helper', ClassList[AIndex].ClassName]));
-
-  AddHelperDual          (AIndex);
-  AddHelperInverse       (AIndex);
-  AddHelperReverse       (AIndex);
-  AddHelperConjugate     (AIndex);
-  AddHelperReciprocal    (AIndex);
-  AddHelperLeftReciprocal(AIndex);
-  AddHelperNormalized    (AIndex);
-  AddHelperNorm          (AIndex);
-  AddHelperSquareNorm    (AIndex);
-  AddHelperProjection    (AIndex);
-  AddHelperRejection     (AIndex);
-  AddHelperRotation      (AIndex);
-  AddHelperSameValue     (AIndex);
-  AddHelperExtract       (AIndex);
-  AddHelperToMultivector (AIndex);
-
-  SectionA0.Add('  end;');
   SectionA0.Add('');
 end;
 
@@ -1648,8 +2132,6 @@ begin
     for i := High(ClassList) downto Low(ClassList) + 1 do AddClassHelper(i);
   end;
   AddVersors;
-
-  SectionB0.Add('');
   SectionB0.Add('end.');
 
   for i := 0 to SectionA0.Count -1 do SourceCode.Lines.Add(SectionA0[i]);
