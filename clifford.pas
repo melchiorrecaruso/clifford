@@ -8,7 +8,7 @@ unit Clifford;
 interface
 
 uses
-  Cl2, Cl3, Cl4, LazarusPackageIntf;
+  Cl2, Cl3, Cl4, Cl13, LazarusPackageIntf;
 
 implementation
 
@@ -17,5 +17,5 @@ begin
 end;
 
 initialization
-  RegisterPackage('clifford', @Register);
+  RegisterPackage('Clifford', @Register);
 end.

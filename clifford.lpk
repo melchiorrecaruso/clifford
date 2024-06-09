@@ -3,24 +3,31 @@
   <Package Version="5">
     <Name Value="clifford"/>
     <Type Value="RunAndDesignTime"/>
+    <Author Value="Melchiorre Caruso"/>
     <CompilerOptions>
       <Version Value="11"/>
       <SearchPaths>
         <UnitOutputDirectory Value="build"/>
       </SearchPaths>
     </CompilerOptions>
+    <Description Value="Geometric Algebra for Freepascal"/>
+    <License Value="MIT License"/>
     <Files>
       <Item>
         <Filename Value="cl2.pas"/>
-        <UnitName Value="Cl2"/>
+        <UnitName Value="cl2"/>
       </Item>
       <Item>
         <Filename Value="cl3.pas"/>
-        <UnitName Value="Cl3"/>
+        <UnitName Value="cl3"/>
       </Item>
       <Item>
         <Filename Value="cl4.pas"/>
-        <UnitName Value="Cl4"/>
+        <UnitName Value="cl4"/>
+      </Item>
+      <Item>
+        <Filename Value="cl13.pas"/>
+        <UnitName Value="cl13"/>
       </Item>
     </Files>
     <RequiredPkgs>
