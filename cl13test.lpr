@@ -363,7 +363,7 @@ begin
     if (v.Rotation(u234, u123) <> M.Rotation(u234.ToMultivector, u123.ToMultivector)) then writeln('{6299E035-CFA2-4CB5-9EC5-8B4B4DB3A5FA}');
   end;
 
-  writeln('CL4 TEST: end.');
+  writeln('CL13 TEST: end.');
 
   v1 := Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e4;
   v2 := Rnd*e1 + Rnd*e2 + Rnd*e3 + Rnd*e4;
@@ -399,6 +399,8 @@ begin
   writeln(Format('B1/B1 = %s', [(B1/B1).ToString]));
   writeln(Format('B2/B2 = %s', [(B2/B2).ToString]));
   writeln(Format('B3/B3 = %s', [(B3/B3).ToString]));
+  writeln(Format('B3.Normalized      = %s', [(B3.Normalized     ).ToString]));
+  writeln(Format('B3.Normalized.Norm = %s', [(B3.Normalized.Norm).ToString]));
 
   writeln(Format('I1 = %s (Norm = %s)', [I1.ToString, I1.Norm.ToString]));
   writeln(Format('I2 = %s (Norm = %s)', [I2.ToString, I2.Norm.ToString]));

@@ -70,16 +70,18 @@ type
     fm234:  double;
     fm1234: double;
   public
-    class operator := (const AValue: double): TMultivector;
+    class operator :=(const AValue: double): TMultivector;
     class operator =(const ALeft: TMultivector; ARight: double): boolean;
     class operator =(const ALeft: double; ARight: TMultivector): boolean;
     class operator =(const ALeft, ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; ARight: double): boolean;
     class operator <>(const ALeft: double; ARight: TMultivector): boolean;
     class operator <>(const ALeft, ARight: TMultivector): boolean;
+    class operator +(const AValue: TMultivector): TMultivector;
     class operator +(const ALeft: TMultivector; ARight: double): TMultivector;
     class operator +(const ALeft: double; ARight: TMultivector): TMultivector;
     class operator +(const ALeft, ARight: TMultivector): TMultivector;
+    class operator -(const AValue: TMultivector): TMultivector;
     class operator -(const ALeft: TMultivector; ARight: double): TMultivector;
     class operator -(const ALeft: double; ARight: TMultivector): TMultivector;
     class operator -(const ALeft, ARight: TMultivector): TMultivector;
@@ -102,11 +104,13 @@ type
     class operator <>(const ALeft, ARight: TQuadrivector): boolean;
     class operator <>(const ALeft: TQuadrivector; ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; ARight: TQuadrivector): boolean;
+    class operator +(const AValue: TQuadrivector): TQuadrivector;
     class operator +(const ALeft: TQuadrivector; ARight: double): TMultivector;
     class operator +(const ALeft: double; ARight: TQuadrivector): TMultivector;
     class operator +(const ALeft, ARight: TQuadrivector): TQuadrivector;
     class operator +(const ALeft: TQuadrivector; ARight: TMultivector): TMultivector;
     class operator +(const ALeft: TMultivector; ARight: TQuadrivector): TMultivector;
+    class operator -(const AValue: TQuadrivector): TQuadrivector;
     class operator -(const ALeft: TQuadrivector; ARight: double): TMultivector;
     class operator -(const ALeft: double; ARight: TQuadrivector): TMultivector;
     class operator -(const ALeft, ARight: TQuadrivector): TQuadrivector;
@@ -142,6 +146,7 @@ type
     class operator <>(const ALeft, ARight: TTrivector): boolean;
     class operator <>(const ALeft: TTrivector; ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; ARight: TTrivector): boolean;
+    class operator +(const AValue: TTrivector): TTrivector;
     class operator +(const ALeft: TTrivector; ARight: double): TMultivector;
     class operator +(const ALeft: double; ARight: TTrivector): TMultivector;
     class operator +(const ALeft, ARight: TTrivector): TTrivector;
@@ -149,6 +154,7 @@ type
     class operator +(const ALeft: TQuadrivector; ARight: TTrivector): TMultivector;
     class operator +(const ALeft: TTrivector; ARight: TMultivector): TMultivector;
     class operator +(const ALeft: TMultivector; ARight: TTrivector): TMultivector;
+    class operator -(const AValue: TTrivector): TTrivector;
     class operator -(const ALeft: TTrivector; ARight: double): TMultivector;
     class operator -(const ALeft: double; ARight: TTrivector): TMultivector;
     class operator -(const ALeft, ARight: TTrivector): TTrivector;
@@ -192,6 +198,7 @@ type
     class operator <>(const ALeft, ARight: TBivector): boolean;
     class operator <>(const ALeft: TBivector; ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; ARight: TBivector): boolean;
+    class operator +(const AValue: TBivector): TBivector;
     class operator +(const ALeft: TBivector; ARight: double): TMultivector;
     class operator +(const ALeft: double; ARight: TBivector): TMultivector;
     class operator +(const ALeft, ARight: TBivector): TBivector;
@@ -201,6 +208,7 @@ type
     class operator +(const ALeft: TQuadrivector; ARight: TBivector): TMultivector;
     class operator +(const ALeft: TBivector; ARight: TMultivector): TMultivector;
     class operator +(const ALeft: TMultivector; ARight: TBivector): TMultivector;
+    class operator -(const AValue: TBivector): TBivector;
     class operator -(const ALeft: TBivector; ARight: double): TMultivector;
     class operator -(const ALeft: double; ARight: TBivector): TMultivector;
     class operator -(const ALeft, ARight: TBivector): TBivector;
@@ -248,6 +256,7 @@ type
     class operator <>(const ALeft, ARight: TVector): boolean;
     class operator <>(const ALeft: TVector; ARight: TMultivector): boolean;
     class operator <>(const ALeft: TMultivector; ARight: TVector): boolean;
+    class operator +(const AValue: TVector): TVector;
     class operator +(const ALeft: TVector; ARight: double): TMultivector;
     class operator +(const ALeft: double; ARight: TVector): TMultivector;
     class operator +(const ALeft, ARight: TVector): TVector;
@@ -259,6 +268,7 @@ type
     class operator +(const ALeft: TQuadrivector; ARight: TVector): TMultivector;
     class operator +(const ALeft: TVector; ARight: TMultivector): TMultivector;
     class operator +(const ALeft: TMultivector; ARight: TVector): TMultivector;
+    class operator -(const AValue: TVector): TVector;
     class operator -(const ALeft: TVector; ARight: double): TMultivector;
     class operator -(const ALeft: double; ARight: TVector): TMultivector;
     class operator -(const ALeft, ARight: TVector): TVector;
@@ -740,6 +750,26 @@ begin
     (ALeft.fm234 <> ARight.fm234) and (ALeft.fm1234 <> ARight.fm1234);
 end;
 
+class operator TMultivector.+(const AValue: TMultivector): TMultivector;
+begin
+  result.fm0 := Avalue.fm0;
+  result.fm1 := Avalue.fm1;
+  result.fm2 := Avalue.fm2;
+  result.fm3 := Avalue.fm3;
+  result.fm4 := Avalue.fm4;
+  result.fm12 := Avalue.fm12;
+  result.fm13 := Avalue.fm13;
+  result.fm14 := Avalue.fm14;
+  result.fm23 := Avalue.fm23;
+  result.fm24 := Avalue.fm24;
+  result.fm34 := Avalue.fm34;
+  result.fm123 := Avalue.fm123;
+  result.fm124 := Avalue.fm124;
+  result.fm134 := Avalue.fm134;
+  result.fm234 := Avalue.fm234;
+  result.fm1234 := Avalue.fm1234;
+end;
+
 class operator TMultivector.+(const ALeft: TMultivector; ARight: double): TMultivector;
 begin
   result.fm0 := ALeft.fm0 + ARight;
@@ -798,6 +828,26 @@ begin
   result.fm134 := ALeft.fm134 + ARight.fm134;
   result.fm234 := ALeft.fm234 + ARight.fm234;
   result.fm1234 := ALeft.fm1234 + ARight.fm1234;
+end;
+
+class operator TMultivector.-(const AValue: TMultivector): TMultivector;
+begin
+  result.fm0 := -Avalue.fm0;
+  result.fm1 := -Avalue.fm1;
+  result.fm2 := -Avalue.fm2;
+  result.fm3 := -Avalue.fm3;
+  result.fm4 := -Avalue.fm4;
+  result.fm12 := -Avalue.fm12;
+  result.fm13 := -Avalue.fm13;
+  result.fm14 := -Avalue.fm14;
+  result.fm23 := -Avalue.fm23;
+  result.fm24 := -Avalue.fm24;
+  result.fm34 := -Avalue.fm34;
+  result.fm123 := -Avalue.fm123;
+  result.fm124 := -Avalue.fm124;
+  result.fm134 := -Avalue.fm134;
+  result.fm234 := -Avalue.fm234;
+  result.fm1234 := -Avalue.fm1234;
 end;
 
 class operator TMultivector.-(const ALeft: TMultivector; ARight: double): TMultivector;
@@ -1156,6 +1206,11 @@ begin
     (ALeft.fm1234 <> ARight.fm1234);
 end;
 
+class operator TQuadrivector.+(const AValue: TQuadrivector): TQuadrivector;
+begin
+  result.fm1234 := AValue.fm1234;
+end;
+
 class operator TQuadrivector.+(const ALeft: TQuadrivector; ARight: double): TMultivector;
 begin
   result.fm0 := ARight;
@@ -1241,6 +1296,11 @@ begin
   result.fm134 := ALeft.fm134;
   result.fm234 := ALeft.fm234;
   result.fm1234 := ALeft.fm1234 + ARight.fm1234;
+end;
+
+class operator TQuadrivector.-(const AValue: TQuadrivector): TQuadrivector;
+begin
+  result.fm1234 := -AValue.fm1234;
 end;
 
 class operator TQuadrivector.-(const ALeft: TQuadrivector; ARight: double): TMultivector;
@@ -1507,6 +1567,14 @@ begin
     (ALeft.fm234 <> ARight.fm234) and (ALeft.fm1234 <> 0);
 end;
 
+class operator TTrivector.+(const AValue: TTrivector): TTrivector;
+begin
+  result.fm123 := AValue.fm123;
+  result.fm124 := AValue.fm124;
+  result.fm134 := AValue.fm134;
+  result.fm234 := AValue.fm234;
+end;
+
 class operator TTrivector.+(const ALeft: TTrivector; ARight: double): TMultivector;
 begin
   result.fm0 := ARight;
@@ -1635,6 +1703,14 @@ begin
   result.fm134 := ALeft.fm134 + ARight.fm134;
   result.fm234 := ALeft.fm234 + ARight.fm234;
   result.fm1234 := ALeft.fm1234;
+end;
+
+class operator TTrivector.-(const AValue: TTrivector): TTrivector;
+begin
+  result.fm123 := -AValue.fm123;
+  result.fm124 := -AValue.fm124;
+  result.fm134 := -AValue.fm134;
+  result.fm234 := -AValue.fm234;
 end;
 
 class operator TTrivector.-(const ALeft: TTrivector; ARight: double): TMultivector;
@@ -2079,6 +2155,16 @@ begin
     (ALeft.fm1234 <> 0);
 end;
 
+class operator TBivector.+(const AValue: TBivector): TBivector;
+begin
+  result.fm12 := AValue.fm12;
+  result.fm13 := AValue.fm13;
+  result.fm14 := AValue.fm14;
+  result.fm23 := AValue.fm23;
+  result.fm24 := AValue.fm24;
+  result.fm34 := AValue.fm34;
+end;
+
 class operator TBivector.+(const ALeft: TBivector; ARight: double): TMultivector;
 begin
   result.fm0 := ARight;
@@ -2247,6 +2333,16 @@ begin
   result.fm134 := ALeft.fm134;
   result.fm234 := ALeft.fm234;
   result.fm1234 := ALeft.fm1234;
+end;
+
+class operator TBivector.-(const AValue: TBivector): TBivector;
+begin
+  result.fm12 := -AValue.fm12;
+  result.fm13 := -AValue.fm13;
+  result.fm14 := -AValue.fm14;
+  result.fm23 := -AValue.fm23;
+  result.fm24 := -AValue.fm24;
+  result.fm34 := -AValue.fm34;
 end;
 
 class operator TBivector.-(const ALeft: TBivector; ARight: double): TMultivector;
@@ -2849,6 +2945,14 @@ begin
     (ALeft.fm134 <> 0) and (ALeft.fm234 <> 0) and (ALeft.fm1234 <> 0);
 end;
 
+class operator TVector.+(const AValue: TVector): TVector;
+begin
+  result.fm1 := AValue.fm1;
+  result.fm2 := AValue.fm2;
+  result.fm3 := AValue.fm3;
+  result.fm4 := AValue.fm4;
+end;
+
 class operator TVector.+(const ALeft: TVector; ARight: double): TMultivector;
 begin
   result.fm0 := ARight;
@@ -3055,6 +3159,14 @@ begin
   result.fm134 := ALeft.fm134;
   result.fm234 := ALeft.fm234;
   result.fm1234 := ALeft.fm1234;
+end;
+
+class operator TVector.-(const AValue: TVector): TVector;
+begin
+  result.fm1 := -AValue.fm1;
+  result.fm2 := -AValue.fm2;
+  result.fm3 := -AValue.fm3;
+  result.fm4 := -AValue.fm4;
 end;
 
 class operator TVector.-(const ALeft: TVector; ARight: double): TMultivector;
@@ -3634,37 +3746,21 @@ end;
 function TMultivectorHelper.Dual: TMultivector;
 begin
   result.fm0 := -fm1234;
-
   result.fm1 := -fm234;
-
   result.fm2 := -fm134;
-
-  result.fm3 := +fm124;
-
+  result.fm3 :=  fm124;
   result.fm4 := -fm123;
-
   result.fm12 := -fm34;
-
-  result.fm13 := +fm24;
-
+  result.fm13 :=  fm24;
   result.fm14 := -fm23;
-
-  result.fm23 := +fm14;
-
+  result.fm23 :=  fm14;
   result.fm24 := -fm13;
-
-  result.fm34 := +fm12;
-
-  result.fm123 := +fm4;
-
+  result.fm34 :=  fm12;
+  result.fm123 :=  fm4;
   result.fm124 := -fm3;
-
-  result.fm134 := +fm2;
-
-  result.fm234 := +fm1;
-
-  result.fm1234 := +fm0;
-
+  result.fm134 :=  fm2;
+  result.fm234 :=  fm1;
+  result.fm1234 :=  fm0;
 end;
 
 function TMultivectorHelper.Inverse: TMultivector;
@@ -3764,15 +3860,19 @@ end;
 
 function TMultivectorHelper.Norm: double;
 begin
-  result := sqrt(SquaredNorm);
+  result := SquaredNorm;
+  if result > 0 then
+    result := sqrt(result)
+  else
+    result := -sqrt(-result);
 end;
 
 function TMultivectorHelper.SquaredNorm: double;
 begin
-  result := +fm0 * fm0 + fm1 * fm1 + fm2 * fm2 + fm3 * fm3 + fm4 *
-    fm4 + fm12 * fm12 + fm13 * fm13 + fm14 * fm14 + fm23 * fm23 +
-    fm24 * fm24 + fm34 * fm34 + fm123 * fm123 + fm124 * fm124 + fm134 *
-    fm134 + fm234 * fm234 + fm1234 * fm1234;
+  result :=  fm0    * fm0   + fm1   * fm1   - fm2   * fm2   - fm3   * fm3   - fm4  * fm4
+            +fm12   * fm12  + fm13  * fm13  + fm14  * fm14  - fm23  * fm23  - fm24 * fm24 - fm34 * fm34
+            -fm123  * fm123 - fm124 * fm124 - fm134 * fm134 + fm234 * fm234
+            -fm1234 * fm1234;
 end;
 
 function TMultivectorHelper.Projection(const AVector: TVector): TMultivector;
@@ -4659,8 +4759,7 @@ end;
 
 function TQuadrivectorHelper.Reciprocal: TQuadrivector;
 begin
-//result := Reverse / SquaredNorm;
-  result := Self.ToMultivector.Reciprocal.ExtractQuadrivector;
+  result := Reverse / SquaredNorm;
 end;
 
 function TQuadrivectorHelper.Normalized: TQuadrivector;
@@ -4670,12 +4769,16 @@ end;
 
 function TQuadrivectorHelper.Norm: double;
 begin
-  result := sqrt(SquaredNorm);
+  result := SquaredNorm;
+  if result > 0 then
+    result := sqrt(result)
+  else
+    result := -sqrt(-result);
 end;
 
 function TQuadrivectorHelper.SquaredNorm: double;
 begin
-  result := fm1234 * fm1234;
+  result := -fm1234 * fm1234;
 end;
 
 function TQuadrivectorHelper.Projection(const AVector: TVector): TMultivector;
@@ -4968,8 +5071,7 @@ end;
 
 function TTrivectorHelper.Reciprocal: TTrivector;
 begin
-//result := Reverse / SquaredNorm;
-  result := Self.ToMultivector.Reciprocal.ExtractTrivector;
+  result := -Reverse / SquaredNorm;
 end;
 
 function TTrivectorHelper.Normalized: TTrivector;
@@ -4979,12 +5081,16 @@ end;
 
 function TTrivectorHelper.Norm: double;
 begin
-  result := sqrt(SquaredNorm);
+  result := SquaredNorm;
+  if result > 0 then
+    result := sqrt(result)
+  else
+    result := -sqrt(-result);
 end;
 
 function TTrivectorHelper.SquaredNorm: double;
 begin
-  result := +fm123 * fm123 + fm124 * fm124 + fm134 * fm134 + fm234 * fm234;
+  result := -fm123 * fm123 -fm124 * fm124 -fm134 * fm134 +fm234 * fm234;
 end;
 
 function TTrivectorHelper.Projection(const AVector: TVector): TMultivector;
@@ -5347,7 +5453,8 @@ end;
 
 function TBivectorHelper.Reciprocal: TBivector;
 begin
-  result := Self.ToMultivector.Reciprocal.ExtractBivector;
+//result := Reverse / SquaredNorm;
+  result := ToMultivector.Reciprocal.ExtractBivector;
 end;
 
 function TBivectorHelper.Normalized: TBivector;
@@ -5357,12 +5464,16 @@ end;
 
 function TBivectorHelper.Norm: double;
 begin
-  result := sqrt(SquaredNorm);
+  result := SquaredNorm;
+  if result > 0 then
+    result := sqrt(result)
+  else
+    result := -sqrt(-result);
 end;
 
 function TBivectorHelper.SquaredNorm: double;
 begin
-  result := +fm12 * fm12 + fm13 * fm13 + fm14 * fm14 + fm23 * fm23 + fm24 * fm24 + fm34 * fm34;
+  result := +fm12 * fm12 +fm13 * fm13 +fm14 * fm14 -fm23 * fm23 -fm24 * fm24 -fm34 * fm34;
 end;
 
 function TBivectorHelper.Projection(const AVector: TVector): TMultivector;
@@ -5713,8 +5824,7 @@ end;
 
 function TVectorHelper.Reciprocal: TVector;
 begin
-  //result := Reverse / SquaredNorm;
-  result := Self.ToMultivector.Reciprocal.ExtractVector;
+  result := Reverse / SquaredNorm;
 end;
 
 function TVectorHelper.Normalized: TVector;
@@ -5724,12 +5834,16 @@ end;
 
 function TVectorHelper.Norm: double;
 begin
-  result := sqrt(SquaredNorm);
+  result := SquaredNorm;
+  if result > 0 then
+    result := sqrt(result)
+  else
+    result := -sqrt(-result);
 end;
 
 function TVectorHelper.SquaredNorm: double;
 begin
-  result := fm1 * fm1 + fm2 * fm2 + fm3 * fm3 + fm4 * fm4;
+  result := fm1 * fm1 - fm2 * fm2 - fm3 * fm3 - fm4 * fm4;
 end;
 
 function TVectorHelper.Projection(const AVector: TVector): TVector;
