@@ -136,10 +136,6 @@ type
     class operator / (const ALeft: TMultivector; const ARight: TTrivector): TMultivector;
   end;
 
-  // TBivectorComponents
-  TBivectorComponent  = (bc12, bc13, bc23);
-  TBivectorComponents = set of TBivectorComponent;
-
   // TBivector
   TBivector = record
   private
@@ -190,10 +186,6 @@ type
     class operator / (const ALeft: TBivector; const ARight: TMultivector): TMultivector;
     class operator / (const ALeft: TMultivector; const ARight: TBivector): TMultivector;
   end;
-
-  // TVectorComponents
-  TVectorComponent  = (vc1, vc2, vc3);
-  TVectorComponents = set of TVectorComponent;
 
   // TVector
   TVector = record
@@ -302,9 +294,9 @@ type
     function SameValue(const AValue: TVector): boolean;
     function SameValue(const AValue: double): boolean;
 
-    function Extract(AComponents: TMultivectorComponents): TMultivector;
-    function Extract(AComponents: TBivectorComponents): TBivector;
-    function Extract(AComponents: TVectorComponents): TVector;
+    function ExtractMultivector(AComponents: TMultivectorComponents): TMultivector;
+    function ExtractBivector(AComponents: TMultivectorComponents): TBivector;
+    function ExtractVector(AComponents: TMultivectorComponents): TVector;
 
     function ExtractTrivector: TTrivector;
     function ExtractBivector: TBivector;
@@ -415,7 +407,7 @@ type
     function SameValue(const AValue: TMultivector): boolean;
     function SameValue(const AValue: TBivector): boolean;
 
-    function Extract(AComponents: TBivectorComponents): TBivector;
+    function ExtractBivector(AComponents: TMultivectorComponents): TBivector;
 
     function ToMultivector: TMultivector;
     function ToVerboseString(APrecision, ADigits: longint): string;
@@ -468,7 +460,7 @@ type
     function SameValue(const AValue: TMultivector): boolean;
     function SameValue(const AValue: TVector): boolean;
 
-    function Extract(AComponents: TVectorComponents): TVector;
+    function ExtractVector(AComponents: TMultivectorComponents): TVector;
 
     function ToMultivector: TMultivector;
     function ToVerboseString(APrecision, ADigits: longint): string;
@@ -2471,7 +2463,7 @@ begin
     result := '0';
 end;
 
-function TMultivectorHelper.Extract(AComponents: TMultivectorComponents): TMultivector;
+function TMultivectorHelper.ExtractMultivector(AComponents: TMultivectorComponents): TMultivector;
 begin
   Result := NullMultivector;
   if mc0   in AComponents then result.fm0   := fm0;
@@ -2484,20 +2476,20 @@ begin
   if mc123 in AComponents then result.fm123 := fm123;
 end;
 
-function TMultivectorHelper.Extract(AComponents: TBivectorComponents): TBivector;
+function TMultivectorHelper.ExtractBivector(AComponents: TMultivectorComponents): TBivector;
 begin
   Result := NullBivector;
-  if bc12 in AComponents then result.fm12 := fm12;
-  if bc13 in AComponents then result.fm13 := fm13;
-  if bc23 in AComponents then result.fm23 := fm23;
+  if mc12 in AComponents then result.fm12 := fm12;
+  if mc13 in AComponents then result.fm13 := fm13;
+  if mc23 in AComponents then result.fm23 := fm23;
 end;
 
-function TMultivectorHelper.Extract(AComponents: TVectorComponents): TVector;
+function TMultivectorHelper.ExtractVector(AComponents: TMultivectorComponents): TVector;
 begin
   Result := NullVector;
-  if vc1 in AComponents then result.fm1 := fm1;
-  if vc2 in AComponents then result.fm2 := fm2;
-  if vc3 in AComponents then result.fm3 := fm3;
+  if mc1 in AComponents then result.fm1 := fm1;
+  if mc2 in AComponents then result.fm2 := fm2;
+  if mc3 in AComponents then result.fm3 := fm3;
 end;
 
 function TMultivectorHelper.ExtractTrivector: TTrivector;
@@ -3050,12 +3042,12 @@ begin
             Math.SameValue(fm23, AValue.fm23);
 end;
 
-function TBivectorHelper.Extract(AComponents: TBivectorComponents): TBivector;
+function TBivectorHelper.ExtractBivector(AComponents: TMultivectorComponents): TBivector;
 begin
   Result := NullBivector;
-  if bc12 in AComponents then result.fm12 := fm12;
-  if bc13 in AComponents then result.fm13 := fm13;
-  if bc23 in AComponents then result.fm23 := fm23;
+  if mc12 in AComponents then result.fm12 := fm12;
+  if mc13 in AComponents then result.fm13 := fm13;
+  if mc23 in AComponents then result.fm23 := fm23;
 end;
 
 function TBivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
@@ -3358,12 +3350,12 @@ begin
             Math.SameValue(fm3, AValue.fm3);
 end;
 
-function TVectorHelper.Extract(AComponents: TVectorComponents): TVector;
+function TVectorHelper.ExtractVector(AComponents: TMultivectorComponents): TVector;
 begin
   Result := NullVector;
-  if vc1 in AComponents then result.fm1 := fm1;
-  if vc2 in AComponents then result.fm2 := fm2;
-  if vc3 in AComponents then result.fm3 := fm3;
+  if mc1 in AComponents then result.fm1 := fm1;
+  if mc2 in AComponents then result.fm2 := fm2;
+  if mc3 in AComponents then result.fm3 := fm3;
 end;
 
 
