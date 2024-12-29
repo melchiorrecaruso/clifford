@@ -310,7 +310,7 @@ type
     function IsTrivector: boolean;
     function IsA: string;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -359,7 +359,7 @@ type
     function SameValue(const AValue: TTrivector): boolean;
 
     function ToMultivector: TMultivector;
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -410,7 +410,7 @@ type
     function ExtractBivector(AComponents: TMultivectorComponents): TBivector;
 
     function ToMultivector: TMultivector;
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -463,7 +463,7 @@ type
     function ExtractVector(AComponents: TMultivectorComponents): TVector;
 
     function ToMultivector: TMultivector;
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -2421,7 +2421,7 @@ begin
             Math.SameValue(fm123,    0.0);
 end;
 
-function TMultivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TMultivectorHelper.ToString(APrecision, ADigits: longint): string;
 var
   i: longint;
 begin
@@ -2440,6 +2440,8 @@ begin
     SetLength(result, i - 1)
   else
     result := '0';
+
+  result := '(' + result + ')';
 end;
 
 function TMultivectorHelper.ToString: string;
@@ -2461,6 +2463,8 @@ begin
     SetLength(result, i - 1)
   else
     result := '0';
+
+  result := '(' + result + ')';
 end;
 
 function TMultivectorHelper.ExtractMultivector(AComponents: TMultivectorComponents): TMultivector;
@@ -2776,12 +2780,14 @@ begin
   result := Math.SameValue(fm123, AValue.fm123);
 end;
 
-function TTrivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TTrivectorHelper.ToString(APrecision, ADigits: longint): string;
 begin
   if not Math.SameValue(fm123, 0.0) then
     result := Fmt(fm123, APrecision, ADigits) + 'e123'
   else
     result := '0e123';
+
+  result := '(' + result + ')';
 end;
 
 function TTrivectorHelper.ToString: string;
@@ -2790,6 +2796,8 @@ begin
     result := Fmt(fm123) + 'e123'
   else
     result := '0e123';
+
+  result := '(' + result + ')';
 end;
 
 function TTrivectorHelper.ToMultivector: TMultivector;
@@ -3050,36 +3058,40 @@ begin
   if mc23 in AComponents then result.fm23 := fm23;
 end;
 
-function TBivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TBivectorHelper.ToString(APrecision, ADigits: longint): string;
 var
   i: longint;
 begin
-  Result := '';
-  if not Math.SameValue(fm12, 0.0) then Result := Result + Fmt(fm12,  APrecision, ADigits) + 'e12 ';
-  if not Math.SameValue(fm13, 0.0) then Result := Result + Fmt(fm13,  APrecision, ADigits) + 'e13 ';
-  if not Math.SameValue(fm23, 0.0) then Result := Result + Fmt(fm23,  APrecision, ADigits) + 'e23 ';
+  result := '';
+  if not Math.SameValue(fm12, 0.0) then result := result + Fmt(fm12,  APrecision, ADigits) + 'e12 ';
+  if not Math.SameValue(fm13, 0.0) then result := result + Fmt(fm13,  APrecision, ADigits) + 'e13 ';
+  if not Math.SameValue(fm23, 0.0) then result := result + Fmt(fm23,  APrecision, ADigits) + 'e23 ';
 
-  i := Length(Result);
+  i := Length(result);
   if i > 0 then
-    SetLength(Result, i - 1)
+    SetLength(result, i - 1)
   else
-    Result := '0e12';
+    result := '0e12';
+
+  result := '(' + result + ')';
 end;
 
 function TBivectorHelper.ToString: string;
 var
   i: longint;
 begin
-  Result := '';
-  if not Math.SameValue(fm12, 0.0) then Result := Result + Fmt(fm12) + 'e12 ';
-  if not Math.SameValue(fm13, 0.0) then Result := Result + Fmt(fm13) + 'e13 ';
-  if not Math.SameValue(fm23, 0.0) then Result := Result + Fmt(fm23) + 'e23 ';
+  result := '';
+  if not Math.SameValue(fm12, 0.0) then result := result + Fmt(fm12) + 'e12 ';
+  if not Math.SameValue(fm13, 0.0) then result := result + Fmt(fm13) + 'e13 ';
+  if not Math.SameValue(fm23, 0.0) then result := result + Fmt(fm23) + 'e23 ';
 
-  i := Length(Result);
+  i := Length(result);
   if i > 0 then
-    SetLength(Result, i - 1)
+    SetLength(result, i - 1)
   else
-    Result := '0e12';
+    result := '0e12';
+
+  result := '(' + result + ')';
 end;
 
 function TBivectorHelper.ToMultivector: TMultivector;
@@ -3359,20 +3371,22 @@ begin
 end;
 
 
-function TVectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TVectorHelper.ToString(APrecision, ADigits: longint): string;
 var
   i: longint;
 begin
   result := '';
-  if not Math.SameValue(fm1, 0.0) then Result := Result + Fmt(fm1,  APrecision, ADigits) + 'e1 ';
-  if not Math.SameValue(fm2, 0.0) then Result := Result + Fmt(fm2,  APrecision, ADigits) + 'e2 ';
-  if not Math.SameValue(fm3, 0.0) then Result := Result + Fmt(fm3,  APrecision, ADigits) + 'e3 ';
+  if not Math.SameValue(fm1, 0.0) then result := result + Fmt(fm1,  APrecision, ADigits) + 'e1 ';
+  if not Math.SameValue(fm2, 0.0) then result := result + Fmt(fm2,  APrecision, ADigits) + 'e2 ';
+  if not Math.SameValue(fm3, 0.0) then result := result + Fmt(fm3,  APrecision, ADigits) + 'e3 ';
 
-    i := Length(Result);
+    i := Length(result);
   if i > 0 then
-    SetLength(Result, i - 1)
+    SetLength(result, i - 1)
   else
-    Result := '0e1';
+    result := '0e1';
+
+  result := '(' + result + ')';
 end;
 
 function TVectorHelper.ToString: string;
@@ -3380,15 +3394,17 @@ var
   i: longint;
 begin
   result := '';
-  if not Math.SameValue(fm1, 0.0) then Result := Result + Fmt(fm1) + 'e1 ';
-  if not Math.SameValue(fm2, 0.0) then Result := Result + Fmt(fm2) + 'e2 ';
-  if not Math.SameValue(fm3, 0.0) then Result := Result + Fmt(fm3) + 'e3 ';
+  if not Math.SameValue(fm1, 0.0) then result := result + Fmt(fm1) + 'e1 ';
+  if not Math.SameValue(fm2, 0.0) then result := result + Fmt(fm2) + 'e2 ';
+  if not Math.SameValue(fm3, 0.0) then result := result + Fmt(fm3) + 'e3 ';
 
-  i := Length(Result);
+  i := Length(result);
   if i > 0 then
-    SetLength(Result, i - 1)
+    SetLength(result, i - 1)
   else
-    Result := '0e1';
+    result := '0e1';
+
+  result := '(' + result + ')';
 end;
 
 function TVectorHelper.ToMultivector: TMultivector;
