@@ -9,6 +9,18 @@
       <SearchPaths>
         <UnitOutputDirectory Value="build"/>
       </SearchPaths>
+      <CodeGeneration>
+        <Optimizations>
+          <OptimizationLevel Value="0"/>
+        </Optimizations>
+      </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <GenerateDebugInfo Value="False"/>
+          <RunWithoutDebug Value="True"/>
+          <UseLineInfoUnit Value="False"/>
+        </Debugging>
+      </Linking>
     </CompilerOptions>
     <Description Value="Geometric Algebra for Freepascal"/>
     <License Value="MIT License"/>
