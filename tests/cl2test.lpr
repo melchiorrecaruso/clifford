@@ -46,14 +46,14 @@ begin
     if B.Wedge        (M) <> M.Wedge              (B) then Writeln('TEST-204: NOT PASSED');
     if (B*M)              <> (M*B)                    then Writeln('TEST-205: NOT PASSED');
     if (B*B)              <> (M*M)                    then Writeln('TEST-206: NOT PASSED');
-    if B.Reciprocal       <> M.Reciprocal             then Writeln('TEST-208: NOT PASSED');
+    if B.Inverse          <> M.Inverse                then Writeln('TEST-208: NOT PASSED');
     if B.Conjugate        <> M.Conjugate              then Writeln('TEST-209: NOT PASSED');
-    if B.Inverse          <> M.Inverse                then Writeln('TEST-210: NOT PASSED');
+    if B.Involute         <> M.Involute               then Writeln('TEST-210: NOT PASSED');
     if B.Dual             <> M.Dual                   then Writeln('TEST-211: NOT PASSED');
     if B.Norm             <> M.ExtractBivector.Norm   then Writeln('TEST-212: NOT PASSED');
     if B.SquaredNorm      <> M.SquaredNorm            then Writeln('TEST-213: NOT PASSED');
     if B.Reverse          <> M.Reverse                then Writeln('TEST-214: NOT PASSED');
-    if not (B/B).SameValue(1)                         then Writeln('TEST-215: NOT PASSED');
+    if not SameValue(B/B, 1)                           then Writeln('TEST-215: NOT PASSED');
 
     if (B.Projection(u1  ) <> M.Projection(u1  .ToMultivector)) then Writeln('TEST-215: NOT PASSED');
     if (B.Projection(u2  ) <> M.Projection(u2  .ToMultivector)) then Writeln('TEST-216: NOT PASSED');
@@ -77,9 +77,9 @@ begin
     if v.Wedge         (M) <> M.Wedge          (v) then Writeln('TEST-304: NOT PASSED');
     if (v*M)               <> (M*v)                then Writeln('TEST-305: NOT PASSED');
     if (v*v)               <> (M*M)                then Writeln('TEST-306: NOT PASSED');
-    if v.Reciprocal        <> M.Reciprocal         then Writeln('TEST-307: NOT PASSED');
+    if v.Inverse           <> M.Inverse            then Writeln('TEST-307: NOT PASSED');
     if v.Conjugate         <> M.Conjugate          then Writeln('TEST-308: NOT PASSED');
-    if v.Inverse           <> M.Inverse            then Writeln('TEST-309: NOT PASSED');
+    if v.Involute          <> M.Involute           then Writeln('TEST-309: NOT PASSED');
     if v.Dual              <> M.Dual               then Writeln('TEST-310: NOT PASSED');
     if v.Norm              <> M.ExtractVector.Norm then Writeln('TEST-311: NOT PASSED');
     if v.SquaredNorm       <> M.SquaredNorm        then Writeln('TEST-312: NOT PASSED');
@@ -137,7 +137,7 @@ begin
   Writeln(Format('M2/M2 = %s', [(M2/M2).ToString]));
   Writeln(Format('M3/M3 = %s', [(M3/M3).ToString]));
 
-  Writeln(Format(' 1/M3 = (%s)', [(M3.Reciprocal            ).ToString]));
+  Writeln(Format(' 1/M3 = (%s)', [(M3.Inverse               ).ToString]));
   Writeln(Format(' 1/M3 = (%s)', [(M3.Reverse/M3.SquaredNorm).ToString]));
   Writeln(Format('M.Normalized      = %s', [(M3.Normalized     ).ToString]));
   Writeln(Format('M.Normalized.Norm = %s', [(M3.Normalized.Norm).ToString]));

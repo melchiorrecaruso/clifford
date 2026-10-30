@@ -1,4 +1,4 @@
-program gatoolkit;
+program clgengui;
 
 {$mode objfpc}{$H+}
 
