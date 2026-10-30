@@ -50,9 +50,9 @@ begin
     if Q.Wedge        (M) <> M.Wedge                (Q) then writeln('{71428F05-C10B-4A29-9D08-063116B6465C}');
     if (Q*M)              <> (M*Q)                      then writeln('{206B1C8E-B682-45D7-B5D7-74F1FA44301F}');
     if (Q*Q)              <> (M*M)                      then writeln('{713F6B88-1CD0-454C-B55B-581FD48E4801}');
-    if not Q.Reciprocal.SameValue(M.Reciprocal)         then writeln('{0BE76E6C-8545-4037-ADDC-12CC1371C8D5}');
+    if not Q.Inverse.SameValue(M.Inverse)               then writeln('{0BE76E6C-8545-4037-ADDC-12CC1371C8D5}');
     if Q.Conjugate        <> M.Conjugate                then writeln('{4A12ECF2-CBB9-437A-97F9-EF3F0E20B5F2}');
-    if Q.Inverse          <> M.Inverse                  then writeln('{61259540-CC98-4A67-9CA3-948A150C6615}');
+    if Q.Involute         <> M.Involute                 then writeln('{61259540-CC98-4A67-9CA3-948A150C6615}');
     if Q.Dual             <> M.Dual                     then writeln('{826A2A28-D383-4A17-9C28-F713C21A0041}');
     if Q.Norm             <> M.ExtractQuadrivector.Norm then writeln('{AF8A2D67-541E-43A4-A666-007584911B4E}');
     if Q.SquaredNorm      <> M.SquaredNorm              then writeln('{966128E8-F2E3-4210-8C3A-51C5E8D40EE8}');
@@ -130,14 +130,14 @@ begin
     if I.Wedge        (M) <> M.Wedge             (I) then writeln('{1FE84617-158B-4D25-BE40-5A26A37BA8FA}');
     if (I*M)              <> (M*I)                   then writeln('{919FF702-E102-4C19-9D78-AB2BDB2B073E}');
     if (I*I)              <> (M*M)                   then writeln('{DAEC0267-2214-4173-B321-631B8B93B3D1}');
-    if not I.Reciprocal.SameValue(M.Reciprocal)      then writeln('{9598F268-6196-4074-AE18-4042222D5CB3}');
+    if not I.Inverse.SameValue(M.Inverse)            then writeln('{9598F268-6196-4074-AE18-4042222D5CB3}');
     if I.Conjugate        <> M.Conjugate             then writeln('{6860E223-A300-4C12-9CE0-61140AEE7E0C}');
-    if I.Inverse          <> M.Inverse               then writeln('{055B3A75-B2AA-4CF2-8003-C1C5B605A641}');
+    if I.Involute         <> M.Involute              then writeln('{055B3A75-B2AA-4CF2-8003-C1C5B605A641}');
     if I.Dual             <> M.Dual                  then writeln('{A508AD7C-679D-45BD-9273-546537ABBC0A}');
     if I.Norm             <> M.ExtractTrivector.Norm then writeln('{8266D72A-896C-42F2-BE67-9FB60A4E00C9}');
     if I.SquaredNorm      <> M.SquaredNorm           then writeln('{8A4BE64C-602C-4487-8187-332287938B42}');
     if I.Reverse          <> M.Reverse               then writeln('{0AD09754-FBE9-490F-8B04-4C2E8EE6006B}');
-    if not SameValue(I/I, 1)                         then writeln('{E055123A-8413-4D78-9723-35D5E5098AFD}');
+    if not (I/I).SameValue(1)                         then writeln('{E055123A-8413-4D78-9723-35D5E5098AFD}');
 
     if (I.Projection(u1   ) <> M.Projection(u1   .ToMultivector)) then writeln('{2B4C0336-72C7-4F45-97EA-1177BF631B63}');
     if (I.Projection(u2   ) <> M.Projection(u2   .ToMultivector)) then writeln('{5949724F-76BF-4852-8342-09A3FD5FC497}');
@@ -148,7 +148,7 @@ begin
     if (I.Projection(u14  ) <> M.Projection(u14  .ToMultivector)) then writeln('{FB7E4073-2EA9-4E20-81E0-3188E28B12D7}');
     if (I.Projection(u23  ) <> M.Projection(u23  .ToMultivector)) then writeln('{08AB5FD9-5C9A-4955-BF3C-8828FFC0131D}');
     if (I.Projection(u24  ) <> M.Projection(u24  .ToMultivector)) then writeln('{5BCAC996-75BA-459E-91E8-0896FF1C2700}');
-    if (I.Projection(u34  ) <> M.Projection(u23  .ToMultivector)) then writeln('{BBA671BD-FB3E-4991-82AC-8E340F26E759}');
+    if (I.Projection(u34  ) <> M.Projection(u34  .ToMultivector)) then writeln('{BBA671BD-FB3E-4991-82AC-8E340F26E759}');
     if (I.Projection(u123 ) <> M.Projection(u123 .ToMultivector)) then writeln('{E2CB7EDC-BCF1-450F-BC99-6FDA0BC52F16}');
     if (I.Projection(u124 ) <> M.Projection(u124 .ToMultivector)) then writeln('{3C22D9EB-8C6F-4F2E-9DD1-C46A1E4C407C}');
     if (I.Projection(u134 ) <> M.Projection(u134 .ToMultivector)) then writeln('{3E905ADD-A421-4E56-ADBF-B2618D646139}');
@@ -210,9 +210,9 @@ begin
     if B.Wedge        (M) <> M.Wedge              (B) then writeln('{DE383E41-70E6-4301-8D2E-EC3646FE4EA0}');
     if (B*M)              <> (M*B)                    then writeln('{F4A706FC-C50A-4511-9AB2-FCB1D7D24A94}');
     if (B*B)              <> (M*M)                    then writeln('{4F788337-3640-41A1-BEB8-E6FDB83B0624}');
-    if not B.Reciprocal.SameValue(M.Reciprocal)       then writeln('{9A0BE928-E294-4C87-875C-9FD0B37DB8EA}');
+    if not B.Inverse.SameValue(M.Inverse)             then writeln('{9A0BE928-E294-4C87-875C-9FD0B37DB8EA}');
     if B.Conjugate        <> M.Conjugate              then writeln('{D2788F82-6B59-40E4-AF91-E7CDBB8FBDA2}');
-    if B.Inverse          <> M.Inverse                then writeln('{34596514-593F-4D65-845D-BD2DC4F4FDF9}');
+    if B.Involute         <> M.Involute               then writeln('{34596514-593F-4D65-845D-BD2DC4F4FDF9}');
     if B.Dual             <> M.Dual                   then writeln('{63E4E07A-7624-45A0-9B3E-F307B7B18462}');
     if B.Norm             <> M.ExtractBivector.Norm   then writeln('{083E1584-1BDF-427E-A726-D2FB0FD0C017}');
     if B.SquaredNorm      <> M.SquaredNorm            then writeln('{F888657C-0A10-458C-82C0-8D4B8576A676}');
@@ -228,7 +228,7 @@ begin
     if (B.Projection(u14  ) <> M.Projection(u14  .ToMultivector)) then writeln('{6098AABD-DF30-4C39-BAEE-B629591EC240}');
     if (B.Projection(u23  ) <> M.Projection(u23  .ToMultivector)) then writeln('{859319CC-E329-440B-8708-E0BB85694204}');
     if (B.Projection(u24  ) <> M.Projection(u24  .ToMultivector)) then writeln('{23BB2AEA-9888-4E8B-AD90-FD3EC146487D}');
-    if (B.Projection(u34  ) <> M.Projection(u23  .ToMultivector)) then writeln('{744E2DEF-A3BA-45F2-866E-61F3E4BB6F7A}');
+    if (B.Projection(u34  ) <> M.Projection(u34  .ToMultivector)) then writeln('{744E2DEF-A3BA-45F2-866E-61F3E4BB6F7A}');
     if (B.Projection(u123 ) <> M.Projection(u123 .ToMultivector)) then writeln('{E5952240-F23A-42C8-903D-CE8EF353CBD1}');
     if (B.Projection(u124 ) <> M.Projection(u124 .ToMultivector)) then writeln('{07450FB9-399F-48AC-B2C4-243EACD4FD47}');
     if (B.Projection(u134 ) <> M.Projection(u134 .ToMultivector)) then writeln('{02F0A5D3-0F98-466C-BFE2-8C194BDF2500}');
@@ -290,9 +290,9 @@ begin
     if v.Wedge         (M) <> M.Wedge          (v) then writeln('{C9305B42-2A5B-4F1A-84AC-6559A9C9C505}');
     if (v*M)               <> (M*v)                then writeln('{59945087-5C44-4F67-A77A-10B5359CAC0B}');
     if (v*v)               <> (M*M)                then writeln('{96CDEDF8-10E8-43CD-8989-369447DB3196}');
-    if not v.Reciprocal.SameValue(M.Reciprocal)    then writeln('{AABD637E-DA0C-4221-8979-890C53CA4373}');
+    if not v.Inverse.SameValue(M.Inverse)          then writeln('{AABD637E-DA0C-4221-8979-890C53CA4373}');
     if v.Conjugate         <> M.Conjugate          then writeln('{50CF4051-4039-4E2C-919F-8465233F95F7}');
-    if v.Inverse           <> M.Inverse            then writeln('{82B46198-C259-4AD3-8694-A4DD3D2A1C32}');
+    if v.Involute          <> M.Involute           then writeln('{82B46198-C259-4AD3-8694-A4DD3D2A1C32}');
     if v.Dual              <> M.Dual               then writeln('{ACA95D2E-4A5C-43E3-9707-89A564C054B2}');
     if v.Norm              <> M.ExtractVector.Norm then writeln('{AA082340-8287-4830-8317-EFD5CDD38DC3}');
     if v.SquaredNorm       <> M.SquaredNorm        then writeln('{4BD36AA5-A7CE-49ED-83C6-E30BA7CEA987}');
@@ -308,7 +308,7 @@ begin
     if (v.Projection(u14  ) <> M.Projection(u14  .ToMultivector)) then writeln('{CB914FB4-C358-4089-B989-7558F082C800}');
     if (v.Projection(u23  ) <> M.Projection(u23  .ToMultivector)) then writeln('{C35442A1-48DF-4949-B496-76ED633EF210}');
     if (v.Projection(u24  ) <> M.Projection(u24  .ToMultivector)) then writeln('{84C0D930-D02C-4DF4-AEA1-43C121C82491}');
-    if (v.Projection(u34  ) <> M.Projection(u23  .ToMultivector)) then writeln('{C9EC1B28-1C0B-4DD5-B2E6-63912B1CBB14}');
+    if (v.Projection(u34  ) <> M.Projection(u34  .ToMultivector)) then writeln('{C9EC1B28-1C0B-4DD5-B2E6-63912B1CBB14}');
     if (v.Projection(u123 ) <> M.Projection(u123 .ToMultivector)) then writeln('{7200053D-8A56-4205-92E7-8FFB2C1A6B24}');
     if (v.Projection(u124 ) <> M.Projection(u124 .ToMultivector)) then writeln('{E4B51086-7B11-4F98-834E-C6F2714E82D5}');
     if (v.Projection(u134 ) <> M.Projection(u134 .ToMultivector)) then writeln('{C949ECAD-99DB-4FEE-9377-9F51D29B1117}');
@@ -421,7 +421,7 @@ begin
   writeln(Format('M2/M2 = %s', [(M2/M2).ToString]));
   writeln(Format('M3/M3 = %s', [(M3/M3).ToString]));
 
-  writeln(Format('1/M3 = (%s)', [(M3.Reciprocal            ).ToString]));
+  writeln(Format('1/M3 = (%s)', [(M3.Inverse               ).ToString]));
   writeln(Format('1/M3 = (%s)', [(M3.Reverse/M3.SquaredNorm).ToString]));
   writeln(Format('M.Normalized      = %s', [(M3.Normalized     ).ToString]));
   writeln(Format('M.Normalized.Norm = %s', [(M3.Normalized.Norm).ToString]));
