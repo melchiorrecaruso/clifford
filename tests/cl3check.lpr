@@ -126,6 +126,7 @@ begin
   try Check(Near(X4.Inverse * X4, 1), 'left inverse'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X1.Projection(Y1) + X1.Rejection(Y1), X1), 'projection + rejection'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X1.Rotation(Y1, Z1).SquaredNorm, X1.SquaredNorm), 'rotation preserves the norm'); except on EMathError do Inc(Skipped); end;
+  try Check(Near(X1.Rotate(Z1 * Y1), X1.Rotation(Y1, Z1) * (Y1.SquaredNorm * Z1.SquaredNorm)), 'rotate = rotation'); except on EMathError do Inc(Skipped); end;
 
   // TVector
   try Check(Near(X1 * X1.Inverse, 1), 'TVector inverse'); except on EMathError do Inc(Skipped); end;
@@ -177,6 +178,7 @@ begin
   try Check(Near(X1.Rejection(Y4), ToMV(X1).Rejection(ToMV(Y4))), 'TVector rejection on TMultivector'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X1.Reflection(Y4), ToMV(X1).Reflection(ToMV(Y4))), 'TVector reflection by TMultivector'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X1.Rotation(Y4, Z4), ToMV(X1).Rotation(ToMV(Y4), ToMV(Z4))), 'TVector rotation by TMultivector'); except on EMathError do Inc(Skipped); end;
+  Check(Same(X1.Rotate(Y1 * Z1), ToMV(X1).Rotate(Y1 * Z1)), 'TVector rotate');
   // TBivector
   try Check(Near(X2 * X2.Inverse, 1), 'TBivector inverse'); except on EMathError do Inc(Skipped); end;
   try Check(Same(X2.Inverse, ToMV(X2).Inverse), 'TBivector inverse type'); except on EMathError do Inc(Skipped); end;
@@ -227,6 +229,7 @@ begin
   try Check(Near(X2.Rejection(Y4), ToMV(X2).Rejection(ToMV(Y4))), 'TBivector rejection on TMultivector'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X2.Reflection(Y4), ToMV(X2).Reflection(ToMV(Y4))), 'TBivector reflection by TMultivector'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X2.Rotation(Y4, Z4), ToMV(X2).Rotation(ToMV(Y4), ToMV(Z4))), 'TBivector rotation by TMultivector'); except on EMathError do Inc(Skipped); end;
+  Check(Same(X2.Rotate(Y1 * Z1), ToMV(X2).Rotate(Y1 * Z1)), 'TBivector rotate');
   // TTrivector
   try Check(Near(X3 * X3.Inverse, 1), 'TTrivector inverse'); except on EMathError do Inc(Skipped); end;
   try Check(Same(X3.Inverse, ToMV(X3).Inverse), 'TTrivector inverse type'); except on EMathError do Inc(Skipped); end;
@@ -277,6 +280,7 @@ begin
   try Check(Near(X3.Rejection(Y4), ToMV(X3).Rejection(ToMV(Y4))), 'TTrivector rejection on TMultivector'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X3.Reflection(Y4), ToMV(X3).Reflection(ToMV(Y4))), 'TTrivector reflection by TMultivector'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X3.Rotation(Y4, Z4), ToMV(X3).Rotation(ToMV(Y4), ToMV(Z4))), 'TTrivector rotation by TMultivector'); except on EMathError do Inc(Skipped); end;
+  Check(Same(X3.Rotate(Y1 * Z1), ToMV(X3).Rotate(Y1 * Z1)), 'TTrivector rotate');
   // TMultivector
   try Check(Near(X4 * X4.Inverse, 1), 'TMultivector inverse'); except on EMathError do Inc(Skipped); end;
   try Check(Same(X4.Inverse, ToMV(X4).Inverse), 'TMultivector inverse type'); except on EMathError do Inc(Skipped); end;
@@ -327,6 +331,7 @@ begin
   try Check(Near(X4.Rejection(Y4), ToMV(X4).Rejection(ToMV(Y4))), 'TMultivector rejection on TMultivector'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X4.Reflection(Y4), ToMV(X4).Reflection(ToMV(Y4))), 'TMultivector reflection by TMultivector'); except on EMathError do Inc(Skipped); end;
   try Check(Near(X4.Rotation(Y4, Z4), ToMV(X4).Rotation(ToMV(Y4), ToMV(Z4))), 'TMultivector rotation by TMultivector'); except on EMathError do Inc(Skipped); end;
+  Check(Same(X4.Rotate(Y1 * Z1), ToMV(X4).Rotate(Y1 * Z1)), 'TMultivector rotate');
 end;
 
 var

@@ -85,6 +85,9 @@ end.
 - `X.Rotation(A, B)` is B A X A⁻¹ B⁻¹, the composition of two reflections: it
   rotates X in the plane A ∧ B by **twice** the angle from A to B. For example,
   with A = e1 and B at 45° from e1 towards e2, e1 is rotated to e2.
+- `X.Rotate(R)` is R X ~R, the rotation by the rotor R (R ~R = 1). For a
+  rotation by θ in the plane of the unit bivector B, R = cos(θ/2) - sin(θ/2) B.
+  The result keeps the type of X: `v.Rotate(R)` is a vector.
 - Widening to `TMultivector` is implicit; narrowing (to a k-vector or to
   `double`) is explicit: `TVector(M)`, `double(M)`.
 - `Components[...]` reads and writes single coefficients, e.g.

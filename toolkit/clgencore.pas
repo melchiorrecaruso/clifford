@@ -963,6 +963,8 @@ begin
   Intf('    dividing by a non-invertible value raises a floating-point exception.');
   Intf('  - X.Rotation(A, B) is B A X A^-1 B^-1: the composition of two reflections,');
   Intf('    i.e. a rotation in the plane A^B by TWICE the angle from A to B.');
+  Intf('  - X.Rotate(R) is R X ~R, for a rotor R with R ~R = 1; it keeps the type');
+  Intf('    of X and drops the components of other grades.');
   Intf('}');
   Intf('');
   Intf('{ References:');
@@ -1510,6 +1512,17 @@ begin
         Impl(Format('  result := %s;', [TypedExpression(Item.Expr, Static, Declared)]));
       EndRoutine;
     end;
+
+  // Rotation by a rotor: a rotor preserves the grades, so the result keeps the
+  // type of Self and the components of other grades (zero for a rotor) are dropped
+  Params := Format('const ARotor: %s', [FTypes[MV].Name]);
+  BeginRoutine(Format('function Rotate(%s): %s;', [Params, N]),
+    Format('function %sHelper.Rotate(%s): %s;', [N, Params, N]));
+  if AType = MV then
+    Impl('  result := ARotor * Self * ARotor.Reverse;')
+  else
+    Impl(Format('  result := %s(ARotor * Self * ARotor.Reverse);', [N]));
+  EndRoutine;
 end;
 
 procedure TGenerator.EmitHelperComparison(AType: longint);
@@ -2018,6 +2031,8 @@ begin
     AddGuarded(Format('  Check(Near(%0:s.Projection(%1:s) + %0:s.Rejection(%1:s), %0:s), ''projection + rejection'');', [V('X', 1), V('Y', 1)]));
     AddGuarded(Format('  Check(Near(%0:s.Rotation(%1:s, %2:s).SquaredNorm, %0:s.SquaredNorm), ''rotation preserves the norm'');',
       [V('X', 1), V('Y', 1), V('Z', 1)]));
+    AddGuarded(Format('  Check(Near(%0:s.Rotate(%2:s * %1:s), %0:s.Rotation(%1:s, %2:s) * (%1:s.SquaredNorm * %2:s.SquaredNorm)), ''rotate = rotation'');',
+      [V('X', 1), V('Y', 1), V('Z', 1)]));
     Add('');
 
     // Every specialised type agrees with the multivector
@@ -2046,6 +2061,8 @@ begin
         AddGuarded(Format('  Check(Near(%0:s.Reflection(%1:s), ToMV(%0:s).Reflection(ToMV(%1:s))), ''%2:s reflection by %3:s'');', [V('X', t), V('Y', u), FTypes[t].Name, FTypes[u].Name]));
         AddGuarded(Format('  Check(Near(%0:s.Rotation(%1:s, %2:s), ToMV(%0:s).Rotation(ToMV(%1:s), ToMV(%2:s))), ''%3:s rotation by %4:s'');', [V('X', t), V('Y', u), V('Z', u), FTypes[t].Name, FTypes[u].Name]));
       end;
+      // A product of two vectors is a versor: the sandwich keeps the grades
+      Add(Format('  Check(Same(%0:s.Rotate(%1:s * %2:s), ToMV(%0:s).Rotate(%1:s * %2:s)), ''%3:s rotate'');', [V('X', t), V('Y', 1), V('Z', 1), FTypes[t].Name]));
     end;
     Add('end;');
     Add('');

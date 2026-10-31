@@ -38,6 +38,8 @@ unit cl13;
     dividing by a non-invertible value raises a floating-point exception.
   - X.Rotation(A, B) is B A X A^-1 B^-1: the composition of two reflections,
     i.e. a rotation in the plane A^B by TWICE the angle from A to B.
+  - X.Rotate(R) is R X ~R, for a rotor R with R ~R = 1; it keeps the type
+    of X and drops the components of other grades.
 }
 
 { References:
@@ -458,6 +460,7 @@ type
     function Rotation(const AVector1, AVector2: TTrivector): TMultivector;
     function Rotation(const AVector1, AVector2: TQuadrivector): TMultivector;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
+    function Rotate(const ARotor: TMultivector): TMultivector;
 
     function Dot(const AVector: TVector): TMultivector;
     function Dot(const AVector: TBivector): TMultivector;
@@ -512,6 +515,7 @@ type
     function Rotation(const AVector1, AVector2: TTrivector): TVector;
     function Rotation(const AVector1, AVector2: TQuadrivector): TVector;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
+    function Rotate(const ARotor: TMultivector): TVector;
 
     function Dot(const AVector: TVector): double;
     function Dot(const AVector: TBivector): TVector;
@@ -566,6 +570,7 @@ type
     function Rotation(const AVector1, AVector2: TTrivector): TBivector;
     function Rotation(const AVector1, AVector2: TQuadrivector): TBivector;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
+    function Rotate(const ARotor: TMultivector): TBivector;
 
     function Dot(const AVector: TVector): TVector;
     function Dot(const AVector: TBivector): double;
@@ -620,6 +625,7 @@ type
     function Rotation(const AVector1, AVector2: TTrivector): TTrivector;
     function Rotation(const AVector1, AVector2: TQuadrivector): TTrivector;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
+    function Rotate(const ARotor: TMultivector): TTrivector;
 
     function Dot(const AVector: TVector): TBivector;
     function Dot(const AVector: TBivector): TVector;
@@ -674,6 +680,7 @@ type
     function Rotation(const AVector1, AVector2: TTrivector): TQuadrivector;
     function Rotation(const AVector1, AVector2: TQuadrivector): TQuadrivector;
     function Rotation(const AVector1, AVector2: TMultivector): TMultivector;
+    function Rotate(const ARotor: TMultivector): TQuadrivector;
 
     function Dot(const AVector: TVector): TTrivector;
     function Dot(const AVector: TBivector): TBivector;
@@ -5116,6 +5123,11 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Inverse * AVector2.Inverse;
 end;
 
+function TMultivectorHelper.Rotate(const ARotor: TMultivector): TMultivector;
+begin
+  result := ARotor * Self * ARotor.Reverse;
+end;
+
 function TMultivectorHelper.Dot(const AVector: TVector): TMultivector;
 begin
   result.fms := fm0 * AVector.fm0
@@ -5813,6 +5825,11 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Inverse * AVector2.Inverse;
 end;
 
+function TVectorHelper.Rotate(const ARotor: TMultivector): TVector;
+begin
+  result := TVector(ARotor * Self * ARotor.Reverse);
+end;
+
 function TVectorHelper.Dot(const AVector: TVector): double;
 begin
   result := fm0 * AVector.fm0
@@ -6213,6 +6230,11 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Inverse * AVector2.Inverse;
 end;
 
+function TBivectorHelper.Rotate(const ARotor: TMultivector): TBivector;
+begin
+  result := TBivector(ARotor * Self * ARotor.Reverse);
+end;
+
 function TBivectorHelper.Dot(const AVector: TVector): TVector;
 begin
   result.fm0 := -fm01 * AVector.fm1
@@ -6604,6 +6626,11 @@ begin
   result := AVector2 * AVector1 * Self * AVector1.Inverse * AVector2.Inverse;
 end;
 
+function TTrivectorHelper.Rotate(const ARotor: TMultivector): TTrivector;
+begin
+  result := TTrivector(ARotor * Self * ARotor.Reverse);
+end;
+
 function TTrivectorHelper.Dot(const AVector: TVector): TBivector;
 begin
   result.fm01 := -fm012 * AVector.fm2
@@ -6939,6 +6966,11 @@ end;
 function TQuadrivectorHelper.Rotation(const AVector1, AVector2: TMultivector): TMultivector;
 begin
   result := AVector2 * AVector1 * Self * AVector1.Inverse * AVector2.Inverse;
+end;
+
+function TQuadrivectorHelper.Rotate(const ARotor: TMultivector): TQuadrivector;
+begin
+  result := TQuadrivector(ARotor * Self * ARotor.Reverse);
 end;
 
 function TQuadrivectorHelper.Dot(const AVector: TVector): TTrivector;
