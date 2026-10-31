@@ -2,10 +2,10 @@ object MainForm: TMainForm
   Left = 908
   Height = 779
   Top = 314
-  Width = 1194
+  Width = 1244
   Caption = 'Geometric Algebra ToolKit'
   ClientHeight = 779
-  ClientWidth = 1194
+  ClientWidth = 1244
   LCLVersion = '5.99.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -705,6 +705,37 @@ object MainForm: TMainForm
     ShowHint = True
     TabOrder = 5
     Text = 'e'
+    OnEditingDone = BoxChange
+  end
+  object TypePrefixLabel: TLabel
+    AnchorSideLeft.Control = PrefixEdit
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = TypePrefixEdit
+    AnchorSideBottom.Control = TypePrefixEdit
+    AnchorSideBottom.Side = asrBottom
+    Left = 763
+    Height = 36
+    Top = 20
+    Width = 41
+    Anchors = [akTop, akLeft, akBottom]
+    BorderSpacing.Left = 25
+    BorderSpacing.Right = 10
+    Caption = 'Types'
+    Layout = tlCenter
+  end
+  object TypePrefixEdit: TEdit
+    AnchorSideLeft.Control = TypePrefixLabel
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Owner
+    Left = 814
+    Height = 36
+    Hint = 'Prefix of the type names, inserted after the T: CL3 gives TCL3Vector, TCL3Multivector... (empty: TVector)'
+    Top = 20
+    Width = 60
+    BorderSpacing.Top = 20
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 7
     OnEditingDone = BoxChange
   end
   object ExportTestBtn: TBitBtn

@@ -266,7 +266,7 @@ type
     function Wedge(const AVector: TBivector): TBivector;
     function Wedge(const AVector: TMultivector): TMultivector;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -308,7 +308,7 @@ type
     function Wedge(const AVector: TBivector): double;
     function Wedge(const AVector: TMultivector): TMultivector;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -350,7 +350,7 @@ type
     function Wedge(const AVector: TBivector): double;
     function Wedge(const AVector: TMultivector): TBivector;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -1475,7 +1475,7 @@ begin
                + fm12 * AVector.fm0;
 end;
 
-function TMultivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TMultivectorHelper.ToString(APrecision, ADigits: longint): string;
 begin
   result := ComponentsToString([fm0, fm1, fm2, fm12], ['', 'e1', 'e2', 'e12'], APrecision, ADigits);
 end;
@@ -1665,7 +1665,7 @@ begin
                - fm2 * AVector.fm1;
 end;
 
-function TVectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TVectorHelper.ToString(APrecision, ADigits: longint): string;
 begin
   result := ComponentsToString([fm1, fm2], ['e1', 'e2'], APrecision, ADigits);
 end;
@@ -1843,7 +1843,7 @@ begin
   result.fm12 := fm12 * AVector.fm0;
 end;
 
-function TBivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TBivectorHelper.ToString(APrecision, ADigits: longint): string;
 begin
   result := ComponentsToString([fm12], ['e12'], APrecision, ADigits);
 end;

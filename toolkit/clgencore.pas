@@ -109,6 +109,7 @@ type
     FIntf: TStringList;
     FImpl: TStringList;
     FUnitName: string;
+    FTypePrefix: string;
     FAuthor: string;
     FYear: longint;
     FSeed: qword;
@@ -137,6 +138,8 @@ type
     function ProbeSupport(AFormula: TFormula; ASelf, AArg: longint): TSupport;
 
     // Naming
+    function BaseTypeName(AType: longint): string;
+    procedure SetTypePrefix(const AValue: string);
     function Field(ABladeIndex: longint): string;
     function Access(const AVar: string; AType, ABladeIndex: longint): string;
     function ComponentEnum(AType, ABladeIndex: longint): string;
@@ -192,6 +195,9 @@ type
 
     property Algebra: TAlgebra read FAlgebra;
     property OutputUnitName: string read FUnitName write FUnitName;
+    // Inserted after the leading T of every type name: 'CL3' gives TCL3Vector,
+    // TCL3Versor1... Basis and null constant names are not affected.
+    property TypePrefix: string read FTypePrefix write SetTypePrefix;
     property Author: string read FAuthor write FAuthor;
     property Year: longint read FYear write FYear;
   end;
@@ -463,10 +469,8 @@ begin
   begin
     if i = 0 then
       FTypes[i].Name := 'double'
-    else if i = High(FTypes) then
-      FTypes[i].Name := 'TMultivector'
     else
-      FTypes[i].Name := 'T' + GradeWords[i];
+      FTypes[i].Name := 'T' + BaseTypeName(i);
 
     if i = High(FTypes) then FTypes[i].Grade := -1 else FTypes[i].Grade := i;
 
@@ -741,6 +745,23 @@ begin
     result := AVar + '.' + Field(ABladeIndex);
 end;
 
+function TGenerator.BaseTypeName(AType: longint): string;
+begin
+  if AType = MV then
+    result := 'Multivector'
+  else
+    result := GradeWords[AType];
+end;
+
+procedure TGenerator.SetTypePrefix(const AValue: string);
+var
+  i: longint;
+begin
+  FTypePrefix := AValue;
+  for i := 1 to High(FTypes) do
+    FTypes[i].Name := 'T' + FTypePrefix + BaseTypeName(i);
+end;
+
 function TGenerator.ComponentEnum(AType, ABladeIndex: longint): string;
 begin
   if AType = MV then
@@ -770,7 +791,7 @@ begin
   if AType = 0 then
     result := 'NullScalar'
   else
-    result := 'Null' + Copy(FTypes[AType].Name, 2, MaxInt);
+    result := 'Null' + BaseTypeName(AType);
 end;
 
 { Emission }
@@ -1001,8 +1022,8 @@ begin
   Impl('');
   if AType = MV then
   begin
-    BeginRoutine('class operator :=(const AValue: double): TMultivector;',
-      'class operator TMultivector.:=(const AValue: double): TMultivector;');
+    BeginRoutine(Format('class operator :=(const AValue: double): %s;', [FTypes[MV].Name]),
+      Format('class operator %0:s.:=(const AValue: double): %0:s;', [FTypes[MV].Name]));
     for k in FTypes[MV].Blades do
       if k = 0 then
         Impl(Format('  result.%s := AValue;', [Field(k)]))
@@ -1010,14 +1031,14 @@ begin
         Impl(Format('  result.%s := 0.0;', [Field(k)]));
     EndRoutine;
 
-    BeginRoutine('class operator Explicit(const AValue: TMultivector): double;',
-      'class operator TMultivector.Explicit(const AValue: TMultivector): double;');
+    BeginRoutine(Format('class operator Explicit(const AValue: %s): double;', [FTypes[MV].Name]),
+      Format('class operator %0:s.Explicit(const AValue: %0:s): double;', [FTypes[MV].Name]));
     Impl(Format('  result := AValue.%s;', [Field(0)]));
     EndRoutine;
   end else
   begin
-    BeginRoutine(Format('class operator :=(const AValue: %s): TMultivector;', [FTypes[AType].Name]),
-      Format('class operator %s.:=(const AValue: %s): TMultivector;', [FTypes[AType].Name, FTypes[AType].Name]));
+    BeginRoutine(Format('class operator :=(const AValue: %s): %s;', [FTypes[AType].Name, FTypes[MV].Name]),
+      Format('class operator %0:s.:=(const AValue: %0:s): %1:s;', [FTypes[AType].Name, FTypes[MV].Name]));
     for k in FTypes[MV].Blades do
       if (FTypes[AType].Support shr k) and 1 = 1 then
         Impl(Format('  result.%s := AValue.%s;', [Field(k), Field(k)]))
@@ -1025,8 +1046,8 @@ begin
         Impl(Format('  result.%s := 0.0;', [Field(k)]));
     EndRoutine;
 
-    BeginRoutine(Format('class operator Explicit(const AValue: TMultivector): %s;', [FTypes[AType].Name]),
-      Format('class operator %s.Explicit(const AValue: TMultivector): %s;', [FTypes[AType].Name, FTypes[AType].Name]));
+    BeginRoutine(Format('class operator Explicit(const AValue: %s): %s;', [FTypes[MV].Name, FTypes[AType].Name]),
+      Format('class operator %0:s.Explicit(const AValue: %1:s): %0:s;', [FTypes[AType].Name, FTypes[MV].Name]));
     for k in FTypes[AType].Blades do
       Impl(Format('  result.%s := AValue.%s;', [Field(k), Field(k)]));
     EndRoutine;
@@ -1350,7 +1371,7 @@ begin
 
   if AType = MV then
   begin
-    BeginRoutine('function GradeMask: longword;', 'function TMultivectorHelper.GradeMask: longword;');
+    BeginRoutine('function GradeMask: longword;', Format('function %sHelper.GradeMask: longword;', [FTypes[MV].Name]));
     Impl('  // Bit g is set when some component of grade g is non-zero');
     Impl('  result := 0;');
     for g := 0 to FAlgebra.Dimension do
@@ -1428,8 +1449,8 @@ begin
   if (FAlgebra.Dimension = 3) and (AType = 1) then
   begin
     ResultType := ProductType(1, 1, @FAlgebra.Cross);
-    BeginRoutine(Format('function Cross(const AVector: TVector): %s;', [FTypes[ResultType].Name]),
-      Format('function TVectorHelper.Cross(const AVector: TVector): %s;', [FTypes[ResultType].Name]));
+    BeginRoutine(Format('function Cross(const AVector: %s): %s;', [FTypes[1].Name, FTypes[ResultType].Name]),
+      Format('function %0:sHelper.Cross(const AVector: %0:s): %1:s;', [FTypes[1].Name, FTypes[ResultType].Name]));
     EmitBilinear('', 1, 'AVector', 1, @FAlgebra.Cross, ResultType);
     EndRoutine;
   end;
@@ -1556,7 +1577,7 @@ begin
     for t := MV - 1 downto 0 do
     begin
       BeginRoutine(Format('function Extract%s: %s;', [GradeWord(t), FTypes[t].Name]),
-        Format('function TMultivectorHelper.Extract%s: %s;', [GradeWord(t), FTypes[t].Name]));
+        Format('function %sHelper.Extract%s: %s;', [FTypes[MV].Name, GradeWord(t), FTypes[t].Name]));
       if t = 0 then
         Impl(Format('  result := %s;', [Field(0)]))
       else
@@ -1566,7 +1587,8 @@ begin
     end;
   end else
   begin
-    BeginRoutine('function ToMultivector: TMultivector;', Format('function %sHelper.ToMultivector: TMultivector;', [N]));
+    BeginRoutine(Format('function ToMultivector: %s;', [FTypes[MV].Name]),
+      Format('function %sHelper.ToMultivector: %s;', [N, FTypes[MV].Name]));
     Impl('  result := Self;');
     EndRoutine;
   end;
@@ -1580,14 +1602,14 @@ var
 begin
   if AType <> MV then Exit;
 
-  BeginRoutine('function IsNull: boolean;', 'function TMultivectorHelper.IsNull: boolean;');
+  BeginRoutine('function IsNull: boolean;', Format('function %sHelper.IsNull: boolean;', [FTypes[MV].Name]));
   Impl('  result := SameValue(NullMultivector);');
   EndRoutine;
 
   for g := 0 to FAlgebra.Dimension do
   begin
     BeginRoutine(Format('function Is%s: boolean;', [GradeWord(g)]),
-      Format('function TMultivectorHelper.Is%s: boolean;', [GradeWord(g)]));
+      Format('function %sHelper.Is%s: boolean;', [FTypes[MV].Name, GradeWord(g)]));
     Terms := TStringList.Create;
     try
       // Some component of grade g is non-zero, all the others are zero
@@ -1611,12 +1633,12 @@ begin
     EndRoutine;
   end;
 
-  BeginRoutine('function IsA: string;', 'function TMultivectorHelper.IsA: string;');
+  BeginRoutine('function IsA: string;', Format('function %sHelper.IsA: string;', [FTypes[MV].Name]));
   Impl('  if IsNull then Exit(''Null'');');
   for g := FAlgebra.Dimension downto 1 do
     Impl(Format('  if Is%s then Exit(''%s'');', [GradeWord(g), FTypes[g].Name]));
   Impl('  if IsScalar then Exit(''TScalar'');');
-  Impl('  result := ''TMultivector'';');
+  Impl(Format('  result := ''%s'';', [FTypes[MV].Name]));
   EndRoutine;
 end;
 
@@ -1640,8 +1662,8 @@ begin
     Names := Names + '''' + Iif(k = 0, '', FAlgebra.Name(FAlgebra.Blade(k))) + '''';
   end;
 
-  BeginRoutine('function ToVerboseString(APrecision, ADigits: longint): string;',
-    Format('function %sHelper.ToVerboseString(APrecision, ADigits: longint): string;', [N]));
+  BeginRoutine('function ToString(APrecision, ADigits: longint): string;',
+    Format('function %sHelper.ToString(APrecision, ADigits: longint): string;', [N]));
   Impl(Format('  result := ComponentsToString([%s], [%s], APrecision, ADigits);', [Values, Names]));
   EndRoutine;
 
@@ -1688,10 +1710,10 @@ begin
   // Basis blades: 3*e12 builds a TBivector
   for g := 1 to FAlgebra.Dimension do
   begin
-    Intf(Format('  // T%s', [VersorWords[g]]));
+    Intf(Format('  // T%s%s', [FTypePrefix, VersorWords[g]]));
     for k in FTypes[g].Blades do
     begin
-      VersorName := 'T' + VersorWords[g] + FAlgebra.Suffix(FAlgebra.Blade(k));
+      VersorName := 'T' + FTypePrefix + VersorWords[g] + FAlgebra.Suffix(FAlgebra.Blade(k));
       Intf(Format('  %s = record', [VersorName]));
       Intf(Format('    class operator *(const AValue: double; const ASelf: %s): %s;', [VersorName, FTypes[g].Name]));
       Intf(Format('    class operator *(const ASelf: %s; const AValue: double): %s;', [VersorName, FTypes[g].Name]));
@@ -1719,7 +1741,7 @@ begin
   Intf('const');
   for g := 1 to FAlgebra.Dimension do
     for k in FTypes[g].Blades do
-      Intf(Format('  %s: T%s%s = ();', [FAlgebra.Name(FAlgebra.Blade(k)), VersorWords[g], FAlgebra.Suffix(FAlgebra.Blade(k))]));
+      Intf(Format('  %s: T%s%s%s = ();', [FAlgebra.Name(FAlgebra.Blade(k)), FTypePrefix, VersorWords[g], FAlgebra.Suffix(FAlgebra.Blade(k))]));
   Intf('');
 
   // Unit basis values
@@ -1778,18 +1800,18 @@ begin
   Impl('');
 
   // Implementation-only routines; GeometricScalar is <A B>_0 without the full product
-  Impl('function GeometricScalar(const ALeft, ARight: TMultivector): double;');
+  Impl(Format('function GeometricScalar(const ALeft, ARight: %s): double;', [FTypes[MV].Name]));
   Impl('begin');
   EmitBilinear('ALeft', MV, 'ARight', MV, @FAlgebra.Geometric, 0);
   Impl('end;');
   Impl('');
 
   Steps := 1 shl ((FAlgebra.Dimension + 1) div 2);
-  Impl('function ShirokovInverse(const AValue: TMultivector): TMultivector;');
+  Impl(Format('function ShirokovInverse(const AValue: %0:s): %0:s;', [FTypes[MV].Name]));
   Impl('const');
   Impl(Format('  N = %d; // 2^ceil(n/2), n = %d', [Steps, FAlgebra.Dimension]));
   Impl('var');
-  Impl('  U: TMultivector;');
+  Impl(Format('  U: %s;', [FTypes[MV].Name]));
   Impl('  k: longint;');
   Impl('begin');
   Impl('  // U(1) = A; U(k) = A (U(k-1) - C(k-1)); C(k) = N/k <U(k)>_0');
@@ -1873,7 +1895,7 @@ begin
     Add(Format('program %scheck;', [FUnitName]));
     Add('');
     Add(Format('{ Self-check of the generated unit %s: algebraic laws, and consistency', [FUnitName]));
-    Add('  between the k-vector types and TMultivector.');
+    Add(Format('  between the k-vector types and %s.', [FTypes[MV].Name]));
     Add('  Generated by the Clifford toolkit (clgencore.pas): do not edit by hand. }');
     Add('');
     Add('{$mode objfpc}{$H+}');
@@ -1900,25 +1922,25 @@ begin
     Add('  result := RandomRange(-9, 10);');
     Add('end;');
     Add('');
-    Add('function ToMV(const AValue: TMultivector): TMultivector;');
+    Add(Format('function ToMV(const AValue: %0:s): %0:s;', [FTypes[MV].Name]));
     Add('begin');
     Add('  result := AValue;');
     Add('end;');
     Add('');
-    Add('function Same(const A, B: TMultivector): boolean;');
+    Add(Format('function Same(const A, B: %s): boolean;', [FTypes[MV].Name]));
     Add('begin');
     Add('  result := A = B;');
     Add('end;');
     Add('');
-    Add('function Near(const A, B: TMultivector; ATolerance: double = 1e-7): boolean;');
+    Add(Format('function Near(const A, B: %s; ATolerance: double = 1e-7): boolean;', [FTypes[MV].Name]));
     Add('var');
-    Add('  C: TMultivectorComponent;');
+    Add(Format('  C: %sComponent;', [FTypes[MV].Name]));
     Add('  Scale: double;');
     Add('begin');
     Add('  Scale := 1.0;');
-    Add('  for C := Low(TMultivectorComponent) to High(TMultivectorComponent) do');
+    Add(Format('  for C := Low(%0:sComponent) to High(%0:sComponent) do', [FTypes[MV].Name]));
     Add('    Scale := Max(Scale, Max(Abs(A.Components[C]), Abs(B.Components[C])));');
-    Add('  for C := Low(TMultivectorComponent) to High(TMultivectorComponent) do');
+    Add(Format('  for C := Low(%0:sComponent) to High(%0:sComponent) do', [FTypes[MV].Name]));
     Add('    if Abs(A.Components[C] - B.Components[C]) > ATolerance * Scale then Exit(False);');
     Add('  result := True;');
     Add('end;');
@@ -1926,7 +1948,7 @@ begin
 
     for t := 1 to MV do
     begin
-      Add(Format('function Random%s: %s;', [Copy(FTypes[t].Name, 2, MaxInt), FTypes[t].Name]));
+      Add(Format('function Random%s: %s;', [BaseTypeName(t), FTypes[t].Name]));
       Add('var');
       Add(Format('  C: %sComponent;', [FTypes[t].Name]));
       Add('begin');
@@ -1978,8 +2000,8 @@ begin
       Add(Format('  %s, %s, %s: %s;', [V('X', t), V('Y', t), V('Z', t), FTypes[t].Name]));
     Add('begin');
     for t := 1 to MV do
-      Add(Format('  %s := Random%s; %s := Random%s; %s := Random%s;', [V('X', t), Copy(FTypes[t].Name, 2, MaxInt),
-        V('Y', t), Copy(FTypes[t].Name, 2, MaxInt), V('Z', t), Copy(FTypes[t].Name, 2, MaxInt)]));
+      Add(Format('  %s := Random%s; %s := Random%s; %s := Random%s;', [V('X', t), BaseTypeName(t),
+        V('Y', t), BaseTypeName(t), V('Z', t), BaseTypeName(t)]));
     Add('');
 
     // Laws on general multivectors (exact with integer inputs)

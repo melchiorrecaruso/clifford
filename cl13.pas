@@ -470,7 +470,7 @@ type
     function Wedge(const AVector: TQuadrivector): TQuadrivector;
     function Wedge(const AVector: TMultivector): TMultivector;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -524,7 +524,7 @@ type
     function Wedge(const AVector: TQuadrivector): double;
     function Wedge(const AVector: TMultivector): TMultivector;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -578,7 +578,7 @@ type
     function Wedge(const AVector: TQuadrivector): double;
     function Wedge(const AVector: TMultivector): TMultivector;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -632,7 +632,7 @@ type
     function Wedge(const AVector: TQuadrivector): double;
     function Wedge(const AVector: TMultivector): TMultivector;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -686,7 +686,7 @@ type
     function Wedge(const AVector: TQuadrivector): double;
     function Wedge(const AVector: TMultivector): TQuadrivector;
 
-    function ToVerboseString(APrecision, ADigits: longint): string;
+    function ToString(APrecision, ADigits: longint): string;
     function ToString: string;
   end;
 
@@ -5602,7 +5602,7 @@ begin
                  + fm0123 * AVector.fms;
 end;
 
-function TMultivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TMultivectorHelper.ToString(APrecision, ADigits: longint): string;
 begin
   result := ComponentsToString([fms, fm0, fm1, fm2, fm3, fm01, fm02, fm03, fm12, fm13, fm23, fm012, fm013, fm023, fm123, fm0123], ['', 'g0', 'g1', 'g2', 'g3', 'g01', 'g02', 'g03', 'g12', 'g13', 'g23', 'g012', 'g013', 'g023', 'g123', 'g0123'], APrecision, ADigits);
 end;
@@ -5986,7 +5986,7 @@ begin
                  - fm3 * AVector.fm012;
 end;
 
-function TVectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TVectorHelper.ToString(APrecision, ADigits: longint): string;
 begin
   result := ComponentsToString([fm0, fm1, fm2, fm3], ['g0', 'g1', 'g2', 'g3'], APrecision, ADigits);
 end;
@@ -6389,7 +6389,7 @@ begin
                  + fm23 * AVector.fm01;
 end;
 
-function TBivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TBivectorHelper.ToString(APrecision, ADigits: longint): string;
 begin
   result := ComponentsToString([fm01, fm02, fm03, fm12, fm13, fm23], ['g01', 'g02', 'g03', 'g12', 'g13', 'g23'], APrecision, ADigits);
 end;
@@ -6745,7 +6745,7 @@ begin
                  - fm123 * AVector.fm0;
 end;
 
-function TTrivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TTrivectorHelper.ToString(APrecision, ADigits: longint): string;
 begin
   result := ComponentsToString([fm012, fm013, fm023, fm123], ['g012', 'g013', 'g023', 'g123'], APrecision, ADigits);
 end;
@@ -7025,7 +7025,7 @@ begin
   result.fm0123 := fm0123 * AVector.fms;
 end;
 
-function TQuadrivectorHelper.ToVerboseString(APrecision, ADigits: longint): string;
+function TQuadrivectorHelper.ToString(APrecision, ADigits: longint): string;
 begin
   result := ComponentsToString([fm0123], ['g0123'], APrecision, ADigits);
 end;
