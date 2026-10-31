@@ -2,11 +2,14 @@ program clgen;
 
 { Command-line front end of the Clifford toolkit.
 
-  Usage: clgen -p <positive> [-q <negative>] [-b <0|1>] [-n <basis prefix>] [-u <unit>] [-o <file>]
-         [-t <test file>] [-i <test iterations>]
+  Usage: clgen -p <positive> [-q <negative>] [-b <0|1>] [-n <basis prefix>] [-x <type prefix>]
+         [-u <unit>] [-o <file>] [-t <test file>] [-i <test iterations>]
 
   Example, spacetime algebra with gamma notation and indices from 0:
-    clgen -p 1 -q 3 -b 0 -n g -u cl13 -t cl13check.lpr }
+    clgen -p 1 -q 3 -b 0 -n g -u cl13 -t cl13check.lpr
+
+  Example, Cl(3) with prefixed types (TCL3Vector...):
+    clgen -p 3 -x CL3 -u ADimCL3 }
 
 {$mode objfpc}{$H+}
 
@@ -15,13 +18,14 @@ uses
 
 var
   P, Q, IndexBase, Iterations: longint;
-  UnitNameOpt, OutFile, TestFile, Prefix: string;
+  UnitNameOpt, OutFile, TestFile, Prefix, TypePrefix: string;
   Generator: TGenerator;
   Lines: TStringList;
   i: longint;
 begin
   P := -1; Q := 0; IndexBase := 1; Iterations := 0;
   UnitNameOpt := ''; OutFile := ''; TestFile := ''; Prefix := 'e';
+  TypePrefix := '';
   i := 1;
   while i <= ParamCount do
   begin
@@ -30,6 +34,7 @@ begin
       '-q': begin Inc(i); Q := StrToInt(ParamStr(i)); end;
       '-b': begin Inc(i); IndexBase := StrToInt(ParamStr(i)); end;
       '-n': begin Inc(i); Prefix := ParamStr(i); end;
+      '-x': begin Inc(i); TypePrefix := ParamStr(i); end;
       '-u': begin Inc(i); UnitNameOpt := ParamStr(i); end;
       '-i': begin Inc(i); Iterations := StrToInt(ParamStr(i)); end;
       '-o': begin Inc(i); OutFile := ParamStr(i); end;
@@ -44,7 +49,7 @@ begin
   end;
   if P < 0 then
   begin
-    Writeln('Usage: clgen -p <positive> [-q <negative>] [-b <0|1>] [-n <basis prefix>] [-u <unit>] [-o <file>] [-t <test file>] [-i <test iterations>]');
+    Writeln('Usage: clgen -p <positive> [-q <negative>] [-b <0|1>] [-n <basis prefix>] [-x <type prefix>] [-u <unit>] [-o <file>] [-t <test file>] [-i <test iterations>]');
     Halt(2);
   end;
 
@@ -54,6 +59,7 @@ begin
     try
       if UnitNameOpt <> '' then Generator.OutputUnitName := UnitNameOpt;
       Generator.Algebra.BasisPrefix := Prefix;
+      Generator.TypePrefix := TypePrefix;
       if OutFile = '' then OutFile := Generator.OutputUnitName + '.pas';
 
       Generator.Generate(Lines);

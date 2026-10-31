@@ -35,6 +35,8 @@ type
     PrefixLabel: TLabel;
     SaveDialog: TSaveDialog;
     SynPasSyn: TSynPasSyn;
+    TypePrefixEdit: TEdit;
+    TypePrefixLabel: TLabel;
     WedgeProduct: TStringGrid;
     GeometricProduct: TStringGrid;
     WedgeProductSheet: TTabSheet;
@@ -52,6 +54,7 @@ type
   private
     FGenerator: TGenerator;
     function BasisPrefix: string;
+    function TypePrefix: string;
     function CellText(ASign: longint; ABlade: TBlade): string;
     function CellGrade(const AText: string): longint;
     procedure FillTable(AGrid: TStringGrid; AProduct: TBladeProduct);
@@ -103,6 +106,17 @@ begin
   begin
     result := 'e';
     PrefixEdit.Text := result;
+  end;
+end;
+
+function TMainForm.TypePrefix: string;
+begin
+  result := Trim(TypePrefixEdit.Text);
+  // The prefix becomes part of identifiers such as TCL3Vector
+  if not IsValidIdent('T' + result) then
+  begin
+    result := '';
+    TypePrefixEdit.Text := result;
   end;
 end;
 
@@ -186,6 +200,7 @@ begin
   FreeAndNil(FGenerator);
   FGenerator := Generator;
   FGenerator.Algebra.BasisPrefix := BasisPrefix;
+  FGenerator.TypePrefix := TypePrefix;
 
   Screen.BeginWaitCursor;
   try
